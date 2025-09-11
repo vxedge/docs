@@ -59,9 +59,12 @@ vxedge is a reproducible, modular framework to define and run SDV experiments th
         +----+-------------------+   +----+-----------+  +------------------+
              |                          |
     Zones:   |                          |
-    - zone-adas (VMs, RTOS, nodes)      - central-hpc (Autoware, OTA server, inference)
-    - zone-infotain (Android Automotive in QEMU)
-    - zone-telemetry (OTA clients, logging)
+    - zone-front-left   (VMs, RTOS, ADAS sensors/nodes)
+    - zone-front-right  (VMs, RTOS, ADAS sensors/nodes)
+    - zone-rear-left    (comfort, BMS, infotainment clients)
+    - zone-rear-right   (comfort, BMS, infotainment clients)
+    - zone-central-hpc  (Autoware, OTA server, inference)
+    - zone-gateway      (uplink to CCR2004, VLAN slicing)
 ```
 
 **Key components:**
@@ -92,7 +95,7 @@ Canonical repos (under vxedge org):
 **Single-source rules:**
 
 - A zone/compute’s manifest is authoritative for its images and node IDs.
-- Services declared under services in an experiment manifest are the authoritative runtime descriptors for that experiment (image + config). The code lives in vxota or vxsvc-telemetry as appropriate.
+- Services declared under services in an experiment manifest are the authoritative runtime descriptors for that experiment (image + config). The code lives in vxota or vxtelemetry as appropriate.
 - CLI uses manifests as sole input; state stored in ephemeral runtime directories and vxedge logs.
 
 ---
@@ -125,19 +128,19 @@ vxedge compute rm --vxid <vxid>
 vxedge compute image push --vxid <vxid> --from <path> --registry <url?>
 
 # Services (OTA, telemetry)
-vxedge service ota up --experiment <exp-manifest.yaml>
-vxedge service ota down --experiment <exp-manifest.yaml>
-vxedge service telemetry up --experiment <exp-manifest.yaml>
-vxedge service telemetry down --experiment <exp-manifest.yaml>
+vxedge ota up --experiment <exp-manifest.yaml>
+vxedge ota down --experiment <exp-manifest.yaml>
+vxedge telemetry up --experiment <exp-manifest.yaml>
+vxedge telemetry down --experiment <exp-manifest.yaml>
+vxedge telemetry collect --manifest vxperiments/exp-001.yaml --out results/exp-001.zip
 
 # Experiments (manifest-driven)
 vxedge experiment up --manifest vxperiments/exp-001.yaml
 vxedge experiment down --manifest vxperiments/exp-001.yaml
 
-# Telemetry collection (ad-hoc)
-vxedge telemetry up --manifest vxperiments/exp-001.yaml
-vxedge telemetry down --manifest vxperiments/exp-001.yaml
-vxedge telemetry collect --manifest vxperiments/exp-001.yaml --out results/exp-001.zip
+# Traffic generation 
+vxedge traffic up --manifest ...
+
 ```
 
 ---
@@ -187,9 +190,9 @@ compute:
       - <service-id>
 
 zones:
-  - id: vxzone-<role>-<seq>
+  - id: vxzone-<zone>-<seq>
     name: <human-readable>
-    role: front-ecu | infotain | telemetry
+    role: front-left | front-right | rear-left | rear-right | central-hpc | gateway
     nodes:
       - id: node-<type>-<seq>
         type: ecu | sensor | gateway | infotainment | telemetry-client
@@ -276,7 +279,7 @@ results:
 
 ---
 
-## 11 — Edge agents & telemetry collection (vxedge-agents / vxsvc-telemetry)
+## 11 — Edge agents & telemetry collection (vxagents / vxtelemetry)
 
 - Rust agents deployed per experiment to collect metrics, latency, and traffic.
 - Prometheus exporters for centralized metric collection.
@@ -390,7 +393,7 @@ services:
     id: telemetry-01
     type: telemetry
     image:
-      url: registry/vxsvc-telemetry:latest
+      url: registry/vxtelemetry:latest
       kind: container
     config:
       scrape_interval_s: 5
@@ -400,8 +403,14 @@ services:
 
 ```text
 /interface vlan
-add name=vlan-adas vlan-id=101 interface=ether1
-add name=vlan-infotain vlan-id=102 interface=ether1
+add name=vlan-front-left vlan-id=101 interface=ether1
+add name=vlan-front-right vlan-id=102 interface=ether1
+add name=vlan-rear-left vlan-id=103 interface=ether1
+add name=vlan-rear-right vlan-id=104 interface=ether1
+add name=vlan-central-hpc vlan-id=105 interface=ether1
+add name=vlan-gateway vlan-id=106 interface=ether1
+
+
 
 /queue tree
 add name=adas parent=ether1 max-limit=100M
@@ -411,8 +420,8 @@ add name=infotain parent=ether1 max-limit=500M
 ### Run sequence (CLI)
 
 1. `vxedge up`
-2. `vxedge zone up --vxid vxzone-adas`
-3. `vxedge zone up --vxid vxzone-infotain`
+2. `vxedge zone up --vxid vxzone-front-left`
+3. `vxedge zone up --vxid vxzone-front-right`
 4. `vxedge compute up --vxid vxcompute-central`
 5. `vxedge service ota up --experiment vxperiments/exp-001.yaml`
 6. `vxedge service telemetry up --experiment vxperiments/exp-001.yaml`
