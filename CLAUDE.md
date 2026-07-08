@@ -11,6 +11,8 @@ spec** — every other repo's CLAUDE.md and TASKS.md derive from it and must not
   §16 worked examples.
 - `TASKS.md` — the program-level task board: phase gates and cross-repo critical path.
   Per-repo TASKS.md files hold the detailed work items.
+- `PUBLICATION.md` — arXiv/venue plan, paper skeletons, partner-selection procedure, and the
+  publication gate (never preprint before repos are public and results rerun reproducibly).
 - Papers, slides, reproducibility guide land here as they are written.
 
 ## Rules
