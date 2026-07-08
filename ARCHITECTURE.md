@@ -384,15 +384,19 @@ zones:
           - iface: <name>
             vlan: <vlan id>
             slice: <slice-id>            # binds the iface to a slice from network.slices
+        slice_policy:                    # optional, URSP-style UE-side slice selection (phase 2):
+          - match: <traffic class | dscp | app id>   #   per-traffic-class routing onto concurrent
+            slice: <slice-id>                        #   PDU sessions when slices use mode: s-nssai
     services:
       - <service-id>
 
 links:
   - from: <vxid or vxid:nodeid>
     to: <vxid or vxid:nodeid>
-    type: vlan_trunk | vxlan | wireguard | direct
+    type: vlan_trunk | vxlan | wireguard | direct | can
     properties:
-      - { vlan: <id> }
+      - { vlan: <id> }                       # vlan_trunk
+      - { bus: <vcan name>, bitrate: <bps> } # can — SocketCAN/vcan; CAN-over-Ethernet via cannelloni
 
 traffic_profiles:
   <profile-id>:
@@ -463,8 +467,19 @@ templating):
   of hypothesis H1.
 - **Real 5G slicing (H2):** Open5GS core + UERANSIM gNB/UE terminate PDU sessions per S-NSSAI;
   slice definitions in the manifest (`mode: s-nssai`) provision both the 5G core and the gateway.
-  Optional radio-channel realism via **NVIDIA Sionna** (6G Developer Program); full
-  **Aerial CUDA-Accelerated RAN** is a stretch goal requiring specific NVIDIA platforms.
+  Zone nodes may additionally carry a URSP-style `slice_policy` (per-traffic-class selection
+  across concurrent PDU sessions), mirroring UE-side slicing as deployed on production
+  automotive modems (Qualcomm Snapdragon Auto 5G; cf. the DT/BMW/Valeo/Ericsson/Qualcomm 5G SA
+  slicing trial, which vxedge reproduces openly in software). Optional radio-channel realism
+  via **NVIDIA Sionna** (6G Developer Program); full **Aerial CUDA-Accelerated RAN** is a
+  stretch goal requiring specific NVIDIA platforms.
+- **TSN variant (phase 3):** time-aware scheduling via `taprio`/`cbs` qdiscs + gPTP time sync
+  (`linuxptp`, 802.1AS) as an alternative gateway shaping mode — enables HTB-vs-TSN isolation
+  comparisons matching production automotive Ethernet backbones.
+- **Legacy bus edges (`type: can`, phase 3):** SocketCAN/vcan buses per zone, exposed to guests
+  via QEMU CAN controllers and tunneled across the backbone with cannelloni; CAN frames map to
+  VSS signals via Kuksa feeders — the zonal-controller CAN-aggregation role that makes the
+  prototype vehicle-shaped rather than datacenter-shaped.
 - **Tunnels:** VXLAN for inter-host communication; WireGuard (in-kernel) for secure telemetry and
   OTA transport.
 - **Routing:** static for lab experiments; FRR provides BGP for cloud interconnect.
@@ -651,8 +666,12 @@ templating):
 - **Industrialization notes:**
   - Middleware and patterns match the production SDV convergence: Eclipse SDV (Kuksa/VSS, Zenoh,
     uProtocol, Ankaios), SOAFEE-style cloud/vehicle virtual-ECU parity, NVIDIA DRIVE-adjacent
-    compute. This makes results directly legible to an NVIDIA-DRIVE-partner OEM
-    (JLR-class zonal E/E programs).
+    compute, and UE-side slicing semantics matching production automotive modems (Qualcomm
+    Snapdragon Auto, URSP). This makes results directly legible to NVIDIA-DRIVE-partner OEMs
+    (JLR-class zonal E/E programs) and Qualcomm-Digital-Chassis programs alike.
+  - ARM64 zone/compute variants (phase 3) target NVIDIA Jetson and the cloud virtual-ECU
+    parity paths both silicon vendors ship: Snapdragon vSoC / Virtual Platforms on Graviton
+    and Google Cloud.
   - All manifests modular, reusable across multiple experiments.
   - Gateway patterns have an explicit hardware exit ramp: SONiC on Spectrum, or OVS/DOCA offload
     on BlueField/ConnectX.
@@ -680,7 +699,8 @@ templating):
    (Gateway/Zone/Compute/Job/Event services) with the CLI as thin client; vxgateway
    (OVS/tc/FRR/WireGuard) + synthetic traffic + vxagents/vxtelemetry → the H1/H3/H4 isolation
    numbers. This alone is the paper.
-2. **Phase 2 — real slices & workloads:** Open5GS/UERANSIM S-NSSAI slicing (H2);
+2. **Phase 2 — real slices & workloads:** Open5GS/UERANSIM S-NSSAI slicing (H2) incl.
+   URSP-style `slice_policy` (UE-side selection over concurrent PDU sessions);
    CARLA → ROS2 → Autoware as real ADAS traffic; QNX SDP 8 and AAOS zones; SONiC-VS
    production-NOS twin; TypeScript vxAPI SDK + minimal web dashboard (live slice metrics over
    gRPC-Web).
@@ -688,7 +708,9 @@ templating):
    Kuksa/VSS signal plane; rmw_zenoh/uProtocol comms; Ankaios workload orchestration; Sionna
    channel realism (NVIDIA 6G Developer Program); Alpamayo/AlpaSim workload; Qt/QML operator HMI
    (Qt GRPC); cloud-hosted `vxedged --controller` federating multiple GPU hosts; Electron
-   "vxedge Studio" groundwork.
+   "vxedge Studio" groundwork; ARM64 zone/compute/agent variants (Jetson + Snapdragon
+   vSoC / Graviton parity); CAN/LIN edge modeling (`type: can`, SocketCAN/vcan + Kuksa CAN
+   feeders); TSN gateway variant (taprio/cbs + gPTP); UDS/DoIP diagnostic probe for OTA runs.
 4. **Phase 4 — hardware (optional):** Jetson AGX in the loop (affordable DRIVE-lineage stand-in);
    DRIVE AGX + DRIVE OS (Linux/QNX); BlueField/DOCA gateway offload; Aerial CUDA-Accelerated RAN.
 
