@@ -6,8 +6,10 @@ to zonal & central SDV E/E architectures — **entirely in software**. A softwar
 gateway (`vxgateway`, built on the Linux networking stack) replaces physical edge gear; KVM/QEMU
 VMs managed through libvirt provide zonal ECUs (QNX, Zephyr, FreeRTOS, Android Automotive);
 containerized central compute runs Autoware/ROS2 and NVIDIA AD workloads (Alpamayo, DeepStream,
-TensorRT); and a Rust CLI (`vxedge`) orchestrates manifest-driven vehicles, experiments, services,
-and telemetry.
+TensorRT); and a Rust control plane (`vxedged`) orchestrates manifest-driven vehicles,
+experiments, services, and telemetry — exposing a versioned gRPC/Protobuf API (**vxAPI**)
+consumed by thin frontends: the `vxedge` CLI today; Qt/QML, web/TypeScript, and Electron
+frontends next; locally over a Unix socket or cloud-hosted behind mTLS.
 
 ---
 
@@ -17,7 +19,7 @@ and telemetry.
 2. Research goals & hypotheses
 3. High-level architecture (topology & components)
 4. Repositories & single-source rules
-5. vxedge CLI (commands, semantics, UX)
+5. vxedge control plane & API (vxedged, vxAPI, frontends, CLI)
 6. Manifests (experiment & vehicle schemas)
 7. Network model — vxgateway (SDN slicing)
 8. Service model (OTA, telemetry, extensibility)
@@ -47,7 +49,10 @@ The platform is designed to:
   network stack (OVS/tc/FRR/WireGuard, SONiC as production NOS twin), and AD workloads
   (Autoware, NVIDIA Alpamayo) used or converged on by OEMs;
 - run on a single NVIDIA GPU host (scaling to several), with an explicit later path onto NVIDIA
-  hardware (Jetson AGX, DRIVE AGX / DRIVE OS, BlueField/DOCA offload).
+  hardware (Jetson AGX, DRIVE AGX / DRIVE OS, BlueField/DOCA offload);
+- be **API-first**: all orchestration lives behind vxAPI (gRPC/Protobuf) served by the `vxedged`
+  daemon. The CLI, GUIs (Qt/QML, Electron), and web dashboards are interchangeable thin clients,
+  and the same API hosts locally or in the cloud (controller mode federating multiple hosts).
 
 No physical router is required: the former MikroTik CCR2004 role is fully absorbed by `vxgateway`.
 
@@ -120,7 +125,9 @@ hugepages) are part of the method, and their effect is itself reported.
 
 **Key components:**
 
-- **vxedge CLI (Rust)** — orchestrator + provisioning (core).
+- **vxedged (Rust)** — control-plane daemon: orchestration + provisioning core behind **vxAPI**
+  (gRPC/Protobuf). See §5.
+- **vxedge CLI (Rust)** — thin vxAPI client; the primary frontend.
 - **vxgateway** — the software-defined edge gateway: Linux-native data plane (OVS or Linux
   bridge, tc, VXLAN, WireGuard, FRR), provisioned declaratively by the CLI. See §7.
 - **vxzones** — authoritative zone manifests, VM images (QNX SDP 8, Zephyr, FreeRTOS, AAOS),
@@ -137,8 +144,10 @@ hugepages) are part of the method, and their effect is itself reported.
 
 Canonical repos (under vxedge org):
 
-- `vxedge/vxedge` — core + CLI + **gateway provisioning templates** (netlink/OVS/nftables/tc,
-  libvirt domain XML templates). RouterOS templates are removed.
+- `vxedge/vxedge` — Rust workspace: `vxedge-core` (domain lib), `vxedged` (daemon, vxAPI),
+  `vxedge-cli` (thin client), `proto/` (vxAPI Protobuf IDL — the source for all generated SDKs:
+  Rust/tonic, C++/Qt GRPC, TypeScript/connect-es), plus **gateway provisioning templates**
+  (netlink/OVS/nftables/tc, libvirt domain XML templates). RouterOS templates are removed.
 - `vxedge/vxzones` — zone definitions, VM images, RTOS/QNX artifacts, publish scripts.
 - `vxedge/vxcompute` — central compute, Autoware, Alpamayo, inference images, compute manifests.
 - `vxedge/vxota` — OTA server, signing, manifests.
@@ -156,21 +165,103 @@ Canonical repos (under vxedge org):
 - A **vehicle manifest** is the authoritative composition of zones + compute + network + services
   for a software-bootstrapped vehicle; experiments reference a vehicle rather than restating it.
 - CLI uses manifests as sole input; state stored in ephemeral runtime directories and vxedge logs.
-- Manifests are the **only interface between languages** (Rust, C++, Python, TypeScript): no
-  bespoke cross-language RPC.
+- Exactly two cross-language interfaces exist: **manifests** (YAML content) and **vxAPI**
+  (Protobuf IDL under `vxedge/vxedge/proto/`, authoritative; client SDKs are generated, never
+  hand-written). No bespoke ad-hoc RPC.
 
 ---
 
-## 5 — vxedge CLI — commands & semantics
+## 5 — vxedge control plane & API (vxedged, vxAPI, frontends, CLI)
 
-**Location:** `vxedge/vxedge/cli` (Rust).
-**Binary:** `vxedge` (single binary).
+**Principle (API-first):** the split every production SDV toolchain converges on — Tesla-style
+fleet tooling, NVIDIA DriveWorks tools, AUTOSAR Adaptive development tooling — is a headless core
+behind a strongly-typed IDL, with every UI a disposable thin client. vxedge adopts it outright:
+**no orchestration logic lives in any frontend.**
+
+### 5.1 Layers & frontends
+
+```
+ frontends:  vxedge CLI │ Qt/QML HMI │ web dashboard (TS) │ Electron "vxedge Studio" (future)
+                 │            │              │                      │
+                 └──────┬─────┴──────┬───────┴─────────┬────────────┘
+                        ▼ generated SDKs (Rust · C++/Qt GRPC · TypeScript/connect-es)
+                ┌───────────────────────────────────────────────┐
+                │ vxAPI — gRPC/Protobuf, package vxedge.v1      │
+                │ (UDS local · mTLS TCP remote · gRPC-Web)      │
+                ├───────────────────────────────────────────────┤
+                │ vxedged — daemon: async job engine, event bus,│
+                │ reconciler (desired vs observed), audit log   │
+                ├───────────────────────────────────────────────┤
+                │ vxedge-core — manifests, validation, backends:│
+                │ libvirt · rtnetlink/OVSDB · containers ·      │
+                │ Open5GS · traffic                             │
+                └───────────────────────────────────────────────┘
+```
+
+- **vxedge-core** (Rust lib): pure domain logic; no user-facing I/O.
+- **vxedged** (Rust daemon, tonic + tonic-web): hosts vxAPI. Every mutating verb is an **async
+  job** with server-streamed progress; the reconciler compares desired (manifest) vs observed
+  state — that is what makes `up|down` idempotent.
+- **Frontends** (all thin clients of the same API):
+  - **`vxedge` CLI** (Rust) — unchanged UX; local Unix socket by default, `--endpoint` for
+    remote; auto-spawns an ephemeral local daemon for single-host lab use.
+  - **Qt/QML operator HMI** (C++; Qt ≥ 6.8 speaks gRPC natively into QML via Qt GRPC) — live
+    slice dashboard styled as an instrument cluster; doubles as the in-vehicle HMI demo.
+  - **Web dashboard / Electron** (TypeScript; connect-es-generated SDK over gRPC-Web) — cloud
+    console first, "vxedge Studio" desktop app later.
+
+### 5.2 API surface (vxAPI, `proto/vxedge/v1/`)
+
+| Service | RPCs (declarative, manifest-in) |
+|---|---|
+| `GatewayService` | `Apply`, `Up`, `Down`, `Status` |
+| `ZoneService` / `ComputeService` | `Apply`, `Up`, `Down`, `List`, `Remove`, `PushImage` (client-streaming) |
+| `SvcService` (ota, telemetry) | `Up`, `Down`, `Status` |
+| `VehicleService` | `Up`, `Down`, `Status` |
+| `ExperimentService` | `Up`, `Down`, `Status` |
+| `TrafficService` | `Up`, `Down` |
+| `JobService` | `Get`, `Watch` (server-streamed progress; every mutating RPC returns a `Job`) |
+| `EventService` | `Subscribe` (state transitions, audit events) |
+| `TelemetryService` | `StreamMetrics` (live), `Collect` (archive job) |
+
+Rules: mutating RPCs carry manifest documents (or references to them) — the API introduces **no
+second source of truth** beside manifests; daemon state stays in ephemeral runtime dirs + logs.
+The proto package is versioned (`vxedge.v1`): additive changes stay in v1, breaking changes mean
+`vxedge.v2`.
+
+**Why gRPC/Protobuf** (not SOME/IP, not bare REST): SOME/IP–`ara::com` is the *in-vehicle service
+plane* — the wrong tool for an orchestration/tooling plane; bare REST lacks first-class streaming
+and codegen rigor. One Protobuf IDL generates every SDK, gRPC-Web covers browsers and Electron,
+and Protobuf is what Eclipse uProtocol already speaks — schema reuse when the signal plane lands
+in phase 3. An optional REST/OpenAPI façade can be added later by transcoding, without touching
+the core.
+
+### 5.3 Transport, security, deployment modes
+
+- **Local (default):** Unix domain socket, peer-credential auth.
+- **Remote:** TCP + mTLS, OIDC bearer tokens; roles viewer/operator/admin; every mutating call is
+  audit-logged.
+- **Cloud-hosted:** `vxedged --controller` runs anywhere and federates one or more site daemons
+  (one per GPU host, reached over WireGuard + mTLS) behind the **same vxAPI**. Frontends never
+  know whether they talk to a single host or a fleet controller, and never touch hypervisors
+  directly.
+
+### 5.4 CLI — commands & semantics
+
+**Location:** `vxedge/vxedge` (Rust workspace: `vxedge-core`, `vxedged`, `vxedge-cli`, `proto/`).
+**Binaries:** `vxedge` (thin client), `vxedged` (daemon).
 **Global behavior:** all lifecycle commands follow `up|down` semantics. Where staging is required,
 `up` performs staging + start; `down` stops + cleanup. All operations are idempotent.
 
 **Commands (canonical)**
 
 ```bash
+# Daemon / control plane
+vxedged serve [--listen unix:///run/vxedge.sock | https://0.0.0.0:8443] [--controller]
+
+# Client endpoint (applies to every command below; defaults to the local Unix socket)
+vxedge [--endpoint <url>] ...
+
 # Gateway (vxgateway — virtual edge gateway)
 vxedge up|down|status
 
@@ -211,6 +302,9 @@ vxedge traffic up --manifest ...
 
 `vxedge vehicle up` is sugar for the ordered composition: gateway up → zones up → compute up →
 signal plane up (Kuksa, phase 3) → services up. `vehicle down` tears down in reverse.
+
+Every CLI verb is a 1:1 wrapper over a vxAPI RPC — anything the CLI can do, every other frontend
+(QML, web, Electron, scripts against the TS/C++ SDKs) can do identically.
 
 ---
 
@@ -571,25 +665,30 @@ templating):
 
 ### Languages
 
-- **Rust** — `vxedge` CLI, `vxagents`, gateway provisioning (rtnetlink/OVSDB, `virt` crate for
-  libvirt).
+- **Rust** — `vxedge-core`, `vxedged` daemon (vxAPI/tonic), `vxedge` CLI, `vxagents`, gateway
+  provisioning (rtnetlink/OVSDB, `virt` crate for libvirt).
 - **C++** — everything touching ROS 2/DDS/Autoware, DeepStream/TensorRT plugins, QNX-side
-  components (automotive-native, AUTOSAR-adjacent).
+  components (automotive-native, AUTOSAR-adjacent), and the Qt/QML operator HMI (Qt GRPC client).
 - **Python** — Sionna, notebooks, analysis pipelines.
-- **TypeScript** — dashboards.
+- **TypeScript** — web dashboard, Electron "vxedge Studio", generated vxAPI SDK (connect-es).
 - **Shell** — glue only.
-- Manifests (YAML) are the sole cross-language interface.
+- Manifests (YAML) and the generated vxAPI (Protobuf) are the only cross-language interfaces.
 
 ### Phases
 
-1. **Phase 1 — slicing core:** vxgateway (OVS/tc/FRR/WireGuard) + synthetic traffic +
-   vxagents/vxtelemetry → the H1/H3/H4 isolation numbers. This alone is the paper.
+1. **Phase 1 — slicing core, API-first from day one:** `vxedge-core` + `vxedged` + vxAPI v1
+   (Gateway/Zone/Compute/Job/Event services) with the CLI as thin client; vxgateway
+   (OVS/tc/FRR/WireGuard) + synthetic traffic + vxagents/vxtelemetry → the H1/H3/H4 isolation
+   numbers. This alone is the paper.
 2. **Phase 2 — real slices & workloads:** Open5GS/UERANSIM S-NSSAI slicing (H2);
    CARLA → ROS2 → Autoware as real ADAS traffic; QNX SDP 8 and AAOS zones; SONiC-VS
-   production-NOS twin.
+   production-NOS twin; TypeScript vxAPI SDK + minimal web dashboard (live slice metrics over
+   gRPC-Web).
 3. **Phase 3 — production SDV alignment:** vehicle manifest end-to-end (`vxedge vehicle up`);
    Kuksa/VSS signal plane; rmw_zenoh/uProtocol comms; Ankaios workload orchestration; Sionna
-   channel realism (NVIDIA 6G Developer Program); Alpamayo/AlpaSim workload.
+   channel realism (NVIDIA 6G Developer Program); Alpamayo/AlpaSim workload; Qt/QML operator HMI
+   (Qt GRPC); cloud-hosted `vxedged --controller` federating multiple GPU hosts; Electron
+   "vxedge Studio" groundwork.
 4. **Phase 4 — hardware (optional):** Jetson AGX in the loop (affordable DRIVE-lineage stand-in);
    DRIVE AGX + DRIVE OS (Linux/QNX); BlueField/DOCA gateway offload; Aerial CUDA-Accelerated RAN.
 
@@ -656,6 +755,7 @@ tc class add dev vxup0 parent 1:1 classid 1:50 htb rate 1mbit   ceil 500mbit pri
 
 ### Run sequence (CLI)
 
+0. `vxedged serve`                                        # or let the CLI auto-spawn a local daemon
 1. `vxedge up`                                            # vxgateway: bridges, VLANs, queue trees
 2. `vxedge zone up --vxid vxzone-front-left`
 3. `vxedge zone up --vxid vxzone-front-right`
