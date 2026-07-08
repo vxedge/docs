@@ -1,0 +1,24 @@
+# CLAUDE.md — vxedge/docs
+
+Master documentation repo for the vxedge platform. **`ARCHITECTURE.md` is the single master
+spec** — every other repo's CLAUDE.md and TASKS.md derive from it and must not contradict it.
+
+## Contents
+
+- `ARCHITECTURE.md` — the master spec (16 sections). Key anchors: §2 hypotheses H1–H4,
+  §5 vxAPI/control plane, §6 manifest schemas (experiment + vehicle), §7 vxgateway network
+  model, §9 virtualization (libvirt/QEMU/QNX), §15 language policy + 4-phase roadmap,
+  §16 worked examples.
+- `TASKS.md` — the program-level task board: phase gates and cross-repo critical path.
+  Per-repo TASKS.md files hold the detailed work items.
+- Papers, slides, reproducibility guide land here as they are written.
+
+## Rules
+
+- Any change to manifest schemas, vxAPI surface, CLI command shape, or the phase roadmap MUST
+  be made in `ARCHITECTURE.md` first, then propagated to affected repos' CLAUDE.md/TASKS.md and
+  the workspace-root CLAUDE.md.
+- When a phase gate is reached, update `TASKS.md` here in the same change set as the per-repo
+  TASKS.md updates.
+- Prose style: state fidelity caveats honestly (shared-host gateway, QNX-as-guest inversion);
+  reproducibility claims must name the mechanism (digests, versioned manifests, idempotent CLI).
