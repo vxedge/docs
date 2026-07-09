@@ -376,7 +376,8 @@ zones:
         image:
           url: <image url>
           kind: vm | container | rtimage
-        backend: libvirt | qemu-microvm | container   # default: libvirt for vm/rtimage
+        backend: libvirt | qemu-microvm | container | renode   # default: libvirt for vm/rtimage;
+                                                               # renode = MCU-class, register-level I/O (phase 3)
         realtime:                                     # optional determinism controls
           pinned_cpus: [<host cpu ids>]
           hugepages: <bool>
@@ -387,6 +388,18 @@ zones:
         slice_policy:                    # optional, URSP-style UE-side slice selection (phase 2):
           - match: <traffic class | dscp | app id>   #   per-traffic-class routing onto concurrent
             slice: <slice-id>                        #   PDU sessions when slices use mode: s-nssai
+        io:                              # optional, emulator-level device models (phase 3)
+          devices: [virtio-gpio, i2c, spi, can]      # QEMU devices; register-level via backend: renode
+        sensors:                         # optional, restbus simulation (phase 3)
+          - id: <sensor id>
+            dbc: <path to .dbc>          # CAN frame definitions
+            vss: <VSS signal path>       # Kuksa mapping
+        actuators:
+          - id: <actuator id>
+            dbc: <path to .dbc>
+            vss: <VSS signal path>
+            plant: first-order | fmu:<path>          # response model, run by the vxplant agent
+                                                     # (FMI/FMU co-simulation: phase 4)
     services:
       - <service-id>
 
@@ -397,6 +410,8 @@ links:
     properties:
       - { vlan: <id> }                       # vlan_trunk
       - { bus: <vcan name>, bitrate: <bps> } # can — SocketCAN/vcan; CAN-over-Ethernet via cannelloni
+      - { impairments: { rate_mbps: <int>, latency_ms: <float>,   # per-link PHY realism via netem
+                         jitter_ms: <float>, loss_pct: <float> } } # e.g. 100/1000BASE-T1 (phase 2)
 
 traffic_profiles:
   <profile-id>:
@@ -479,6 +494,14 @@ templating):
   via QEMU CAN controllers and tunneled across the backbone with cannelloni; CAN frames map to
   VSS signals via Kuksa feeders — the zonal-controller CAN-aggregation role that makes the
   prototype vehicle-shaped rather than datacenter-shaped.
+- **Harness modeling:** the manifest `links` section *is* the wiring harness. Per-link
+  `impairments` (tc netem: rate cap, latency/jitter, loss) emulate PHY characteristics such as
+  100/1000BASE-T1; CAN/LIN drops ride `type: can` links (LIN modeled as a constrained bus).
+  Because harness topology is manifest data, it becomes an experimental variable — star vs
+  daisy-chained zones, sensor-to-ECU path placement — iterable in minutes, which no physical
+  testbed offers. Power distribution is modeled only as VSS signals (vxplant power tree,
+  optional); electrical/thermal fidelity is explicitly out of scope. gPTP/TSN (above) is the
+  harness's timing layer.
 - **Tunnels:** VXLAN for inter-host communication; WireGuard (in-kernel) for secure telemetry and
   OTA transport.
 - **Routing:** static for lab experiments; FRR provides BGP for cloud interconnect.
@@ -539,6 +562,31 @@ templating):
   phase-4 answer to the gap is DRIVE OS (QNX or Linux) on DRIVE AGX hardware.
 - CLI stages images, creates instances, and configures network interfaces; persistent storage
   optional per zone; logs and telemetry collected centrally.
+
+### Sensor, actuator & I/O virtualization (four layers)
+
+1. **Perception sensors** (camera, lidar, radar, GNSS/IMU) — synthesized by the world
+   simulator (CARLA; AlpaSim / Sensor RTX as the higher-fidelity path). In a real vehicle
+   these ride GMSL/FPD-Link serdes into the ADAS ECU; here the transport **is** slice traffic
+   through vxgateway (`traffic_profiles.source: carla`) — sensor streams are the measured
+   ADAS load, not synthetic filler.
+2. **Body sensors/actuators** (doors, HVAC, wipers, BMS…) — **restbus simulation**: simulated
+   nodes emit/consume CAN frames per DBC definitions (`sensors:`/`actuators:` in the node
+   schema); Kuksa's CAN provider maps DBC signals ↔ VSS. Closed-loop behavior comes from the
+   **vxplant agent** (in `vxagents`): subscribes to actuator commands, integrates a plant
+   model (first-order default; FMI/FMU import in phase 4 so OEMs can drop in Simulink-exported
+   models), publishes sensor feedback.
+3. **Register-level I/O** (GPIO/ADC/PWM/I2C/SPI) — application-class ECUs (QNX, AAOS) use QEMU
+   device models (`io.devices`); MCU-class ECUs needing register fidelity use **Renode**
+   (`backend: renode`): full peripheral models running unmodified Zephyr/FreeRTOS firmware.
+4. **Actuation loop closure** — control commands (steering/throttle/brake) return to CARLA via
+   carla-ros-bridge vehicle control, closing the loop world → sensors → slices → AD stack →
+   actuation → world. End-to-end **control-loop latency under slice contention** is a
+   first-class metric (§12).
+
+**Boundary standards (phase 4):** ASAM **OSI** at the simulator↔stack boundary, **FMI/FMU**
+for plant models, **XIL**-style semantics for the bench API — so the virtual testbed and
+OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
 
 ---
 
@@ -602,6 +650,8 @@ templating):
 **Metrics:**
 
 - **Network:** p50/p95/p99 latency, jitter, packet loss per slice.
+- **Closed loop (phase 2+):** end-to-end control-loop latency — world → sensors → slices →
+  AD stack → actuation → world — under slice contention.
 - **Compute:** CPU/memory/GPU utilization, service response times.
 - **OTA:** deployment success rate, artifact delivery latency.
 - **Telemetry agents:** data ingestion rates, metric completeness.
@@ -700,9 +750,10 @@ templating):
    numbers. This alone is the paper.
 2. **Phase 2 — real slices & workloads:** Open5GS/UERANSIM S-NSSAI slicing (H2) incl.
    URSP-style `slice_policy` (UE-side selection over concurrent PDU sessions);
-   CARLA → ROS2 → Autoware as real ADAS traffic; QNX SDP 8 and AAOS zones; SONiC-VS
-   production-NOS twin; TypeScript vxAPI SDK + minimal web dashboard (live slice metrics over
-   gRPC-Web).
+   CARLA → ROS2 → Autoware as real ADAS traffic, **closed-loop** (actuation back into CARLA;
+   control-loop latency metric); per-link harness `impairments` (netem, BASE-T1 emulation);
+   QNX SDP 8 and AAOS zones; SONiC-VS production-NOS twin; TypeScript vxAPI SDK + minimal web
+   dashboard (live slice metrics over gRPC-Web).
 3. **Phase 3 — production SDV alignment:** vehicle manifest end-to-end (`vxedge vehicle up`);
    Kuksa/VSS signal plane; rmw_zenoh/uProtocol comms; Ankaios workload orchestration; Sionna
    channel realism (NVIDIA 6G Developer Program); Alpamayo/AlpaSim workload; Qt/QML operator HMI
@@ -711,11 +762,14 @@ templating):
    vSoC / Graviton parity); CAN/LIN edge modeling (`type: can`, SocketCAN/vcan + Kuksa CAN
    feeders); TSN gateway variant (taprio/cbs + gPTP); UDS/DoIP diagnostic probe for OTA runs;
    V2X groundwork — multi-vehicle composition (second vehicle-manifest instance, V2V) + `rsu`
-   nodes (V2I).
+   nodes (V2I); sensor/actuator virtualization — restbus simulation (DBC + Kuksa CAN
+   provider), **vxplant** plant-model agent, QEMU `io.devices`, **Renode backend** for
+   MCU-class virtual ECUs.
 4. **Phase 4 — hardware (optional):** Jetson AGX in the loop (affordable DRIVE-lineage stand-in);
    DRIVE AGX + DRIVE OS (Linux/QNX); BlueField/DOCA gateway offload; Aerial CUDA-Accelerated RAN;
    V2X radio realism — C-V2X PC5 sidelink (Sionna channel models; PAWR/AERPAW outdoor
-   validation).
+   validation); ASAM boundary standards — OSI (simulator↔stack), FMI/FMU plant-model import,
+   XIL-style bench semantics; optional VSS power-tree modeling.
 
 ---
 
