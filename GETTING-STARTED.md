@@ -13,7 +13,7 @@ Verified versions as of 2026-07:
 
 | Tool | Version | Install |
 |---|---|---|
-| Rust | 1.96+ (pinned by `rust-toolchain.toml`) | `curl https://sh.rustup.rs -sSf \| sh`, then `rustup update stable` |
+| Rust | 1.96+ (pinned by `rust-toolchain.toml` — with rustup installed, the first `cargo` command in the repo fetches the right toolchain automatically) | `curl https://sh.rustup.rs -sSf \| sh` |
 | protoc | any recent (35.x current) | distro package, or the [release zip](https://github.com/protocolbuffers/protobuf/releases) → `~/.local/bin` |
 | buf | 1.71+ (optional: proto lint/SDK gen) | [release binary](https://github.com/bufbuild/buf/releases) → `~/.local/bin` |
 | git + gh | any recent | distro package |
@@ -51,7 +51,7 @@ Every repo has an `AGENTS.md` (scope + rules) and `TASKS.md` (phased work items)
 ```bash
 cd vxedge          # the core repo
 cargo build --workspace
-cargo test --workspace
+cargo test --workspace   # expect: vxedge-core's manifest tests pass (5 at time of writing)
 ```
 
 Terminal 1 — the daemon (serves vxAPI on a Unix socket):
@@ -76,7 +76,7 @@ provisioning) is the next work item on the phase-1 critical path.
 ## 4. Poke the API directly
 
 The contract lives in `vxedge/proto/vxedge/v1/` (package `vxedge.v1`). Any gRPC tool works;
-with [grpcurl](https://github.com/fullstorydev/grpcurl):
+with [grpcurl](https://github.com/fullstorydev/grpcurl), from the workspace root:
 
 ```bash
 grpcurl -unix -plaintext -import-path vxedge/proto \
@@ -94,9 +94,21 @@ errors — and semantic validation covers slice references, vxid uniqueness, and
 consistency. Experiment manifests live in `vxperiments/experiments/`, vehicle manifests in
 `vxperiments/vehicles/`.
 
-## 6. Where to contribute next
+## 6. Troubleshooting
 
-Check `docs/TASKS.md` (program board). The current critical path, in order:
+- **`protoc` not found during `cargo build`** — install protoc (table above); the proto
+  codegen runs inside the build via `crates/vxedge-api/build.rs`.
+- **`cannot reach vxedged at unix:///run/vxedge.sock`** — the default socket path needs
+  root-writable `/run`; for development pass a user-writable path to *both* sides
+  (`--listen`/`--endpoint unix:///tmp/vxedge.sock`) or set `VXEDGE_ENDPOINT`.
+- **A verb prints "not wired to the daemon yet (scaffold)"** — expected: only `status` is
+  wired today. `docs/TASKS.md` shows exactly what works at any point in time; check it
+  before assuming a bug.
+
+## 7. Where to contribute next
+
+Check `docs/TASKS.md` (program board — includes the current phase-1 status assessment).
+The current critical path, in order:
 
 1. `vxedge` — vxgateway backend: OVS/bridge + tc HTB queue trees behind `vxedge up` (TASKS §2)
 2. `vxagents` — latency/jitter probes + traffic generator

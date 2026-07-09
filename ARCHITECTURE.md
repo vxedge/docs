@@ -54,7 +54,7 @@ The platform is designed to:
   daemon. The CLI, GUIs (Qt/QML, Electron), and web dashboards are interchangeable thin clients,
   and the same API hosts locally or in the cloud (controller mode federating multiple hosts).
 
-No physical router is required: the former MikroTik CCR2004 role is fully absorbed by `vxgateway`.
+No physical router is required: the edge-gateway role is fully absorbed by `vxgateway`.
 
 ---
 
@@ -147,7 +147,7 @@ Canonical repos (under vxedge org):
 - `vxedge/vxedge` — Rust workspace: `vxedge-core` (domain lib), `vxedged` (daemon, vxAPI),
   `vxedge-cli` (thin client), `proto/` (vxAPI Protobuf IDL — the source for all generated SDKs:
   Rust/tonic, C++/Qt GRPC, TypeScript/connect-es), plus **gateway provisioning templates**
-  (netlink/OVS/nftables/tc, libvirt domain XML templates). RouterOS templates are removed.
+  (netlink/OVS/nftables/tc, libvirt domain XML templates).
 - `vxedge/vxzones` — zone definitions, VM images, RTOS/QNX artifacts, publish scripts.
 - `vxedge/vxcompute` — central compute, Autoware, Alpamayo, inference images, compute manifests.
 - `vxedge/vxota` — OTA server, signing, manifests.
@@ -463,8 +463,7 @@ templating):
   Deployed either as a set of network namespaces on the host (default; lowest overhead, fully
   inspectable) or as a dedicated VM (stronger isolation of the gateway itself).
 - **Queueing / slice QoS:** hierarchical tc (HTB) queue trees per slice with guaranteed min-rate
-  for URLLC-like slices — the direct successor of the former RouterOS queue trees, and the object
-  of hypothesis H1.
+  for URLLC-like slices — the object of hypothesis H1.
 - **Real 5G slicing (H2):** Open5GS core + UERANSIM gNB/UE terminate PDU sessions per S-NSSAI;
   slice definitions in the manifest (`mode: s-nssai`) provision both the 5G core and the gateway.
   Zone nodes may additionally carry a URSP-style `slice_policy` (per-traffic-class selection
