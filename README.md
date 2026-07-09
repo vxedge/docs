@@ -5,22 +5,33 @@ for the **vxedge** project.
 
 ## Contents
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) — complete system architecture, research design, and manifest schema.
+- [GETTING-STARTED.md](GETTING-STARTED.md) — prerequisites, workspace setup, build & smoke test.
+- [ARCHITECTURE.md](ARCHITECTURE.md) — complete system architecture, research design, and manifest schemas.
+- [TASKS.md](TASKS.md) — program-level task board: phase gates and the cross-repo critical path.
+- [PUBLICATION.md](PUBLICATION.md) — arXiv/venue plan, paper skeletons, partner-selection procedure.
 - Reproducibility Guide (coming soon) — how to re-run published experiments step by step.
 - Experiment Reports — structured results and analysis from `vxedge/vxperiments`.
 
 ## About vxedge
 
-vxedge is a research-grade orchestration and experiment platform to evaluate **5G network-slice mapping to zonal & central SDV E/E architectures**.  
+vxedge is a research-grade orchestration and experiment platform to evaluate **5G
+network-slice mapping to zonal & central SDV E/E architectures — entirely in software**.
 It provides:
-- MikroTik CCR2004 edge gateway slicing.
-- QEMU/KVM for zonal ECUs.
-- Containerized central compute (Autoware, inference).
-- Rust CLI (`vxedge`) to orchestrate experiments, services, and telemetry.
+
+- **vxgateway** — a software-defined virtual edge gateway (OVS/Linux bridge VLANs, tc queue
+  trees, VXLAN, WireGuard, FRR), with real 5G slicing via Open5GS + UERANSIM.
+- QEMU/KVM zonal ECUs managed via libvirt (QNX SDP 8, Zephyr/FreeRTOS, Android Automotive).
+- Containerized central compute (Autoware/ROS2, NVIDIA Alpamayo/AlpaSim, DeepStream/TensorRT).
+- An API-first Rust control plane: the `vxedged` daemon exposes **vxAPI** (gRPC/Protobuf);
+  the `vxedge` CLI, and future Qt/QML, web, and Electron frontends, are thin clients.
+- Manifest-driven everything — up to a full software-bootstrapped vehicle
+  (`vxedge vehicle up`).
 
 ## Getting Started
 
-- Core CLI & orchestrator: [vxedge/vxedge](https://github.com/vxedge/vxedge)
+See [GETTING-STARTED.md](GETTING-STARTED.md). Key repos:
+
+- Control plane, vxAPI & CLI: [vxedge/vxedge](https://github.com/vxedge/vxedge)
 - Zone definitions & artifacts: [vxedge/vxzones](https://github.com/vxedge/vxzones)
 - Experiment manifests: [vxedge/vxperiments](https://github.com/vxedge/vxperiments)
 
