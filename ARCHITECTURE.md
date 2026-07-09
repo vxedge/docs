@@ -371,7 +371,7 @@ zones:
     role: front-left | front-right | rear-left | rear-right | central-hpc | gateway
     nodes:
       - id: node-<type>-<seq>
-        type: ecu | sensor | gateway | infotainment | telemetry-client
+        type: ecu | sensor | gateway | infotainment | telemetry-client | rsu   # rsu = V2X roadside unit (phase 3)
         function: <text>
         image:
           url: <image url>
@@ -710,9 +710,13 @@ templating):
    (Qt GRPC); cloud-hosted `vxedged --controller` federating multiple GPU hosts; Electron
    "vxedge Studio" groundwork; ARM64 zone/compute/agent variants (Jetson + Snapdragon
    vSoC / Graviton parity); CAN/LIN edge modeling (`type: can`, SocketCAN/vcan + Kuksa CAN
-   feeders); TSN gateway variant (taprio/cbs + gPTP); UDS/DoIP diagnostic probe for OTA runs.
+   feeders); TSN gateway variant (taprio/cbs + gPTP); UDS/DoIP diagnostic probe for OTA runs;
+   V2X groundwork — multi-vehicle composition (second vehicle-manifest instance, V2V) + `rsu`
+   nodes (V2I).
 4. **Phase 4 — hardware (optional):** Jetson AGX in the loop (affordable DRIVE-lineage stand-in);
-   DRIVE AGX + DRIVE OS (Linux/QNX); BlueField/DOCA gateway offload; Aerial CUDA-Accelerated RAN.
+   DRIVE AGX + DRIVE OS (Linux/QNX); BlueField/DOCA gateway offload; Aerial CUDA-Accelerated RAN;
+   V2X radio realism — C-V2X PC5 sidelink (Sionna channel models; PAWR/AERPAW outdoor
+   validation).
 
 ---
 
