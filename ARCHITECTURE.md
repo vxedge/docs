@@ -209,6 +209,9 @@ behind a strongly-typed IDL, with every UI a disposable thin client. vxedge adop
     slice dashboard styled as an instrument cluster; doubles as the in-vehicle HMI demo.
   - **Web dashboard / Electron** (TypeScript; connect-es-generated SDK over gRPC-Web) — cloud
     console first, "vxedge Studio" desktop app later.
+  - **vxedge-tray** (Rust, StatusNotifierItem/SNI system tray) — at-a-glance gateway/experiment
+    state + quick up/down from the desktop; pairs with a **systemd unit for vxedged**
+    (socket-activated where possible). Same thin-client rule: 1:1 vxAPI calls, no logic.
 
 ### 5.2 API surface (vxAPI, `proto/vxedge/v1/`)
 
@@ -758,7 +761,8 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
    Kuksa/VSS signal plane; rmw_zenoh/uProtocol comms; Ankaios workload orchestration; Sionna
    channel realism (NVIDIA 6G Developer Program); Alpamayo/AlpaSim workload; Qt/QML operator HMI
    (Qt GRPC); cloud-hosted `vxedged --controller` federating multiple GPU hosts; Electron
-   "vxedge Studio" groundwork; ARM64 zone/compute/agent variants (Jetson + Snapdragon
+   "vxedge Studio" groundwork; vxedge-tray (Rust SNI tray, thin vxAPI client) + vxedged
+   systemd unit; ARM64 zone/compute/agent variants (Jetson + Snapdragon
    vSoC / Graviton parity); CAN/LIN edge modeling (`type: can`, SocketCAN/vcan + Kuksa CAN
    feeders); TSN gateway variant (taprio/cbs + gPTP); UDS/DoIP diagnostic probe for OTA runs;
    V2X groundwork — multi-vehicle composition (second vehicle-manifest instance, V2V) + `rsu`
