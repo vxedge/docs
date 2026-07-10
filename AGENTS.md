@@ -31,3 +31,8 @@ spec** — every other repo's AGENTS.md and TASKS.md derive from it and must not
   TASKS.md updates.
 - Prose style: state fidelity caveats honestly (shared-host gateway, QNX-as-guest inversion);
   reproducibility claims must name the mechanism (digests, versioned manifests, idempotent CLI).
+
+## Project skills
+
+AI/contributor skills in `.claude/skills/`: **testbed-quality** and **experiment-methodology**
+— the quality bars every repo change and every reported number are judged against.
