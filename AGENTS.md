@@ -8,6 +8,10 @@ spec** — every other repo's AGENTS.md and TASKS.md derive from it and must not
 - `GETTING-STARTED.md` — onboarding: prerequisites (Rust 1.96+/protoc/buf), workspace
   cloning, build + smoke test, contribution entry points. Keep its versions current when
   toolchains move.
+- `STATUS.md` — living progress report (phases %, H1 critical path, per-repo state,
+  environment gaps). **Update it in the same change set as any push that moves progress.**
+- `TESTBED-SETUP.md` — single-machine host requirements, tiered by phase (OS, resources,
+  software versions). Anything the testbed needs that it doesn't list is a bug in it.
 - `ARCHITECTURE.md` — the master spec (16 sections). Key anchors: §2 hypotheses H1–H4,
   §5 vxAPI/control plane, §6 manifest schemas (experiment + vehicle), §7 vxgateway network
   model, §9 virtualization (libvirt/QEMU/QNX), §15 language policy + 4-phase roadmap,
