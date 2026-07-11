@@ -134,13 +134,14 @@ consistency. Experiment manifests live in `vxperiments/experiments/`, vehicle ma
 
 ## 9. Where to contribute next
 
-Check `docs/TASKS.md` (program board — includes the current phase-1 status assessment).
-The current critical path, in order:
+Check `docs/TASKS.md` (program board) and `STATUS.md` (what's done vs open). The H1 spine —
+gateway, agents, telemetry, exp-001 — is complete with published-quality numbers; current
+open fronts, in order:
 
-1. `vxedge` — vxgateway backend: OVS/bridge + tc HTB queue trees behind `vxedge up` (TASKS §2)
-2. `vxagents` — latency/jitter probes + traffic generator
-3. `vxtelemetry` — ingestion + `telemetry collect`
-4. `vxperiments` — `exp-001` (ADAS slice isolation, hypothesis H1)
+1. `vxperiments` — exp-002 (H3: VM vs microVM vs container packaging over identical slices)
+2. `vxota` — OTA server v1 (unblocks exp-003 / H4 and closes the phase-1 gate)
+3. `vxzones` — real-RTOS guest bundles (Zephyr/FreeRTOS) beyond the linux-probe bundle
+4. Phase 2: Open5GS/UERANSIM S-NSSAI slicing, CARLA→ROS2 closed loop, harness impairments
 
 Conventions to know before your first PR: manifests are the sole source of truth; no
 orchestration logic in any frontend; every image is digest-tagged; commits without a
