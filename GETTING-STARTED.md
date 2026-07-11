@@ -4,8 +4,8 @@ vxedge is an all-software research platform for mapping 5G network slices onto z
 central SDV (software-defined vehicle) E/E architectures: a virtual edge gateway
 (`vxgateway`), QEMU/KVM virtual ECUs, containerized AD compute, and a Rust control plane
 (`vxedged`) driven entirely by YAML manifests. Read
-[`ARCHITECTURE.md`](ARCHITECTURE.md) for the full picture; this page gets you to a running
-daemon in minutes.
+[`ARCHITECTURE.md`](ARCHITECTURE.md) for the full picture; this page gets you from
+zero to a measured experiment; day-to-day usage lives in [USER-GUIDE.md](USER-GUIDE.md).
 
 ## 1. Prerequisites
 
@@ -46,34 +46,55 @@ done
 Every repo has an `AGENTS.md` (scope + rules) and `TASKS.md` (phased work items);
 `docs/TASKS.md` is the program-level board with the cross-repo critical path.
 
-## 3. Build and run the control plane
+## 3. Build everything
 
 ```bash
-cd vxedge          # the core repo
-cargo build --workspace
-cargo test --workspace   # expect: vxedge-core's manifest tests pass (5 at time of writing)
+for r in vxedge vxagents vxtelemetry; do (cd $r && cargo build --workspace); done
 ```
 
-Terminal 1 — the daemon (serves vxAPI on a Unix socket):
+Quick unprivileged smoke (daemon + CLI over a Unix socket):
 
 ```bash
-./target/debug/vxedged --listen unix:///tmp/vxedge.sock
-```
-
-Terminal 2 — the CLI (a thin vxAPI client):
-
-```bash
+cd vxedge
+./target/debug/vxedged --listen unix:///tmp/vxedge.sock --runtime-dir /tmp/vxrt &
 ./target/debug/vxedge --endpoint unix:///tmp/vxedge.sock status
-# gateway vxgateway: state=1 detail=scaffold: no backend provisioned
-
-./target/debug/vxedge --endpoint unix:///tmp/vxedge.sock --json status   # machine-readable
-./target/debug/vxedge --help                                             # full command tree
+# gateway vxgateway: state=1 detail=no gateway provisioned
+./target/debug/vxedge --help          # full command tree
 ```
 
-`state=1` is `RESOURCE_STATE_DOWN` — honest output: the gateway backend (OVS/tc
-provisioning) is the next work item on the phase-1 critical path.
+Real provisioning (`up`, `zone up`) needs CAP_NET_ADMIN — run `vxedged` under sudo, or
+`sudo setcap cap_net_admin+ep target/debug/vxedged`. Without it, `up` validates the
+manifest and then fails with an actionable message (by design).
 
-## 4. Poke the API directly
+## 4. Run your first experiment (exp-001)
+
+The flagship walkthrough: a full slice-isolation measurement, one command per step.
+
+```bash
+cd vxperiments
+sudo -E env "PATH=$PATH" ./scripts/run-exp-001.sh --quick   # ~1 min pipeline validation
+python3 notebooks/analyze_exp001.py results/exp-001          # table + H1 verdict
+```
+
+The `--quick` numbers are pipeline validation only (marked NOT reportable). The full
+campaign is `./scripts/run-exp-001.sh` without flags: ~35 minutes, 5 repetitions x 5 load
+levels, 60k samples per point — keep the machine otherwise idle and prefer the
+`performance` CPU governor. Reference result and methodology: STATUS.md and the
+`experiment-methodology` skill.
+
+## 5. Zones and VM guest bundles
+
+Container-backed zones work out of the box (`vxedge zone up --vxid …` after `up`). The VM
+backends (`qemu-microvm`, `libvirt`) boot a guest *bundle* built once per host:
+
+```bash
+sudo chmod 644 /boot/vmlinuz-$(uname -r)        # Ubuntu ships the kernel root-only
+cd vxzones && ./scripts/build-guest-bundle.sh   # -> images/linux-probe/bundle + digests
+```
+
+See USER-GUIDE.md §3c for wiring a bundle into a manifest.
+
+## 6. Poke the API directly
 
 The contract lives in `vxedge/proto/vxedge/v1/` (package `vxedge.v1`). Any gRPC tool works;
 with [grpcurl](https://github.com/fullstorydev/grpcurl), from the workspace root:
@@ -86,7 +107,7 @@ grpcurl -unix -plaintext -import-path vxedge/proto \
 
 Proto hygiene: `buf lint` in the `vxedge` repo (CI enforces it).
 
-## 5. Manifests — the only input
+## 7. Manifests — the only input
 
 Everything the platform does is declared in YAML manifests (schema:
 `ARCHITECTURE.md` §6; worked example: §16). The parser is strict — unknown fields are
@@ -94,18 +115,24 @@ errors — and semantic validation covers slice references, vxid uniqueness, and
 consistency. Experiment manifests live in `vxperiments/experiments/`, vehicle manifests in
 `vxperiments/vehicles/`.
 
-## 6. Troubleshooting
+## 8. Troubleshooting
 
 - **`protoc` not found during `cargo build`** — install protoc (table above); the proto
   codegen runs inside the build via `crates/vxedge-api/build.rs`.
 - **`cannot reach vxedged at unix:///run/vxedge.sock`** — the default socket path needs
   root-writable `/run`; for development pass a user-writable path to *both* sides
   (`--listen`/`--endpoint unix:///tmp/vxedge.sock`) or set `VXEDGE_ENDPOINT`.
-- **A verb prints "not wired to the daemon yet (scaffold)"** — expected: only `status` is
-  wired today. `docs/TASKS.md` shows exactly what works at any point in time; check it
-  before assuming a bug.
+- **A verb prints "not wired to the daemon yet (scaffold)"** — truthfully unimplemented;
+  USER-GUIDE.md §2 lists each verb's state. Check it before assuming a bug.
+- **An experiment runner refuses with "older than source file …"** — the staleness gate:
+  rebuild as your user (`cargo build --workspace && touch <binary>`; cargo doesn't relink
+  unchanged binaries, so mtime alone can look stale).
+- **`insufficient privileges … CAP_NET_ADMIN`** — run the daemon under sudo or setcap it
+  (see §3); provisioning refuses to half-apply without privileges.
+- **Bundle build: "vmlinuz not readable"** — Ubuntu ships kernels 0600;
+  `sudo chmod 644 /boot/vmlinuz-$(uname -r)`.
 
-## 7. Where to contribute next
+## 9. Where to contribute next
 
 Check `docs/TASKS.md` (program board — includes the current phase-1 status assessment).
 The current critical path, in order:

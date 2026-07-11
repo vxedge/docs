@@ -8,6 +8,9 @@ spec** — every other repo's AGENTS.md and TASKS.md derive from it and must not
 - `GETTING-STARTED.md` — onboarding: prerequisites (Rust 1.96+/protoc/buf), workspace
   cloning, build + smoke test, contribution entry points. Keep its versions current when
   toolchains move.
+- `USER-GUIDE.md` — public-facing usage doc (concepts, per-verb CLI state, workflows,
+  results, production-vocabulary mapping). Update its CLI-state table whenever a verb goes
+  live or changes shape — OEM engineers read this first.
 - `STATUS.md` — living progress report (phases %, H1 critical path, per-repo state,
   environment gaps). **Update it in the same change set as any push that moves progress.**
 - `TESTBED-SETUP.md` — single-machine host requirements, tiered by phase (OS, resources,

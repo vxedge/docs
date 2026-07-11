@@ -6,7 +6,8 @@ for the **vxedge** project.
 ## Contents
 
 - [STATUS.md](STATUS.md) — living progress report: phases, critical path, per-repo state.
-- [GETTING-STARTED.md](GETTING-STARTED.md) — prerequisites, workspace setup, build & smoke test.
+- [GETTING-STARTED.md](GETTING-STARTED.md) — prerequisites, workspace setup, first experiment.
+- [USER-GUIDE.md](USER-GUIDE.md) — concepts, CLI reference, workflows, results, SDV vocabulary map.
 - [TESTBED-SETUP.md](TESTBED-SETUP.md) — single-machine host requirements, tiered by phase.
 - [ARCHITECTURE.md](ARCHITECTURE.md) — complete system architecture, research design, and manifest schemas.
 - [TASKS.md](TASKS.md) — program-level task board: phase gates and the cross-repo critical path.
