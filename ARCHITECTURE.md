@@ -388,6 +388,8 @@ zones:
           - iface: <name>
             vlan: <vlan id>
             slice: <slice-id>            # binds the iface to a slice from network.slices
+            ip: <cidr>                   # optional node address (e.g. 10.101.0.2/24); zone
+                                         # backends configure it at `zone up`
         slice_policy:                    # optional, URSP-style UE-side slice selection (phase 2):
           - match: <traffic class | dscp | app id>   #   per-traffic-class routing onto concurrent
             slice: <slice-id>                        #   PDU sessions when slices use mode: s-nssai
