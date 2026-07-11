@@ -560,9 +560,20 @@ templating):
   - **Android Automotive (AAOS)** — infotainment zone; QEMU with virtio-gpu or GPU passthrough.
   - **Containers** — for nodes where packaging as a container is the experimental variable.
 - **Fidelity caveat (stated honestly in publications):** production zonal controllers invert this
-  stacking — silicon runs the **QNX Hypervisor** hosting guests, whereas here KVM plays the
-  hypervisor and QNX is a guest. Functionally equivalent for slice-isolation research; the
-  phase-4 answer to the gap is DRIVE OS (QNX or Linux) on DRIVE AGX hardware.
+  stacking — silicon runs a Type-1 hypervisor (QNX Hypervisor and peers) hosting guests, whereas
+  here KVM plays the hypervisor and QNX is a guest. Functionally equivalent for slice-isolation
+  research; the gap closes via the **hypervisor fidelity ladder** below and, ultimately, DRIVE OS
+  on DRIVE AGX hardware (phase 4).
+- **Hypervisor fidelity ladder** (production-grade rungs only — no research-toy hypervisors):
+  - *Rung 0 (software-only, phase 1–3):* KVM with strict static partitioning — isolcpus/cpuset
+    pinned cells, hugepages — the Linux approximation of partitioning and the baseline arm of
+    the freedom-from-interference experiment (exp-004).
+  - *Rung 1 (phase 4):* **Xen dom0less** as a dedicated boot-entry host profile — production
+    open-source with an active functional-safety track (Xen 4.21 dom0less refactoring; AMD/Honda
+    automotive demos, Xen Summit 2025); Zephyr domUs boot sub-second.
+  - *Rung 2 (phase 4):* **QNX Hypervisor** — the production zonal-controller stack itself
+    (license permitting; pairs with DRIVE OS QNX).
+  Each rung converts part of the stated caveat into a measured claim (exp-004 reruns per rung).
 - CLI stages images, creates instances, and configures network interfaces; persistent storage
   optional per zone; logs and telemetry collected centrally.
 
@@ -773,7 +784,9 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
    DRIVE AGX + DRIVE OS (Linux/QNX); BlueField/DOCA gateway offload; Aerial CUDA-Accelerated RAN;
    V2X radio realism — C-V2X PC5 sidelink (Sionna channel models; PAWR/AERPAW outdoor
    validation); ASAM boundary standards — OSI (simulator↔stack), FMI/FMU plant-model import,
-   XIL-style bench semantics; optional VSS power-tree modeling.
+   XIL-style bench semantics; optional VSS power-tree modeling; hypervisor fidelity ladder
+   rungs 1–2 — Xen dom0less host profile and QNX Hypervisor (freedom-from-interference
+   measured per rung via exp-004).
 
 ---
 
