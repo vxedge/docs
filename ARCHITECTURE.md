@@ -564,6 +564,14 @@ deliberately separate:
   updates, both irrelevant to our QEMU/libvirt block-storage bundles — become a
   blocker). Maps naturally onto vxzones guest bundles, which are already
   kernel+initramfs "slots" in Rugix/RAUC's sense.
+- **v1 service backend (fidelity caveat, stated honestly):** `SvcService.Up` (§5) spawns
+  the service binary (`vxota serve`) as a host-local child process co-located with
+  `vxedged`, tracked by a pidfile the same way the microVM zone backend tracks QEMU — not
+  yet scheduled onto a `vxcompute` node, since that backend doesn't exist. `config.listen`
+  (new manifest field, alongside `config.artifacts`) is the address the process binds;
+  because there is no WireGuard `ota` slice yet either (§7 trailing item), it must be an
+  address zone nodes can already reach — typically the gateway's own bridge address on the
+  slice under test. Both gaps close together when `vxcompute` and WireGuard land.
 
 ---
 
@@ -852,6 +860,7 @@ services:
       kind: container
     config:
       artifacts: /opt/ota/artifacts
+      listen: 10.101.0.1:9900   # reachable from zone nodes on the same slice
   telemetry:
     id: telemetry-01
     type: telemetry
