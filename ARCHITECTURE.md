@@ -539,6 +539,32 @@ templating):
   `signal_plane` block rather than as an experiment service.
 - Each service definition includes `id`, `type`, `image`, `config`.
 
+**OTA design (H4, `vxota`):** the service exists to be a *realistic, measurable* OTA
+workload for H4, not a fleet-management platform — two industry concerns are kept
+deliberately separate:
+
+- **Trust model (adopted as design vocabulary, not as a dependency):** artifact metadata
+  follows the shape of **Uptane** (the automotive-specific, TUF-derived OTA security
+  framework — the closest thing to an ISO/SAE 21434 / UNECE R156-aligned standard) —
+  signed root/targets-style manifests, image-repo vs. director-repo separation. The
+  reference implementation **aktualizr** (C++) is *not* adopted as a dependency: it would
+  contradict the Rust-first service policy (§15) for no benefit vxota needs today.
+- **Delivery/orchestration (out of scope for vxota v1):** production fleet tools —
+  **Eclipse hawkBit** (Java rollout server + DDI API) and **Mender** (Go, server+client)
+  — are named here only as the production analogs an OEM engineer would recognize
+  (mapped in `docs/USER-GUIDE.md` §6); neither is wired in, since vxota's zones/compute
+  nodes are ephemeral per-experiment instances, not persistent fleet devices needing
+  campaign/rollout management.
+- **Slot/image-swap updates (phase 3, optional):** if a later experiment wants a *real*
+  atomic image swap on a running zone (vs. vxota v1's signed-blob delivery), the
+  candidate is **Rugix Ctrl** (Rust, memory-safe, secure-by-default signature
+  verification, native content-defined-chunking delta updates — chosen over the more
+  established **RAUC** specifically for the Rust-policy fit; RAUC remains the fallback
+  if Rugix's narrower deployment history or its gaps — no NAND/UBI, no encrypted
+  updates, both irrelevant to our QEMU/libvirt block-storage bundles — become a
+  blocker). Maps naturally onto vxzones guest bundles, which are already
+  kernel+initramfs "slots" in Rugix/RAUC's sense.
+
 ---
 
 ## 9 — Virtualization & zone provisioning (libvirt, QEMU/KVM, QNX, RTOS, containers)
@@ -772,8 +798,10 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
    dashboard (live slice metrics over gRPC-Web).
 3. **Phase 3 — production SDV alignment:** vehicle manifest end-to-end (`vxedge vehicle up`);
    Kuksa/VSS signal plane; rmw_zenoh/uProtocol comms; Ankaios workload orchestration; Sionna
-   channel realism (NVIDIA 6G Developer Program); Alpamayo/AlpaSim workload; Qt/QML operator HMI
-   (Qt GRPC); cloud-hosted `vxedged --controller` federating multiple GPU hosts; Electron
+   channel realism (NVIDIA 6G Developer Program); Alpamayo/AlpaSim workload; optional
+   Rugix-Ctrl-based atomic slot updates on vxzones guest bundles (§8 OTA design); Qt/QML
+   operator HMI (Qt GRPC); cloud-hosted `vxedged --controller` federating multiple GPU hosts;
+   Electron
    "vxedge Studio" groundwork; vxedge-tray (Rust SNI tray, thin vxAPI client) + vxedged
    systemd unit; ARM64 zone/compute/agent variants (Jetson + Snapdragon
    vSoC / Graviton parity); CAN/LIN edge modeling (`type: can`, SocketCAN/vcan + Kuksa CAN
