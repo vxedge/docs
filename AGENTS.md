@@ -23,6 +23,9 @@ spec** — every other repo's AGENTS.md and TASKS.md derive from it and must not
   Per-repo TASKS.md files hold the detailed work items.
 - `PUBLICATION.md` — arXiv/venue plan, paper skeletons, partner-selection procedure, and the
   publication gate (never preprint before repos are public and results rerun reproducibly).
+- `VERSIONING.md` — SemVer + `CHANGELOG.md` (Keep a Changelog) conventions every repo
+  follows; when tags get cut (not before the phase-1 gate) and what stays out of scope for
+  hand-maintained docs vs. the devops board (`TASKS.md`).
 - Papers, slides, reproducibility guide land here as they are written.
 
 ## Rules
