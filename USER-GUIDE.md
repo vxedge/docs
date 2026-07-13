@@ -42,8 +42,11 @@ All lifecycle verbs follow `up|down[|status]`; operations are idempotent.
 | `vxedge zone up\|down --vxid <zone-id>` | live | runs the zone's nodes under their backends; needs an active experiment |
 | `vxedge zone list` | live | per-node observed state |
 | `vxedge zone add/rm/image push` | planned | image store / registry work |
+| `vxedge manifest validate [--json]` | live | local-only schema+semantic check (same check `up` runs); powers manifest CI |
+| `vxedge doctor [--tier N] [--json]` | live | host preflight against TESTBED-SETUP tiers 0–3, actionable fix hints |
+| `vxedge ota up\|down --experiment …` | live | spawns/manages `vxota serve` from the manifest's `services.ota` block (used by exp-003) |
+| `vxedge telemetry up\|down\|collect` | planned | vxtelemetry runs standalone today (see §4); daemon wiring open |
 | `vxedge compute …` | planned | phase 2 (Autoware/CARLA workloads) |
-| `vxedge ota\|telemetry up/down` | planned | services run standalone today (see §4) |
 | `vxedge vehicle up\|down\|status` | planned | phase 3 |
 | `vxedge experiment\|traffic up` | planned | today the experiment runner script orchestrates |
 
@@ -69,10 +72,14 @@ the probe window, ≥5 repetitions, environment metadata, archive per run):
 
 ```bash
 cd vxperiments
-sudo -E env "PATH=$PATH" ./scripts/run-exp-001.sh --quick   # ~1 min pipeline validation
-sudo -E env "PATH=$PATH" ./scripts/run-exp-001.sh           # full campaign (~35 min, idle host)
+sudo -E env "PATH=$PATH" ./scripts/run-exp-001.sh --quick   # ~1 min pipeline validation -> results/exp-001-quick/
+sudo -E env "PATH=$PATH" ./scripts/run-exp-001.sh           # full campaign (~35 min, idle host) -> results/exp-001/
+sudo -E env "PATH=$PATH" ./scripts/run-exp-001.sh --repro   # later rerun -> results/exp-001-repro-<date>/
 python3 notebooks/analyze_exp001.py results/exp-001          # archives -> table + verdict
 ```
+
+A dir already holding a campaign's archives is never overwritten in place — full runs
+refuse it, repro checks and quick runs get their own dirs (`scripts/lib/results_dir.sh`).
 
 Numbers from `--quick` runs are pipeline validation only and are marked NOT reportable.
 Reference result (2026-07-10, full campaign): ADAS slice p99 held at 0.93x baseline under
@@ -124,7 +131,8 @@ kernel, userspace timestamps).
 ## 7. Getting help / contributing
 
 Each repo carries `AGENTS.md` (scope + rules) and `TASKS.md` (work items);
-`docs/TASKS.md` is the program board. Quality bars are codified as repo skills:
-`rust-patterns`, `testbed-quality`, `experiment-methodology` (`.claude/skills/`).
+`docs/TASKS.md` is the program board. Quality bars are codified as repo skills
+(`.claude/skills/`): `rust-patterns`, `testbed-quality`, `experiment-methodology`,
+`gateway-verification` (vxedge), `sysml-authoring` (vxmodels).
 A verb that prints "not wired to the daemon yet (scaffold)" is truthfully unimplemented —
 check STATUS.md before assuming a bug.
