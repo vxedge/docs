@@ -434,6 +434,10 @@ telemetry:
   prometheus:
     scrape_targets:
       - <host:port>
+    optional_scrape_targets:             # legitimately absent under some experiment
+      - <host:port>                      # arms (e.g. a service exporter that only runs
+                                          # during one arm) — a failed scrape here never
+                                          # counts against vxtelemetry's completeness metric
   gpu:                                   # GPU metrics (DCGM/NVML): utilization, VRAM, throttling
     enabled: <bool>
   pcap:
