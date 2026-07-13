@@ -2,8 +2,8 @@
 
 Target: the full vxedge testbed — control plane, vxgateway, virtual ECUs, AD workloads —
 running flawlessly on a single machine. Requirements are tiered by phase so you only
-install what the work in front of you needs. `vxedge doctor` (planned, vxedge/TASKS.md)
-will verify all of this automatically.
+install what the work in front of you needs. `vxedge doctor --tier N` (delivered
+2026-07-13) verifies tiers 0–3 automatically with actionable fix hints; `--json` for CI.
 
 ## Tier 0 — control-plane development (works today)
 
@@ -50,6 +50,17 @@ Everything above, plus:
 Adds: Kuksa databroker container, CARLA assets (~20 GB), AAOS emulator images, Qt ≥ 6.8
 (QML HMI), Node 20+ (web dashboard build). RAM comfortably 96 GB for the six-zone
 vehicle manifest with AAOS + QNX guests concurrently.
+
+## Tier M — modeling workstation (optional, any phase; track M)
+
+Authoring-time only — none of this runs during a measured experiment, so it has **zero
+effect on results** and no host-resource requirements beyond an editor.
+
+| Requirement | Notes |
+|---|---|
+| SysML v2 authoring | VS Code + SysIDE extension (open-source SysML v2 language server), or the OMG SysML v2 pilot implementation (Jupyter kernel) for visualization |
+| `vxmodel` renderer | Rust (already covered by Tier 0) — builds with the same toolchain once `vxmodels` lands |
+| Validation loop | `vxmodel render` output must pass `vxedge manifest validate --json` (Tier 0 binaries) |
 
 ## Rules
 

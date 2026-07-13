@@ -154,6 +154,10 @@ Canonical repos (under vxedge org):
 - `vxedge/vxagents` — Rust agents, metrics exporters.
 - `vxedge/vxtelemetry` — telemetry ingestion and exporters.
 - `vxedge/vxperiments` — experiment manifests, **vehicle manifests**, notebooks, results.
+- `vxedge/vxmodels` — *(track M)* SysML v2 system models:
+  requirements/traceability (H1–H4 `verify`-linked to frozen result archives), vehicle
+  structure models, the analysis-case/variant library, and the `vxmodel` renderer (Rust)
+  that generates manifests from models. See §6.3 and §15 (track M).
 - `vxedge/docs` — papers, slides, reproducibility guide.
 
 **Single-source rules:**
@@ -168,6 +172,12 @@ Canonical repos (under vxedge org):
 - Exactly two cross-language interfaces exist: **manifests** (YAML content) and **vxAPI**
   (Protobuf IDL under `vxedge/vxedge/proto/`, authoritative; client SDKs are generated, never
   hand-written). No bespoke ad-hoc RPC.
+- **Model governance (track M, when `vxmodels` lands):** the SysML v2 model is the *design
+  authority* upstream of manifests; manifests remain the **sole execution contract** — the
+  daemon/CLI never read models. A model-rendered manifest records the digest of the model
+  version that produced it and must pass `vxedge manifest validate` like any hand-written
+  manifest. The model never duplicates what zone/compute manifests are authoritative for
+  (images, node IDs). See §6.3.
 
 ---
 
@@ -474,6 +484,36 @@ vehicle:
 
 When adding or modifying a manifest, match these schemas exactly; the CLI has no other validation
 source to fall back on.
+
+### 6.3 Model governance — SysML v2 (track M, `vxmodels`)
+
+Why SysML v2 here: unlike v1 it is textual (git-diffable), has a standardized REST/JSON API,
+and composes typed elements — the first systems-modeling standard practical for GenAI
+authoring. vxedge is unusually well-placed for it: the system is already fully declarative
+(manifests) and fully executable (`up|down`), so a model layer is *live*, not documentation.
+
+Construct mapping (authoritative for track M):
+
+| SysML v2 construct | vxedge artifact |
+|---|---|
+| `requirement` def + `verify` | hypotheses (H1–H4, then per-experiment) → frozen result archives |
+| `part` / `connection` / `interface` defs | vehicle manifest: zones/nodes, `links` harness, slices + QoS |
+| `analysis case` + variant points | experiment manifest + its arms |
+| `use case` / `occurrence` | traffic/transportation scenarios (CARLA; ASAM OpenSCENARIO alignment) |
+| metadata annotations | fidelity ledger: per-part caveats → per-experiment validity envelope |
+
+Pipeline: `.sysml` sources (authored in `vxmodels`) → `vxmodel render` (Rust) → YAML
+manifest (+ recorded model digest) → `vxedge manifest validate --json` → the normal CLI
+lifecycle. GenAI-authored experiments therefore clear **two typed gates** (model typing,
+then manifest validation) before touching the testbed — the safety argument for generated
+experiments is structural, not aspirational.
+
+Out of model scope, by rule: Rust internals, the vxAPI IDL (Protobuf stays the contract,
+SDKs stay generated), and anything zone/compute manifests are authoritative for.
+
+Terminology (matches `PUBLICATION.md`): track M makes vxedge a **model-governed executable
+virtual prototype**. "Digital twin" is an earned claim reserved for phase-4 hardware parity
+— track M supplies the model half; phase 4 supplies the physical half.
 
 ---
 
@@ -794,6 +834,8 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
 - **Python** — Sionna, notebooks, analysis pipelines.
 - **TypeScript** — web dashboard, Electron "vxedge Studio", generated vxAPI SDK (connect-es).
 - **Shell** — glue only.
+- **SysML v2** (track M) — authoring-time system models in `vxmodels`, rendered to YAML
+  manifests by `vxmodel`. Deliberately *not* a third runtime interface.
 - Manifests (YAML) and the generated vxAPI (Protobuf) are the only cross-language interfaces.
 
 ### Phases
@@ -829,6 +871,38 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
    XIL-style bench semantics; optional VSS power-tree modeling; hypervisor fidelity ladder
    rungs 1–2 — Xen dom0less host profile and QNX Hypervisor (freedom-from-interference
    measured per rung via exp-004).
+
+### Cross-cutting track M — SysML v2 model governance (twin-readiness)
+
+Not phase-gated; runs alongside phases 2–3 and gates nothing in phases 1–4. All public
+claims keep the *executable virtual prototype* vocabulary until phase-4 hardware parity
+earns the term "digital twin" (`PUBLICATION.md` terminology rule); track M builds the
+model half of that claim. Details in §6.3; work items on the program board
+(`docs/TASKS.md`) and, once created, `vxmodels/TASKS.md`.
+
+- **M0 — governance & home:** this section + §4/§6.3 scoping; `vxedge/vxmodels` created
+  and seeded (AGENTS.md/TASKS.md/skills) — all done 2026-07-13.
+- **M1 — retroactive traceability:** H1–H4 as `requirement` definitions with `verify`
+  links to the frozen exp-001/exp-002b/exp-003 archives (manifest digests). Zero new
+  experiments; demonstrates the requirement → analysis-case → manifest → archive chain on
+  already-published-quality data.
+- **M2 — structure model + renderer:** vx-vehicle-01 E/E architecture as
+  `part`/`connection`/`interface` definitions; `vxmodel render` (Rust) emits the vehicle
+  manifest, gated by `vxedge manifest validate --json`; model digest recorded in the
+  generated manifest (§4 single-source rule).
+- **M3 — analysis cases + variants (the GenAI generation target):** experiments as
+  `analysis case`s; arms (packaging choice, vlan vs s-nssai) as variant points enumerated
+  mechanically; a `sysml-authoring` skill so LLM sessions compose typed model elements —
+  generated experiments pass the §6.3 double gate before touching the testbed. Aligns
+  with phase 2 (the S-NSSAI driver gives variants something real to enumerate).
+- **M4 — scenarios + fidelity ledger:** traffic/transportation scenarios as
+  `use case`/`occurrence` structures mapped toward ASAM OpenSCENARIO (extending the
+  phase-4 OSI commitment); fidelity caveats as first-class model annotations so every
+  generated experiment carries its validity envelope; environmental KPIs (energy per
+  slice/workload via the DCGM/NVML hooks) as verified requirements; V2X multi-vehicle
+  scenario families in phase 3.
+
+Paper #3 (`PUBLICATION.md`) draws on M1–M4; the twin claim attaches only if phase 4 lands.
 
 ---
 

@@ -29,7 +29,7 @@ folder is *not* a git repo):
 
 ```bash
 mkdir vxedge && cd vxedge
-for r in docs vxedge vxzones vxcompute vxota vxagents vxtelemetry vxperiments; do
+for r in docs vxedge vxzones vxcompute vxota vxagents vxtelemetry vxperiments vxmodels; do
   gh repo clone vxedge/$r
 done
 ```
@@ -42,6 +42,7 @@ done
 | `vxota` / `vxtelemetry` | OTA and telemetry service code |
 | `vxagents` | Rust measurement agents (latency probes, traffic gen, pcap) |
 | `vxperiments` | Experiment + vehicle manifests, notebooks, results |
+| `vxmodels` | SysML v2 system models + `vxmodel` manifest renderer — track M (`ARCHITECTURE.md` §6.3) |
 
 Every repo has an `AGENTS.md` (scope + rules) and `TASKS.md` (phased work items);
 `docs/TASKS.md` is the program-level board with the cross-repo critical path.
@@ -134,14 +135,20 @@ consistency. Experiment manifests live in `vxperiments/experiments/`, vehicle ma
 
 ## 9. Where to contribute next
 
-Check `docs/TASKS.md` (program board) and `STATUS.md` (what's done vs open). The H1 spine —
-gateway, agents, telemetry, exp-001 — is complete with published-quality numbers; current
-open fronts, in order:
+Check `docs/TASKS.md` (program board) and `STATUS.md` (what's done vs open). **The phase-1
+gate has passed** (2026-07-13): H1, H3, and H4 all hold with second-campaign
+reproducibility checks, and `v0.1.0` is tagged across the delivering repos. Current open
+fronts, in order:
 
-1. `vxperiments` — exp-002 (H3: VM vs microVM vs container packaging over identical slices)
-2. `vxota` — OTA server v1 (unblocks exp-003 / H4 and closes the phase-1 gate)
-3. `vxzones` — real-RTOS guest bundles (Zephyr/FreeRTOS) beyond the linux-probe bundle
-4. Phase 2: Open5GS/UERANSIM S-NSSAI slicing, CARLA→ROS2 closed loop, harness impairments
+1. `vxedge` — Open5GS/UERANSIM driver (`mode: s-nssai`) + URSP-style `slice_policy` → the
+   H2 numbers (phase-2 gate)
+2. `vxcompute` — Autoware/ROS2 + CARLA + carla-ros-bridge, closed loop (first code in
+   that repo)
+3. `vxzones` — QNX SDP 8 / AAOS images + real-RTOS guest bundles (Zephyr/FreeRTOS)
+   beyond the linux-probe bundle
+4. Track M — M0/M1: `vxmodels` repo + the retroactive H1–H4 SysML v2 traceability model
+   over the frozen archives (`docs/TASKS.md` track M; zero new experiments)
+5. Release/artifact pipeline — GHCR images with digests, cargo-dist binaries
 
 Conventions to know before your first PR: manifests are the sole source of truth; no
 orchestration logic in any frontend; every image is digest-tagged; commits without a
