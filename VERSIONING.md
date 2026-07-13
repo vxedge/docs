@@ -18,13 +18,17 @@ know exactly what they're getting.
    docs it already lists.
 3. **No tag before the entry exists.** A version is cut by moving `[Unreleased]` content
    under a new heading in the same commit as the tag — never tag first and backfill later.
-4. **What's *not* versioned yet:** these repos are pre-phase-1-gate and **private**
-   (`vxzones` is the current exception — see `PUBLICATION.md`). No `v0.1.0` tags are cut
-   until the phase-1 gate closes (H1+H3+H4 numbers in hand, repos going public per the
-   publication gate) — cutting a "stable-looking" tag before then would mislead anyone who
-   finds the repo early. Until then, `CHANGELOG.md`'s `[Unreleased]` section *is* the
-   changelog; commit history + `docs/STATUS.md` are the source of truth for "what works
-   today."
+4. **`v0.1.0` cut 2026-07-13** — the phase-1 gate closed that day (H1+H3+H4 numbers in
+   hand). Tagged: `docs`, `vxedge`, `vxagents`, `vxtelemetry`, `vxota`, `vxperiments`,
+   `vxzones` — the seven repos that actually delivered phase-1 content. Not tagged:
+   `vxcompute`, `vxgo`, `vxslice` — empty, a tag on nothing is meaningless.
+   **Tagging and going public are deliberately decoupled**: cutting a tag on a private
+   repo is zero-risk (just a git ref, no visibility change), so it happens the moment the
+   milestone is real. Going public is a separate, harder-to-reverse step gated on its own
+   short punch list — see `docs/STATUS.md` "Public-visibility punch list" — not on
+   whether a tag exists. (`vxzones` is the standing exception: already public since
+   before the gate, so its tag is publicly visible immediately — nothing sensitive in it,
+   just the guest-bundle builder.)
 5. **Compatibility across repos.** The only thing that couples repos is **vxAPI**
    (`vxedge/proto/vxedge/v1/*.proto`) — a breaking proto change is a MINOR bump (pre-1.0)
    in `vxedge` and must be called out in every dependent repo's next `CHANGELOG.md` entry
