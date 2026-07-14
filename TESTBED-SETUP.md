@@ -42,8 +42,8 @@ Everything above, plus:
 | Open vSwitch (optional variant) | `apt install openvswitch-switch` | alternative gateway data plane; **do not** hand-create bridges — vxedge owns its bridge lifecycle |
 | WireGuard tools | `apt install wireguard-tools` | telemetry/OTA transport links |
 | NVIDIA GPU | RTX-class, ≥ 12 GB VRAM; driver ≥ 550; CUDA per DeepStream/TensorRT matrix | CARLA server + inference share it |
-| Container runtime | Docker or Podman + NVIDIA Container Toolkit | digest-pinned images only |
-| Open5GS + UERANSIM | packaged or built per vxedge docs (phase-2 driver) | S-NSSAI slicing (H2) |
+| Container runtime | **Podman** (preferred; Docker-compatible OCI) + NVIDIA Container Toolkit | digest-pinned images only; hybrid policy: ARCHITECTURE §15 |
+| Open5GS + UERANSIM | **containerized: `vx5g-core` / `vx5g-ran` images** (`vxedge/containers/fiveg/`) | S-NSSAI slicing (H2). Host needs only `modprobe sctp`. Host PPA install is legacy — disable its services (`systemctl disable --now 'open5gs-*'`), purge once the pod path is proven |
 
 ## Tier 3 — full vehicle + HMI (phase 3)
 

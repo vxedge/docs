@@ -838,6 +838,24 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
   manifests by `vxmodel`. Deliberately *not* a third runtime interface.
 - Manifests (YAML) and the generated vxAPI (Protobuf) are the only cross-language interfaces.
 
+### Containerization policy (hybrid, Podman — decided 2026-07-14)
+
+The **measured path stays on the host**: kernel data plane (bridge/VLAN/tc/netem/
+WireGuard/vcan), KVM/libvirt zone execution, `vxedged`, and measurement agents. Containers
+share the kernel, so containerizing these would put container networking *inside* the
+measurement and break comparability with frozen campaigns. Everything else runs
+containerized under **Podman** (daemonless/rootless; OCI images stay Docker-compatible;
+matches the automotive ecosystem — Ankaios, AGL, RH In-Vehicle): the 5G stack (Open5GS
+NFs + UERANSIM + MongoDB as one pod sharing a network namespace, so `FiveGPlan`'s loopback
+addressing is unchanged in or out of the pod — `vxedge/containers/fiveg/`), service images
+(vxota/vxtelemetry), the build/dev toolchain, and phase-2 workloads (CARLA/Autoware/
+DeepStream, already container-first per §10). Image digests are version pins recorded into
+results metadata (§13). Host keeps only: distro-standard kernel tooling, QEMU/libvirt, and
+one `modprobe sctp` for UERANSIM's NGAP (SCTP is not namespaced). This mirrors the
+SOAFEE/EWAOL production pattern (containerized workloads over a thin KVM host) and is the
+portability story for non-Linux dev machines (build/analysis anywhere; measurement always
+on a Linux kernel).
+
 ### Phases
 
 1. **Phase 1 — slicing core, API-first from day one:** `vxedge-core` + `vxedged` + vxAPI v1
