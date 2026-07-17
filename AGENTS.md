@@ -26,6 +26,9 @@ spec** — every other repo's AGENTS.md and TASKS.md derive from it and must not
 - `VERSIONING.md` — SemVer + `CHANGELOG.md` (Keep a Changelog) conventions every repo
   follows; when tags get cut (not before the phase-1 gate) and what stays out of scope for
   hand-maintained docs vs. the devops board (`TASKS.md`).
+- `ACRONYMS.md` — glossary of every acronym used across these docs, grouped by field
+  (5G/RAN, SDN, SDV, virtualization, compute/AI, vxAPI, standards, OTA, methodology).
+  Hand-maintained; update it alongside `ARCHITECTURE.md` when a new acronym lands.
 - Papers, slides, reproducibility guide land here as they are written.
 
 ## Rules
