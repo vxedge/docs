@@ -23,7 +23,7 @@ Everything in Tier 0, plus:
 
 | Requirement | Notes |
 |---|---|
-| CAP_NET_ADMIN | run `vxedged` under sudo, or `sudo setcap cap_net_admin+ep target/debug/vxedged` |
+| CAP_NET_ADMIN | run `vxedged` **unprivileged**, with NOPASSWD sudo for `ip`/`bridge`/`tc` (e.g. `<user> ALL=(root) NOPASSWD: /usr/sbin/ip, /usr/sbin/bridge, /usr/sbin/tc`). **`setcap cap_net_admin+ep` on the binary does not work** — found live 2026-07-17: capabilities don't propagate across `fork`+`exec` to the separate `ip`/`bridge`/`tc` child processes vxedged shells out to. Do not run `vxedged` itself under `sudo`/as root either — phase 2's fiveg driver needs `podman` to keep running as the deploying user's own identity (see Tier 2) |
 | iproute2 + nftables | already present on the dev host |
 | CPU isolation (recommended) | pin gateway + probe cores: `isolcpus`/`cpuset` — record in results metadata |
 | Kernel flavour caveat | generic (non-PREEMPT_RT) is fine for first numbers; **must** be recorded as a determinism caveat (§12). PREEMPT_RT (Ubuntu Pro real-time kernel) is the upgrade path |
@@ -43,7 +43,7 @@ Everything above, plus:
 | WireGuard tools | `apt install wireguard-tools` | telemetry/OTA transport links |
 | NVIDIA GPU | RTX-class, ≥ 12 GB VRAM; driver ≥ 550; CUDA per DeepStream/TensorRT matrix | CARLA server + inference share it |
 | Container runtime | **Podman** (preferred; Docker-compatible OCI) + NVIDIA Container Toolkit | digest-pinned images only; hybrid policy: ARCHITECTURE §15 |
-| Open5GS + UERANSIM | **containerized: `vx5g-core` / `vx5g-ran` images** (`vxedge/containers/fiveg/`) | S-NSSAI slicing (H2). Host needs only `modprobe sctp`. Host PPA install is legacy — disable its services (`systemctl disable --now 'open5gs-*'`), purge once the pod path is proven |
+| Open5GS + UERANSIM | **containerized: `vx5g-core` / `vx5g-ran` images** (`vxedge/containers/fiveg/`) | S-NSSAI slicing (H2). Host needs only `modprobe sctp`. Host PPA install is legacy — disable its services (`systemctl disable --now 'open5gs-*'`), purge once the pod path is proven. Extend the Tier 1 sudoers entry to also cover `nsenter` (fiveg's CN/RAN transit link + bridge attachment join a pod's netns by PID) — same NOPASSWD-for-the-deploying-user model, no wider than that |
 
 ## Tier 3 — full vehicle + HMI (phase 3)
 
