@@ -6,7 +6,10 @@ description: Statistical and methodological rigor for vxedge experiments — use
 # Experiment methodology — numbers OEMs and reviewers trust
 
 A measurement that can't defend itself at review is noise. Every experiment follows this
-discipline (ARCHITECTURE §12 is the spec; this is the practice).
+discipline (ARCHITECTURE §12 is the spec; this is the practice — grounded in the same
+validation discipline as Kochenderfer, Katz, Corso & Moss, *Algorithms for Validation*
+(https://algorithmsbook.com/validation/), a citation worth carrying into the paper-#1
+methodology section (`PUBLICATION.md` §3 step 4), not new practice here).
 
 ## Validation
 
