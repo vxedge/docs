@@ -113,7 +113,9 @@ The `vxgateway` data plane, relevant to `network-provisioning-patterns`.
 - **ADAS** — Advanced Driver-Assistance Systems: the URLLC-like traffic class H1/H2
   test.
 - **AD** — Autonomous Driving.
-- **HMI** — Human-Machine Interface: the phase-3 Qt/QML operator dashboard.
+- **HMI** — Human-Machine Interface. In-vehicle: Android Automotive (AAOS), the infotainment
+  zone's guest OS (§9) — the production-representative choice. The phase-3 Qt/QML operator
+  dashboard is desktop/researcher tooling, not the in-vehicle HMI (ARCHITECTURE.md §5.1).
 - **AUTOSAR** — AUTomotive Open System ARchitecture: the standard automotive software
   architecture vxedge's QNX/C++ conventions are described as "adjacent" to.
 - **OEM** — Original Equipment Manufacturer: the vehicle maker — vxedge's target
