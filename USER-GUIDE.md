@@ -49,9 +49,9 @@ All lifecycle verbs follow `up|down[|status]`; operations are idempotent.
 | `vxedge compute …` | planned | phase 2 (Autoware/CARLA workloads) |
 | `vxedge vehicle up\|down\|status` | planned | phase 3 |
 | `vxedge experiment new <id> [--template minimal\|slicing]` | live | scaffolds a workspace folder; no daemon, no network, no GPU |
-| `vxedge experiment validate [path]` | live | local-only; loads a workspace and runs every cross-file check, reporting all problems at once |
+| `vxedge experiment validate` | live | local-only; loads the workspace here and runs every cross-file check, reporting all problems at once |
 | `vxedge experiment up\|down\|status` | live | acts on the workspace in the **current directory** (the single `.vxp`); no name, no `--manifest`. `--chdir <dir>` to run from elsewhere. `up` provisions gateway → zones → services and **does not start traffic** — use `vxedge traffic up` |
-| `vxedge experiment\|traffic up` | planned | today the experiment runner script orchestrates. `experiment up` does not consume the §6.0 workspace shape yet — that lands with the loader wiring |
+| `vxedge traffic up\|down --manifest …` | live | drives the declared profiles; kept separate from `experiment up` because load is time-bounded and a campaign sweeps it over a fixed topology |
 
 Global flags: `--endpoint` (default local Unix socket), `--json`.
 
