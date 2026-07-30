@@ -29,6 +29,10 @@ spec** — every other repo's AGENTS.md and TASKS.md derive from it and must not
 - `ACRONYMS.md` — glossary of every acronym used across these docs, grouped by field
   (5G/RAN, SDN, SDV, virtualization, compute/AI, vxAPI, standards, OTA, methodology).
   Hand-maintained; update it alongside `ARCHITECTURE.md` when a new acronym lands.
+- `diagrams/` — editable draw.io architecture diagrams (`sdv-ee-architecture.drawio`: hardware
+  and software perspectives of the zonal E/E architecture). Derived from `ARCHITECTURE.md`, which
+  stays authoritative — update the spec first, then the diagram. See `diagrams/README.md` for
+  conventions and the extension palette.
 - Papers, slides, reproducibility guide land here as they are written.
 
 ## Rules
