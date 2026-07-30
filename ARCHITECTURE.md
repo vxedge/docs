@@ -330,6 +330,154 @@ Every CLI verb is a 1:1 wrapper over a vxAPI RPC — anything the CLI can do, ev
 
 ## 6 — Manifests — final schemas (YAML)
 
+### 6.0 The workspace model (Track D)
+
+An experiment is a **folder**. Every file declares its `kind` and `id`; the loader indexes on
+that pair, and **every cross-reference is by id, never by path** — so files can be renamed or
+reorganised without breaking anything.
+
+```
+h1-slice-isolation/
+  h1-slice-isolation.vxp   # package descriptor: id, version, entry, requires
+  main.yaml                # kind: experiment  — the test
+  car1.yaml                # kind: vehicle     — the system under test
+  road1.yaml               # kind: road        — the environment (omit if unused)
+  parts.yaml               # kind: baseline    — which software
+  results/
+```
+
+Kinds: `experiment` | `vehicle` | `road` | `baseline` | `component`. Loading is: read the
+`.vxp`, glob `*.yaml` (non-recursive, so a `results/` archive is never absorbed), index by
+`(kind, id)`, resolve references by id. No includes, no import boilerplate, no ordering rules.
+Files exist only when the experiment needs them.
+
+**Structure and software are separate files.** One `vehicle.yaml` with many baselines is what
+an OTA campaign is, what an RxSWIN identifies, and what makes an A/B arm two baselines rather
+than two vehicle files that drift apart.
+
+**The vehicle names a slice; the experiment defines it.** `links[].slice: adas` in the vehicle,
+`network.slices[].mode: vlan|s-nssai` in the experiment. H2's comparison is therefore *one
+block changed over a provably unchanged vehicle*, enforced by the schema rather than asserted
+in a README. This is the only reference that crosses the structure/test boundary, and
+`vxedge experiment validate` checks it.
+
+**Local-first.** Every ref has a local form (`./images/foo`) and a published form
+(`ghcr.io/…` + digest), same key, resolved by shape. `digest` is optional for local refs
+(content-hashed into the results archive) and **required** for published ones — a moving tag
+is not reproducible for anyone else. So a run is always reproducible *for its author*, and
+publishing is what makes it reproducible *for others*. `vxedge experiment up` must work
+offline with zero published artifacts.
+
+Tooling: `vxedge experiment new <id> [--template minimal|slicing]` scaffolds a workspace;
+`vxedge experiment validate [path]` runs every cross-file check and reports all problems at
+once.
+
+#### 6.0.1 `kind: vehicle`
+
+```yaml
+kind: vehicle
+id: car1
+class: road                          # taxonomy spine: kind > class > subtype
+subtype: car
+
+composition:                         # fixed groups; component defs inline until reused
+  zones:
+    zonefl: { class: zone, subtype: linux, position: front-left }
+  compute:
+    hpc1:   { class: compute, subtype: ad, resources: { cpu: 4, memory_gb: 8 } }
+  gateway:
+    gw1:    { class: gw, subtype: tcu }
+
+links:                               # transport: how bytes move
+  - { id: trunk-fl,  endpoints: [gw1:eth0, zonefl:eth0], slice: adas, transport: tsn }
+  - { id: trunk-hpc, endpoints: [gw1:eth2, hpc1:eth0] }
+
+channels:                            # interaction: what is exchanged
+  - id: adas.object-list
+    from: hpc1:perception
+    to:   [zonefl:actuation]
+    protocol: dds | zenoh | someip | udp
+    qos: { reliability: reliable, deadline_ms: 50 }
+    carried_by: [trunk-hpc, trunk-fl]
+```
+
+Addressing is `<component-id>[:<port>]`. Component ids are **flat and unique workspace-wide**
+(`zonefl`, not `zones.front-left`): structural paths break when the model is restructured, and
+flat ids do not. Uniqueness is therefore an enforced check, not an assumption.
+
+`carried_by` binds a channel to the links carrying it, and validation requires the channel's
+endpoints to be genuinely **reachable** over those links. This is what makes latency and loss
+attributable **per topic per slice** rather than only per link — the measurement §12 exists to
+produce. Without the reachability check, `carried_by` would be an unchecked assertion.
+
+Behaviour splits in two: *interaction* (`channels`) belongs to the vehicle; *stimulus*
+(`traffic_profiles`, scenario) belongs to the experiment and the road. The vehicle is the same
+vehicle whether it is driven hard or gently.
+
+#### 6.0.2 `kind: baseline`
+
+```yaml
+kind: baseline
+id: bl-2026-07
+rxswin: RX-VXE-0001-0003             # optional; UN R156, a property of the vehicle TYPE
+
+parts:
+  - ref: ghcr.io/vxedge/parts/zone/qnx/os/sdp8-base:1.0.0
+    digest: sha256:…                 # required for published refs
+    target_ids: [zonefl, zonefr]     # scalar or list — declared once, however many nodes
+  - ref: ./images/my-autoware        # local; no digest required
+    target_ids: hpc1
+```
+
+Each entry carries **only** `ref`, `digest` and `target_ids`. Class, subtype, layer, name and
+the VXPN part number are all derivable from the ref path; restating them is the drift the
+computed-part-number design exists to prevent. `vxedge manifest bom` derives them for display,
+SBOM export and the RxSWIN roll-up.
+
+`target_ids` declared once for many components is deliberate: repeating a shared part
+per-component is how fleet baselines silently drift when one copy is bumped and the others are
+not.
+
+#### 6.0.3 `kind: experiment` and the `.vxp` descriptor
+
+`kind: experiment` keeps the blocks defined in §6.1 — `network`, `traffic_profiles`,
+`telemetry`, `services`, `results` — and adds `vehicles: [<id>…]`, `baseline: <id>`,
+`world: <id>`, and a `method` block (`duration_s`, `repetitions`, `warmup_s`). It no longer
+carries `zones`/`compute` inline; those move to `kind: vehicle`.
+
+The `.vxp` descriptor holds packaging rather than content, so a version bump never touches an
+experiment file:
+
+```yaml
+id: h1-slice-isolation
+version: 0.1.0
+entry: main.yaml
+requires: { gpu: none }              # surfaced at scaffold time, checked by validate
+```
+
+#### 6.0.4 Requirements vs. allocation
+
+Two different things that both sound like "resources":
+
+- **`requires`** on a *part* (`part.yaml` in `vxparts`) — what the software needs: `arch`,
+  `libc`, `cpu`, `memory_gb`, `gpu.vram_gb`, `gpu.compute_capability`.
+- **`resources`** on a *component* (in a vehicle) — what the node is allocated.
+
+`vxedge manifest validate` checks part → component → host and fails early, so "this host
+cannot run this workspace" is reported before build time is spent rather than after.
+`depends_on` between parts is **metadata only**: validated for presence in the same baseline,
+never version-solved — a resolver is a package manager, and that would be a separate,
+deliberate decision.
+
+#### 6.0.5 Migration status
+
+The workspace model is **additive today**. `vxedge-core` still parses the §6.1/§6.2 schemas
+below, and every existing experiment (`exp-001`/`002`/`002b`/`003`) keeps running unchanged so
+frozen results stay reproducible. Node software moves from a flat `image:` to a baseline
+`parts:` entry in three steps: `image:` accepted through phase 2, then
+`vxedge manifest migrate` plus a deprecation warning, then removed in phase 3.
+`exp-002`/`002b` are not migrated until their H3 re-validation lands.
+
 ### 6.1 Experiment manifest
 
 ```yaml

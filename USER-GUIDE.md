@@ -48,7 +48,9 @@ All lifecycle verbs follow `up|down[|status]`; operations are idempotent.
 | `vxedge telemetry up\|down\|collect` | planned | vxtelemetry runs standalone today (see §4); daemon wiring open |
 | `vxedge compute …` | planned | phase 2 (Autoware/CARLA workloads) |
 | `vxedge vehicle up\|down\|status` | planned | phase 3 |
-| `vxedge experiment\|traffic up` | planned | today the experiment runner script orchestrates |
+| `vxedge experiment new <id> [--template minimal\|slicing]` | live | scaffolds a workspace folder; no daemon, no network, no GPU |
+| `vxedge experiment validate [path]` | live | local-only; loads a workspace and runs every cross-file check, reporting all problems at once |
+| `vxedge experiment\|traffic up` | planned | today the experiment runner script orchestrates. `experiment up` does not consume the §6.0 workspace shape yet — that lands with the loader wiring |
 
 Global flags: `--endpoint` (default local Unix socket), `--json`.
 
