@@ -478,6 +478,16 @@ frozen results stay reproducible. Node software moves from a flat `image:` to a 
 `vxedge manifest migrate` plus a deprecation warning, then removed in phase 3.
 `exp-002`/`002b` are not migrated until their H3 re-validation lands.
 
+A workspace reaches the running path by **lowering**: `vxedge experiment lower` transforms a
+§6.0 folder into a §6.1 manifest, which the daemon then runs unchanged. Lowering resolves what
+§6.0 keeps normalised and §6.1 repeats — a slice's `vlan` onto each node iface bound to it, a
+traffic endpoint's component id into §6.1's `<zone-vxid>:<node-vxid>` — and refuses, with the
+fix in the message, what §6.1 cannot express: more than one part per component (§6.1 carries one
+`image` per node — publish a `stack` composite), or a compute component as a traffic endpoint.
+`channels` (§6.0.1) does not survive lowering, because §6.1 has no interaction layer; that is a
+limitation of the older schema, and removing it is what `experiment up` consuming §6.0 directly
+buys. Until then, a workspace's messaging topology is modelled and validated but not executed.
+
 ### 6.1 Experiment manifest
 
 ```yaml

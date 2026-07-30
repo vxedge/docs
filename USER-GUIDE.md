@@ -50,6 +50,7 @@ All lifecycle verbs follow `up|down[|status]`; operations are idempotent.
 | `vxedge vehicle up\|down\|status` | planned | phase 3 |
 | `vxedge experiment new <id> [--template minimal\|slicing]` | live | scaffolds a workspace folder; no daemon, no network, no GPU |
 | `vxedge experiment validate [path]` | live | local-only; loads a workspace and runs every cross-file check, reporting all problems at once |
+| `vxedge experiment lower [path] [-o <file>]` | live | local-only; turns a §6.0 workspace into the §6.1 manifest `experiment up` runs. `channels` is not carried — §6.1 has no interaction layer |
 | `vxedge experiment\|traffic up` | planned | today the experiment runner script orchestrates. `experiment up` does not consume the §6.0 workspace shape yet — that lands with the loader wiring |
 
 Global flags: `--endpoint` (default local Unix socket), `--json`.
