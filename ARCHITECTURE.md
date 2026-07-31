@@ -351,6 +351,12 @@ Kinds: `experiment` | `vehicle` | `road` | `baseline` | `component`. Loading is:
 `(kind, id)`, resolve references by id. No includes, no import boilerplate, no ordering rules.
 Files exist only when the experiment needs them.
 
+**A file may hold several documents**, `---`-separated, and a whole workspace may be one file.
+That follows from every reference being by id: the file boundary carries no meaning, so it is
+free to move. Separate files stay the scaffold default because they teach the model, but an
+engineer who wants one file — or a caller with no directory to point at, such as an inline
+manifest over vxAPI — has one.
+
 **Structure and software are separate files.** One `vehicle.yaml` with many baselines is what
 an OTA campaign is, what an RxSWIN identifies, and what makes an A/B arm two baselines rather
 than two vehicle files that drift apart.
@@ -380,30 +386,58 @@ id: car1
 class: road                          # taxonomy spine: kind > class > subtype
 subtype: car
 
-composition:                         # fixed groups; component defs inline until reused
-  zones:
-    zonefl: { class: zone, subtype: linux, position: front-left }
-  compute:
-    hpc1:   { class: compute, subtype: ad, resources: { cpu: 4, memory_gb: 8 } }
-  gateway:
-    gw1:    { class: gw, subtype: tcu }
+zones:                               # REGIONS of the entity, not devices
+  front-left: {}
+  central: { name: central compute bay, reference: <external zoning std> }
 
-links:                               # transport: how bytes move
-  - { id: trunk-fl,  endpoints: [gw1:eth0, zonefl:eth0], slice: adas, transport: tsn }
-  - { id: trunk-hpc, endpoints: [gw1:eth2, hpc1:eth0] }
+devices:                             # units LOCATED IN zones
+  zonefl: { role: zone-controller, zone: front-left, backend: container }
+  hpc1:   { role: hpc, zone: central, backend: container, resources: { cpu: 4, memory: 8 } }
+  gw1:    { role: gateway, backend: container }
 
-channels:                            # interaction: what is exchanged
+functions:                           # units of BEHAVIOUR, deployed onto devices
+  adas:    { deployed_on: zonefl, asil: B }
+  percept: { deployed_on: hpc1 }
+
+links:                               # transport: how bytes move (the harness)
+  - { id: trunk-fl,  endpoints: [gw1:eth0, zonefl:eth0], slice: adas }
+  - id: arm-cont                     # object form, when an attachment needs a fixed address
+    endpoints: [{ node: zonefl, port: eth0, ip: 10.101.0.11/24 }]
+    slice: adas
+
+channels:                            # interaction: what is exchanged, between FUNCTIONS
   - id: adas.object-list
-    from: hpc1:perception
-    to:   [zonefl:actuation]
+    from: percept
+    to:   [adas]
     protocol: dds | zenoh | someip | udp
     qos: { reliability: reliable, deadline_ms: 50 }
     carried_by: [trunk-hpc, trunk-fl]
 ```
 
-Addressing is `<component-id>[:<port>]`. Component ids are **flat and unique workspace-wide**
-(`zonefl`, not `zones.front-left`): structural paths break when the model is restructured, and
-flat ids do not. Uniqueness is therefore an enforced check, not an assumption.
+**Zone, device, function are three different things.** A zone is a *place* — a named region
+(front-left, cabin, nacelle-2, an ATA zone), not an enum, which is what lets a non-road entity
+have zones at all. A device is a unit located in one. A function is behaviour deployed *onto* a
+device: AUTOSAR calls it a software component, and separating it from the ECU it runs on is the
+whole point of the Virtual Function Bus. `parts:` targets **functions**, and `channels` connect
+functions — a topic flows between behaviours, and which devices they sit on is a deployment
+decision a study should be able to vary without rewriting the interaction topology.
+
+`role` is `zone-controller | hpc | gateway | ecu | sensor | actuator | switch`. `backend` is
+`container | qemu-microvm | libvirt` and is **required for any device attached to a slice**:
+the planner has to know whether to build a veth or a tap, and guessing produced a workspace
+that validated and then could not boot.
+
+Addressing is `<id>[:<port>]`. Ids are **flat and unique workspace-wide** (`zonefl`, not
+`zones.front-left`): structural paths break when the model is restructured, and flat ids do
+not. Uniqueness is an enforced check, and so is the zone/device collision it makes possible.
+
+A link endpoint takes two forms. The **bare** `zonefl:eth0` is right whenever nothing has to be
+reachable at a known address, which is most attachments. The **object** form
+`{ node, port, ip }` pins a host address on that attachment, for the case with no other
+expression: exp-002's three arms share one VLAN and are told apart *only* by address. An
+address belongs to the attachment rather than the device — a device on two slices has two — and
+it lives in the vehicle rather than the experiment because it states a structural fact ("this
+ECU answers here"), which is what keeps one vehicle usable by many baselines.
 
 `carried_by` binds a channel to the links carrying it, and validation requires the channel's
 endpoints to be genuinely **reachable** over those links. This is what makes latency and loss
@@ -429,9 +463,20 @@ parts:
     target_ids: hpc1
 ```
 
-Each entry carries **only** `ref`, `digest` and `target_ids`. Class, subtype, layer, name and
-the VXPN part number are all derivable from the ref path; restating them is the drift the
-computed-part-number design exists to prevent. `vxedge manifest bom` derives them for display,
+Each entry carries `ref`, `digest`, `target_ids`, and — only where the reference is silent
+about it — `kind: container | bundle`. Class, subtype, layer, name and the VXPN part number are
+all derivable from the ref path; restating them is the drift the computed-part-number design
+exists to prevent.
+
+`kind` exists because a part knows what it *is* and a device knows how it is *run*, and the two
+have to agree: a container backend boots a container image, libvirt and qemu-microvm boot a
+guest bundle. The `local/…` namespace is conclusive on its own (a host process, never a
+bundle), and a published vxparts ref is deliberately **not** read for this — its class says
+what kind of node the part loads onto, not how it is packaged, and a zone guest is legitimately
+a container under the netns backend. Only a bare path is genuinely ambiguous, and there `kind`
+is how the author says so. A stated kind is validated against the device's backend, so a
+baseline pointing an H3 libvirt arm at a container image is rejected with both halves named
+rather than silently accepted and failed at boot. `vxedge manifest bom` derives them for display,
 SBOM export and the RxSWIN roll-up.
 
 `target_ids` declared once for many components is deliberate: repeating a shared part
@@ -440,10 +485,10 @@ not.
 
 #### 6.0.3 `kind: experiment` and the `.vxp` descriptor
 
-`kind: experiment` keeps the blocks defined in §6.1 — `network`, `traffic_profiles`,
-`telemetry`, `services`, `results` — and adds `vehicles: [<id>…]`, `baseline: <id>`,
-`world: <id>`, and a `method` block (`duration_s`, `repetitions`, `warmup_s`). It no longer
-carries `zones`/`compute` inline; those move to `kind: vehicle`.
+`kind: experiment` carries `network` (slices), `traffic_profiles`, `telemetry`, `services` and
+`results`, plus `vehicles: [<id>…]`, `baseline: <id>`, `world: <id>`, and a `method` block
+(`duration_s`, `repetitions`, `warmup_s`). It carries no `zones`/`compute` inline: structure is
+the vehicle's, and software is the baseline's.
 
 The `.vxp` descriptor holds packaging rather than content, so a version bump never touches an
 experiment file:
@@ -469,186 +514,58 @@ cannot run this workspace" is reported before build time is spent rather than af
 never version-solved — a resolver is a package manager, and that would be a separate,
 deliberate decision.
 
-#### 6.0.5 Migration status
+#### 6.0.5 Interface naming
 
-The workspace model is **additive today**. `vxedge-core` still parses the §6.1/§6.2 schemas
-below, and every existing experiment (`exp-001`/`002`/`002b`/`003`) keeps running unchanged so
-frozen results stay reproducible. Node software moves from a flat `image:` to a baseline
-`parts:` entry in three steps: `image:` accepted through phase 2, then
-`vxedge manifest migrate` plus a deprecation warning, then removed in phase 3.
-`exp-002`/`002b` are not migrated until their H3 re-validation lands.
+A device's host interfaces are derived from its **id**: `vz-<stem>` for the bridge access port
+(the veth host side, or the tap itself) and `vzp-<stem>` for the veth peer. The stem is the
+sanitised id, shortened to a readable head plus a hash of the whole id when it does not fit the
+kernel's 15-byte `IFNAMSIZ` limit — `node-cont-01` becomes `vz-node-c-32cc`.
 
-A workspace reaches the running path by **lowering**: `vxedge experiment lower` transforms a
-§6.0 folder into a §6.1 manifest, which the daemon then runs unchanged. Lowering resolves what
-§6.0 keeps normalised and §6.1 repeats — a slice's `vlan` onto each node iface bound to it, a
-traffic endpoint's component id into §6.1's `<zone-vxid>:<node-vxid>` — and refuses, with the
-fix in the message, what §6.1 cannot express: more than one part per component (§6.1 carries one
-`image` per node — publish a `stack` composite), or a compute component as a traffic endpoint.
-`channels` (§6.0.1) does not survive lowering, because §6.1 has no interaction layer; that is a
-limitation of the older schema, and removing it is what `experiment up` consuming §6.0 directly
-buys. Until then, a workspace's messaging topology is modelled and validated but not executed.
+This is a contract, not an implementation detail: campaign scripts address these names directly
+(`ip addr replace … dev vzp-node-a-c06a`, `qemu … ifname=vz-node-q-691e`). Names used to be
+**positional** — `vz0`, `vz1`, … in traversal order — which made ordering load-bearing in the
+worst way: adding a device renumbered the rest, and two views of the *same* topology could
+number it differently. exp-002 declares its arms `cont, microvm, libvirt` and sorts to `cont,
+libvirt, microvm`, so two H3 arms swapped interfaces between the two schema paths — the
+campaign would have measured libvirt and reported microvm, passing every test on the way.
 
-### 6.1 Experiment manifest
+A name now depends on its own device and nothing else: not declaration order, not sorting, not
+how many other devices exist. Two ids that shorten to one name are refused with both named.
+`vxedge zone list` prints each device's `port=` and `peer=`, so the mapping is always
+answerable without recomputing a hash.
 
-```yaml
-experiment:
-  id: <string>
-  name: <string>
-  description: <string>
-  duration_s: <int>
-  results_prefix: <path>
-  vehicle: <path to vehicle manifest>   # optional; composes zones/compute/network from it
+#### 6.0.6 Migration status
 
-network:
-  topology: mesh|star|custom
-  defaults:
-    bandwidth: <bps>
-    latency: <ms>
-  slices:                               # slice definitions consumed by vxgateway (and 5G core)
-    - id: <slice-id>                    # e.g. adas, infotainment, ota, telemetry
-      mode: vlan | s-nssai              # static VLAN mapping (H1) or real 5G slice (H2)
-      vlan: <vlan id>                   # when mode: vlan
-      s_nssai: { sst: <int>, sd: <hex> }  # when mode: s-nssai (Open5GS/UERANSIM)
-      qos:
-        min_rate_mbps: <int>            # guaranteed reservation (tc queue tree)
-        max_rate_mbps: <int>
-        priority: <int>
+§6.0 is **the only authored schema, and the only runnable one** (2026-07-31). Every planner
+takes the domain model, which is built from a workspace; `vxedge up`, `vxedge experiment up`
+and `vxtelemetry ingest|collect` all read a workspace directory. All five experiments —
+exp-001, exp-002, exp-002b, exp-003, exp-010 — have workspaces, each verified to produce
+plans identical to the frozen §6.1 manifest it replaced.
 
-services:
-  ota:
-    id: ota-01
-    type: ota
-    image:
-      url: <registry or local path>
-      kind: container | vm
-    config: <service-specific config object>
-  telemetry:
-    id: telemetry-01
-    type: telemetry
-    image:
-      url: <registry or local path>
-      kind: container | vm
-    config: <service-specific config object>
+§6.1 and §6.2 are **deleted** — structs, adapter and lowering alike. `vxmodel render` (track M)
+emits workspaces too, so `vxedge manifest validate` has one shape to check and CI asserts it.
 
-compute:
-  - id: vxcompute-<role>-<seq>
-    name: <human-readable>
-    image:
-      url: <image url>
-      kind: container | vm
-    resources:
-      cpu: <cores>
-      memory: <GB>
-      gpu: <none | passthrough | mig-slice>   # GPU pass-through / TensorRT-optimized containers
-    services:
-      - <service-id>
+The frozen `vxperiments/experiments/exp-*.yaml` files are kept as provenance for the results
+already recorded against them, not as inputs. Pointing a tool at one now reports what the
+document is and where to go instead.
 
-zones:
-  - id: vxzone-<zone>-<seq>
-    name: <human-readable>
-    role: front-left | front-right | rear-left | rear-right | central-hpc | gateway
-    nodes:
-      - id: node-<type>-<seq>
-        type: ecu | sensor | gateway | infotainment | telemetry-client | rsu   # rsu = V2X roadside unit (phase 3)
-        function: <text>
-        image:
-          url: <image url>
-          kind: vm | container | rtimage
-        backend: libvirt | qemu-microvm | container | renode   # default: libvirt for vm/rtimage;
-                                                               # renode = MCU-class, register-level I/O (phase 3)
-        realtime:                                     # optional determinism controls
-          pinned_cpus: [<host cpu ids>]
-          hugepages: <bool>
-        network:
-          - iface: <name>
-            vlan: <vlan id>
-            slice: <slice-id>            # binds the iface to a slice from network.slices
-            ip: <cidr>                   # optional node address (e.g. 10.101.0.2/24); zone
-                                         # backends configure it at `zone up`
-        slice_policy:                    # optional, URSP-style UE-side slice selection (phase 2):
-          - match: <traffic class | dscp | app id>   #   per-traffic-class routing onto concurrent
-            slice: <slice-id>                        #   PDU sessions when slices use mode: s-nssai
-        io:                              # optional, emulator-level device models (phase 3)
-          devices: [virtio-gpio, i2c, spi, can]      # QEMU devices; register-level via backend: renode
-        sensors:                         # optional, restbus simulation (phase 3)
-          - id: <sensor id>
-            dbc: <path to .dbc>          # CAN frame definitions
-            vss: <VSS signal path>       # Kuksa mapping
-        actuators:
-          - id: <actuator id>
-            dbc: <path to .dbc>
-            vss: <VSS signal path>
-            plant: first-order | fmu:<path>          # response model, run by the vxplant agent
-                                                     # (FMI/FMU co-simulation: phase 4)
-    services:
-      - <service-id>
+### 6.1–6.2 Experiment and vehicle manifests — **retired 2026-07-31**
 
-links:
-  - from: <vxid or vxid:nodeid>
-    to: <vxid or vxid:nodeid>
-    type: vlan_trunk | vxlan | wireguard | direct | can
-    properties:
-      - { vlan: <id> }                       # vlan_trunk
-      - { bus: <vcan name>, bitrate: <bps> } # can — SocketCAN/vcan; CAN-over-Ethernet via cannelloni
-      - { impairments: { rate_mbps: <int>, latency_ms: <float>,   # per-link PHY realism via netem
-                         jitter_ms: <float>, loss_pct: <float> } } # e.g. 100/1000BASE-T1 (phase 2)
+These two schemas are gone: the structs are deleted from `vxedge-core`, nothing parses them, and
+no tool emits them. §6.0 is the only schema.
 
-traffic_profiles:
-  <profile-id>:
-    source: <vxid:nodeid or 'internet' or 'carla'>   # 'carla' = real sensor/perception traffic
-    target: <vxid:nodeid or 'internet'>
-    pps: <int>                                       # synthetic profiles only
-    bandwidth_mbps: <int>
-    payload_bytes: <int>
-    carla:                                           # when source: carla
-      scenario: <scenario name>
-      sensors: [camera, lidar, ...]
-      bridge: ros2                                   # carla-ros-bridge into Autoware/Alpamayo
+They are named here rather than silently dropped because results archives, `STATUS.md` entries
+and the frozen `vxperiments/experiments/exp-*.yaml` files all reference them. A §6.1 experiment
+manifest was one document carrying `experiment`/`network`/`zones`/`compute`/`links`/
+`traffic_profiles`/`telemetry`/`results`, with software attached to a node as a flat `image:`;
+a §6.2 vehicle manifest carried the same composition blocks under a `vehicle:` header. §6.0
+splits both across `kind: experiment` / `kind: vehicle` / `kind: baseline` documents and
+separates zone (a place) from device (a unit) from function (behaviour) — the conflation that
+made `channels` unexecutable and a slice's definition unlocatable.
 
-telemetry:
-  prometheus:
-    scrape_targets:
-      - <host:port>
-    optional_scrape_targets:             # legitimately absent under some experiment
-      - <host:port>                      # arms (e.g. a service exporter that only runs
-                                          # during one arm) — a failed scrape here never
-                                          # counts against vxtelemetry's completeness metric
-  gpu:                                   # GPU metrics (DCGM/NVML): utilization, VRAM, throttling
-    enabled: <bool>
-  pcap:
-    interfaces:
-      - name: <iface>
-        duration_s: <int>
-
-results:
-  artifact_dir: path/to/results/exp-001
-  upload: false
-  upload_target: <registry or s3>
-```
-
-### 6.2 Vehicle manifest
-
-A vehicle manifest composes an entire SDV in software. It reuses the `zones`, `compute`,
-`network` (incl. `slices`) and `services` blocks above, plus:
-
-```yaml
-vehicle:
-  id: <string>
-  name: <string>                    # e.g. vx-vehicle-01 "OEM-representative zonal E/E"
-  description: <text>
-  signal_plane:                     # phase 3
-    kuksa:
-      image: { url: <url>, kind: container }
-      vss_catalog: <path>           # COVESA VSS signal catalog
-  comms:
-    ros2_rmw: rmw_zenoh | rmw_fastrtps   # ROS2 transport between zones and compute
-  world:                            # optional co-simulation source
-    simulator: carla | alpasim | none
-    image: { url: <url>, kind: container }
-```
-
-When adding or modifying a manifest, match these schemas exactly; the CLI has no other validation
-source to fall back on.
+The frozen manifests stay in `vxperiments/experiments/` as provenance for results recorded
+against them. To read one against the schema it was written to, use the `v0.1.0` tag, which is
+where phase-1 reproducibility is anchored.
 
 ### 6.3 Model governance — SysML v2 (track M, `vxmodels`)
 

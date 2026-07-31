@@ -37,12 +37,12 @@ All lifecycle verbs follow `up|down[|status]`; operations are idempotent.
 | Command | State | Notes |
 |---|---|---|
 | `vxedged serve --listen unix://… --runtime-dir …` | live | needs CAP_NET_ADMIN for real `up` (sudo or setcap) |
-| `vxedge up\|down --manifest <exp.yaml>` | live | provisions/removes the gateway; sets the daemon's active experiment |
+| `vxedge up\|down --manifest <workspace-dir>` | live | provisions/removes the gateway; sets the daemon's active experiment. `--manifest` names a §6.0 workspace directory (or one file of `---`-separated documents) |
 | `vxedge status` | live | observed gateway + per-slice state |
-| `vxedge zone up\|down --vxid <zone-id>` | live | runs the zone's nodes under their backends; needs an active experiment |
-| `vxedge zone list` | live | per-node observed state |
+| `vxedge zone up\|down --vxid <zone-id\|device-id>` | live | runs the nodes of a zone (a region), or a single device by its own id; needs an active experiment |
+| `vxedge zone list` | live | per-node observed state, with each device's host interfaces (`port=`, `peer=`) |
 | `vxedge zone add/rm/image push` | planned | image store / registry work |
-| `vxedge manifest validate [--json]` | live | local-only schema+semantic check (same check `up` runs); powers manifest CI |
+| `vxedge manifest validate --manifest <path> [--json]` | live | local-only. Takes a §6.0 workspace — a directory, or one file of `---`-separated documents — and runs every cross-file check *and* every model invariant, the same checks `up` runs. It is the only schema there is (§6.1/§6.2 were retired 2026-07-31) |
 | `vxedge doctor [--tier N] [--json]` | live | host preflight against TESTBED-SETUP tiers 0–3, actionable fix hints |
 | `vxedge ota up\|down --experiment …` | live | spawns/manages `vxota serve` from the manifest's `services.ota` block (used by exp-003) |
 | `vxedge telemetry up\|down\|collect` | planned | vxtelemetry runs standalone today (see §4); daemon wiring open |

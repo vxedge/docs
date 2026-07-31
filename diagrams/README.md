@@ -32,7 +32,7 @@ the SysML v2 model).
 
 ## Conventions
 
-**Connector semantics map to `links[].type`** (`ARCHITECTURE.md` §6.1). Ethernet backbone,
+**Connector semantics map to a vehicle's `links`** (`ARCHITECTURE.md` §6.0.1). Ethernet backbone,
 zone access link, CAN-FD, LIN, GMSL2 serdes, actuator drive, 5G Uu and internal fabric each have a
 fixed stroke colour/weight/dash — the legend panel on page 1 is the authority, and it is built from
 the same style strings the diagram uses.
