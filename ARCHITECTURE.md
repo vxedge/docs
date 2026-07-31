@@ -860,6 +860,25 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
 
 ## 13 — Reproducibility, CI/CD, artifact publication (registries)
 
+- **Workspace identity — one rule.** A run's provenance is a SHA-256 over **every file the
+  experiment is made of**: the relative path, a NUL, the bytes, a NUL, in sorted path order,
+  recursing into subdirectories and **excluding `results/`**.
+
+  Each part of that is load-bearing. The path is hashed with the bytes, so renaming a file is a
+  change. Order is sorted rather than as-read, so the answer does not depend on the filesystem.
+  `results/` is excluded because outputs are not inputs — including them would change a run's
+  identity the moment it produced one. The recursion is what distinguishes the identity from
+  the *document* set: a sandbox's `parts/`, `assets/`, `scripts/` and `tools/` are what ran
+  even though they are not workspace documents, and a local part that changes is a different
+  experiment.
+
+  It answers one question — *did every repetition of this campaign run from the same input?* —
+  and it is one rule because it is recorded in two places that must agree: the daemon's audit
+  records and the results archive's `workspace_sha256`. `vxedge-core` and `vxtelemetry`
+  implement it independently (the latter deliberately does not depend on the former) and pin
+  the **same test vector** over the same fixture. Two implementations of one rule stay honest
+  by agreeing on an answer, not by sharing code; if the rule is revised, both move together.
+
 - **Reproducibility:**
   - All manifests under `vxperiments` are versioned and authoritative.
   - Images and RTOS builds tagged with SHA256 digest.
@@ -875,7 +894,10 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
 
 - **Artifact publication:**
   - Results archived per `results_prefix` in experiment manifest.
-  - Metadata includes experiment ID, manifest checksum, CLI version.
+  - Metadata includes experiment ID, workspace identity (above), `.vxp` id/version, CLI
+    version, and — when the campaign opts in — the content-addressed digests of the container
+    images it ran against. The archive bundles the workspace itself under `workspace/`, so a
+    result is re-runnable from what is inside it rather than merely described by it.
   - Registry uploads optional; ensures compliance with reproducible research principles.
 
 ---
