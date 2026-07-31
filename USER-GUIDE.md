@@ -50,7 +50,7 @@ All lifecycle verbs follow `up|down[|status]`; operations are idempotent.
 | `vxedge vehicle up\|down\|status` | planned | phase 3 |
 | `vxedge experiment new <id> [--template minimal\|slicing]` | live | scaffolds a workspace folder; no daemon, no network, no GPU |
 | `vxedge experiment validate` | live | local-only; loads the workspace here and runs every cross-file check, reporting all problems at once |
-| `vxedge experiment up\|down\|status` | live | acts on the workspace in the **current directory** (the single `.vxp`); no name, no `--manifest`. `--chdir <dir>` to run from elsewhere. `up` provisions gateway → zones → services and **does not start traffic** — use `vxedge traffic up` |
+| `vxedge experiment up\|down\|status` | live | acts on the workspace in the **current directory** (the single `.vxp`); no name, no `--manifest`. `--chdir <dir>` to run from elsewhere. `up` provisions gateway → zones → services and **does not start traffic** — use `vxedge traffic up`. `--stage gateway\|zones\|services` (repeatable) restricts it: a campaign measuring on the host-side veth peers stages only the gateway, and one whose isolation contract is a single arm at a time stages the gateway then brings each arm up with `zone up --vxid` |
 | `vxedge traffic up\|down --manifest …` | live | drives the declared profiles; kept separate from `experiment up` because load is time-bounded and a campaign sweeps it over a fixed topology |
 
 Global flags: `--endpoint` (default local Unix socket), `--json`.
