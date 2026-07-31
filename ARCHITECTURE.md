@@ -340,11 +340,21 @@ reorganised without breaking anything.
 h1-slice-isolation/
   h1-slice-isolation.vxp   # package descriptor: id, version, entry, requires
   main.yaml                # kind: experiment  — the test
-  car1.yaml                # kind: vehicle     — the system under test
+  vehicle.yaml             # kind: vehicle     — the system under test
   road1.yaml               # kind: road        — the environment (omit if unused)
   parts.yaml               # kind: baseline    — which software
-  results/
+  scripts/run.sh           # the campaign: repetitions, warmup, measurement window
+  parts/                   # this experiment's own loadables
+  assets/                  # scenario files, traces, maps
+  tools/                   # analysis specific to this experiment
+  results/                 # archives, one per run
 ```
+
+**A workspace is a sandbox.** It owns everything the experiment needs, so it can be zipped,
+sent, unzipped and run — which is what makes an experiment shareable at all. A workspace whose
+parts live three directories up is not something a recipient can unpack. Only the top-level
+`*.yaml` are workspace *documents*; the subdirectories are content, and the loader ignores them
+(a `part.yaml` inside `parts/` describes a loadable, not an experiment).
 
 Kinds: `experiment` | `vehicle` | `road` | `baseline` | `component`. Loading is: read the
 `.vxp`, glob `*.yaml` (non-recursive, so a `results/` archive is never absorbed), index by
