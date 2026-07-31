@@ -490,6 +490,9 @@ not.
 (`duration_s`, `repetitions`, `warmup_s`). It carries no `zones`/`compute` inline: structure is
 the vehicle's, and software is the baseline's.
 
+Every one of those blocks is **typed and validated when the model is built** — a malformed
+`services:` entry is one error against the file the author wrote, not a surprise at `svc up`.
+
 The `.vxp` descriptor holds packaging rather than content, so a version bump never touches an
 experiment file:
 
