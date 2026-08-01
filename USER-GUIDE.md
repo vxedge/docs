@@ -43,6 +43,7 @@ All lifecycle verbs follow `up|down[|status]`; operations are idempotent.
 | `vxedge zone list` | live | per-node observed state, with each device's host interfaces (`port=`, `peer=`) |
 | `vxedge zone add/rm/image push` | planned | image store / registry work |
 | `vxedge manifest validate --manifest <path> [--json]` | live | local-only. Takes a §6.0 workspace — a directory, or one file of `---`-separated documents — and runs every cross-file check *and* every model invariant, the same checks `up` runs. It is the only schema there is (§6.1/§6.2 were retired 2026-07-31) |
+| `vxedge events [--kind K]... [--json]` | live | streams what the daemon is doing: `gateway.up`, `gateway.slice-applied`, `zone.up`/`down`, `service.up`/`down`, `traffic.started`/`stopped`, plus `job.state`. Domain facts about resources, not job progress — and lossy by design, so it is a live view rather than a record. For "what happened, in order, without loss", read the audit log |
 | `vxedge doctor [--tier N] [--json]` | live | host preflight against TESTBED-SETUP tiers 0–3, actionable fix hints |
 | `vxedge ota up\|down --experiment …` | live | spawns/manages `vxota serve` from the manifest's `services.ota` block (used by exp-003) |
 | `vxedge telemetry up\|down\|collect` | planned | vxtelemetry runs standalone today (see §4); daemon wiring open |
