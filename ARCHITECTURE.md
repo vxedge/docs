@@ -414,6 +414,11 @@ links:                               # transport: how bytes move (the harness)
   - id: arm-cont                     # object form, when an attachment needs a fixed address
     endpoints: [{ node: zonefl, port: eth0, ip: 10.101.0.11/24 }]
     slice: adas
+  - id: seg-t1                       # a slice-bound link may emulate its PHY
+    endpoints: [node-sensor-01:eth0]
+    slice: adas
+    impairments: { rate_mbps: 100, delay_us: 250, jitter_us: 40, loss_pct: 0.01 }
+    harness: { medium: 100BASE-T1, length_m: 2.4, weight_g: 85 }
 
 channels:                            # interaction: what is exchanged, between FUNCTIONS
   - id: adas.object-list
@@ -453,6 +458,16 @@ ECU answers here"), which is what keeps one vehicle usable by many baselines.
 endpoints to be genuinely **reachable** over those links. This is what makes latency and loss
 attributable **per topic per slice** rather than only per link — the measurement §12 exists to
 produce. Without the reachability check, `carried_by` would be an unchecked assertion.
+
+A slice-bound link may add `impairments` (tc netem: `rate_mbps`/`delay_us`/`jitter_us`/
+`loss_pct`) to emulate the PHY it stands for — the mechanism behind §7's "Harness modeling."
+Every value is per traversal, one direction: a round trip pays the declared delay twice. Exactly
+one of the link's access ports renders it, in both directions (the reverse direction rides an
+IFB, since a qdisc only shapes egress); which port is not observable in a measurement, only that
+the segment's declared characteristics apply once per crossing. Any link, impaired or not, may
+separately carry `harness` (`medium`, `length_m`, `weight_g`) — the declarative record a
+zonal-versus-domain harness-reduction study reports on, distinct from `impairments`' emulated
+half: nothing about a length in meters is a `tc` argument.
 
 Behaviour splits in two: *interaction* (`channels`) belongs to the vehicle; *stimulus*
 (`traffic_profiles`, scenario) belongs to the experiment and the road. The vehicle is the same
@@ -640,7 +655,12 @@ templating):
   prototype vehicle-shaped rather than datacenter-shaped.
 - **Harness modeling:** the manifest `links` section *is* the wiring harness. Per-link
   `impairments` (tc netem: rate cap, latency/jitter, loss) emulate PHY characteristics such as
-  100/1000BASE-T1; CAN/LIN drops ride `type: can` links (LIN modeled as a constrained bus).
+  100/1000BASE-T1 — **delivered**: rendered onto the elected access port's egress qdisc and,
+  for the reverse direction, an IFB the port's ingress traffic is redirected onto (a qdisc only
+  shapes egress, so the return direction needs a device of its own to shape). `harness`
+  (`medium`/`length_m`/`weight_g`) carries the same segment's physical properties declaratively,
+  for a harness-reduction report, independent of whether it is impaired. CAN/LIN drops ride
+  `type: can` links (LIN modeled as a constrained bus, phase 3).
   Because harness topology is manifest data, it becomes an experimental variable — star vs
   daisy-chained zones, sensor-to-ECU path placement — iterable in minutes, which no physical
   testbed offers. Power distribution is modeled only as VSS signals (vxplant power tree,
