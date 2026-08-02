@@ -11,26 +11,50 @@ listed per-verb below; everything else fails loudly rather than pretending.
 
 ## 1. Concepts
 
-- **Manifests are the only input.** An *experiment manifest* (YAML) declares slices, zones,
-  compute, traffic, telemetry and results; a *vehicle manifest* (phase 3) composes a full
-  software vehicle. The CLI/daemon keep no other configuration; every result archive records
-  the manifest's SHA-256.
+- **A workspace is the unit of work — a folder, not a single file.** An experiment is a
+  directory holding a `.vxp` package descriptor (id, version, entry, `requires`) plus
+  top-level YAML documents, each declaring its own `kind` — `experiment` (the test),
+  `vehicle` (the system under test), `road` (the environment, optional), `baseline` (which
+  software), `component` — and `id`. Every cross-reference is by id, never by path, so files
+  can be renamed or reorganized without breaking anything; a whole workspace can also be one
+  file of `---`-separated documents. The CLI/daemon keep no other configuration; every result
+  archive records the workspace's SHA-256.
+- **A workspace is a sandbox.** It owns its own `scripts/run.sh` (the campaign: repetitions,
+  warmup, measurement window), `parts/` (its loadables), `assets/` (scenario files), `tools/`
+  (its own analysis), and `results/` (one archive per run) — a folder that can be zipped,
+  sent, unzipped and run standalone. `vxedge experiment new <id> [--template minimal|slicing]`
+  scaffolds one; `vxedge experiment validate` runs every cross-file check and every model
+  invariant before anything is provisioned. Full schema: ARCHITECTURE.md §6.0.
+- **Structure and software are separate files.** One `vehicle.yaml` carries many `baseline`
+  files, so an A/B arm is two baselines over one unchanged vehicle, not two vehicle files that
+  drift apart. The vehicle *names* a slice (`links[].slice: adas`); the experiment *defines*
+  it (`network.slices[].mode: vlan|s-nssai`) — the only reference that crosses the
+  structure/test boundary, and `experiment validate` checks it.
 - **Slices** are the network partitions under test: `mode: vlan` (per-slice VLAN + HTB
   queue-tree reservation on the virtual gateway — the H1 mechanism, verified) or
-  `mode: s-nssai` (real 5G slices via Open5GS/UERANSIM, phase 2).
-- **vxgateway** is the software edge gateway the daemon provisions from the manifest:
-  a VLAN-filtering Linux bridge, a shaped trunk uplink (the shared bottleneck where slice
-  contention is measured), and one access port per zone-node interface.
-- **Zones & nodes** are virtual ECUs. Each node runs under a packaging **backend** —
-  `container` (network namespace), `qemu-microvm` (raw QEMU, direct kernel boot) or
-  `libvirt` (full VM) — with identical network attachment; the packaging choice is itself
-  an experimental variable (H3).
+  `mode: s-nssai` (real 5G slices via Open5GS/UERANSIM — the H2 mechanism, verified).
+- **vxgateway** is the software edge gateway the daemon provisions from the vehicle/experiment:
+  a VLAN-filtering bridge (`network.data_plane: kernel-bridge`, default) or an OVS bridge
+  (`ovs`) — same plan, pluggable rendering backend — a shaped trunk uplink (the shared
+  bottleneck where slice contention is measured), and one access port per zone-node interface.
+  A link's `impairments` block (rate/delay/jitter/loss, via netem) and declarative `harness`
+  block (medium/length/weight, reporting-only) model the physical wiring between two nodes.
+- **Zones, nodes, and roles.** Zones are the six regions (`front-left`, `front-right`,
+  `rear-left`, `rear-right`, `central-hpc`, `gateway`); a node is a device with a `role`
+  (`zone-controller`, `hpc`, `gateway`, `ecu`, `sensor`, `actuator`, `switch`) sitting in one.
+  Each node runs under a packaging **backend** — `container` (network namespace),
+  `qemu-microvm` (raw QEMU, direct kernel boot) or `libvirt` (full VM) — with identical
+  network attachment; the packaging choice is itself an experimental variable (H3).
+  `ComputeService` is `role: hpc` filtered over that same backend split, not a separate
+  provisioning path.
 - **Jobs**: every mutating command returns a job with live streamed progress; a job that
   couldn't finish reports FAILED with the real error, never a hollow success.
 - **Results archives** (`results/<exp>/<run>.zip`) are the reproducibility unit: raw metric
-  scrapes, structured samples, agent summaries, environment metadata, the manifest itself.
+  scrapes, structured samples, agent summaries, environment metadata, the workspace itself.
+  `v0.1.0` (2026-07-13) tags the checkpoint where this became true end to end — H1/H3/H4 all
+  reproducible from a tagged manifest, not just runnable once.
 
-## 2. CLI reference (state as of phase 1)
+## 2. CLI reference
 
 All lifecycle verbs follow `up|down[|status]`; operations are idempotent.
 
@@ -47,7 +71,7 @@ All lifecycle verbs follow `up|down[|status]`; operations are idempotent.
 | `vxedge doctor [--tier N] [--json]` | live | host preflight against TESTBED-SETUP tiers 0–3, actionable fix hints |
 | `vxedge ota up\|down --experiment …` | live | spawns/manages `vxota serve` from the manifest's `services.ota` block (used by exp-003) |
 | `vxedge telemetry up\|down\|collect` | planned | vxtelemetry runs standalone today (see §4); daemon wiring open |
-| `vxedge compute …` | planned | phase 2 (Autoware/CARLA workloads) |
+| `vxedge compute up\|down --vxid <id>` / `list` | live | a second RPC surface over the same node backends as `zone`, filtered to `role: hpc` devices — not a separate provisioning path. `add`/`rm`/`image push` planned |
 | `vxedge vehicle up\|down\|status` | planned | phase 3 |
 | `vxedge experiment new <id> [--template minimal\|slicing]` | live | scaffolds a workspace folder; no daemon, no network, no GPU |
 | `vxedge experiment validate` | live | local-only; loads the workspace here and runs every cross-file check, reporting all problems at once |
