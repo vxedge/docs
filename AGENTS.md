@@ -11,8 +11,11 @@ spec** — every other repo's AGENTS.md and TASKS.md derive from it and must not
 - `USER-GUIDE.md` — public-facing usage doc (concepts, per-verb CLI state, workflows,
   results, production-vocabulary mapping). Update its CLI-state table whenever a verb goes
   live or changes shape — OEM engineers read this first.
-- `STATUS.md` — living progress report (phases %, H1 critical path, per-repo state,
-  environment gaps). **Update it in the same change set as any push that moves progress.**
+- `STATUS.md` — reference document (phases %, H1 critical path, per-repo state, environment
+  gaps, versioning/public-visibility punch list, risks). **Update at phase boundaries**, not
+  per push — the day-by-day progress narrative lives in `TASKS.md`'s "State snapshot" section
+  instead (consolidated 2026-08-02; STATUS.md's own pre-consolidation changelog is preserved
+  at the bottom of the file as a frozen historical archive).
 - `TESTBED-SETUP.md` — single-machine host requirements, tiered by phase (OS, resources,
   software versions). Anything the testbed needs that it doesn't list is a bug in it.
 - `ARCHITECTURE.md` — the master spec (16 sections). Key anchors: §2 hypotheses H1–H4,
