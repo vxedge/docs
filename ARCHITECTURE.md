@@ -520,9 +520,9 @@ not.
 
 #### 6.0.3 `kind: experiment` and the `.vxp` descriptor
 
-`kind: experiment` carries `network` (slices, tunnels), `traffic_profiles`, `telemetry`,
-`services` and `results`, plus `vehicles: [<id>…]`, `baseline: <id>`, `world: <id>`, and a
-`method` block (`duration_s`, `repetitions`, `warmup_s`). It carries no `zones`/`compute`
+`kind: experiment` carries `network` (slices, tunnels, nos_check), `traffic_profiles`,
+`telemetry`, `services` and `results`, plus `vehicles: [<id>…]`, `baseline: <id>`, `world: <id>`,
+and a `method` block (`duration_s`, `repetitions`, `warmup_s`). It carries no `zones`/`compute`
 inline: structure is the vehicle's, and software is the baseline's.
 
 Every one of those blocks is **typed and validated when the model is built** — a malformed
@@ -555,6 +555,36 @@ resulting public key back, which is what an operator hands to the peer out of ba
 an already-existing tunnel reconfigures its peer/listen-port declaratively without touching
 that identity, so a routine reconcile pass can never silently invalidate what the peer already
 trusts.
+
+`network.nos_check` (`docs/TASKS.md` #16/#31, schema settled 2026-08-04) opts an experiment
+into checking its `network.slices` VLAN intent against a real production network OS, alongside
+— never instead of — the actual measured path (`network.data_plane`). Absent by default; most
+experiments don't declare it:
+
+```yaml
+network:
+  nos_check:
+    kind: sonic-vs                     # the only kind today
+    trunk_port: Ethernet0              # validated against the pinned image's actual port list
+    # part_ref / digest: optional, default to the pinned build vxparts/parts/gw/nos/os/sonic-vs
+```
+
+Deliberately not named "twin": the whole testbed already is one (an executable virtual
+prototype of a vehicle), so reusing that word for one internal field would describe nothing.
+What this does is a **check** — boot a real instance of the named NOS, hand it the same VLAN
+declaration `network.slices` already expresses, and confirm it accepts and reports back exactly
+that. It never carries measured traffic (§7: SONiC-VS is functional but not
+timing-representative), and it is not part of `experiment up`'s provisioning sequence — a
+missing or misconfigured `nos_check` block never blocks or changes what an experiment actually
+measures.
+
+`kind` names which NOS is being checked against — `sonic-vs` today, the shape a second kind
+would extend rather than a reason to design one now (`network.data_plane`'s own
+`kernel-bridge | ovs` precedent). `trunk_port` is not a name vxedge invents: it is one of the
+pinned image's own, fixed port names (SONiC-VS's default reference platform exposes exactly 32,
+`Ethernet0`/`Ethernet4`/.../`Ethernet124` — confirmed by booting it, not assumed), validated at
+`vxedge experiment validate` time against that concrete list rather than a free-form string or a
+loose pattern.
 
 The `.vxp` descriptor holds packaging rather than content, so a version bump never touches an
 experiment file:
@@ -720,7 +750,8 @@ templating):
   slice configs express identically on a production NOS. The SONiC-VS data plane is functional
   but **not timing-representative**, so all latency/jitter measurements run against the
   Linux-native vxgateway path. (NVIDIA Cumulus VX is deprecated as a standalone image and is not
-  used; NVIDIA Air remains only an optional cloud sandbox.)
+  used; NVIDIA Air remains only an optional cloud sandbox.) Manifest field: `network.nos_check`
+  (§6.0.3).
 - **Determinism controls:** gateway forwarding cores pinned and isolated (`isolcpus`), PREEMPT_RT
   host kernel, hugepages. An optional **FD.io VPP (DPDK)** data-plane variant exists for
   URLLC-focused runs needing minimal per-packet latency variance.
