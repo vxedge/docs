@@ -509,13 +509,41 @@ not.
 
 #### 6.0.3 `kind: experiment` and the `.vxp` descriptor
 
-`kind: experiment` carries `network` (slices), `traffic_profiles`, `telemetry`, `services` and
-`results`, plus `vehicles: [<id>…]`, `baseline: <id>`, `world: <id>`, and a `method` block
-(`duration_s`, `repetitions`, `warmup_s`). It carries no `zones`/`compute` inline: structure is
-the vehicle's, and software is the baseline's.
+`kind: experiment` carries `network` (slices, tunnels), `traffic_profiles`, `telemetry`,
+`services` and `results`, plus `vehicles: [<id>…]`, `baseline: <id>`, `world: <id>`, and a
+`method` block (`duration_s`, `repetitions`, `warmup_s`). It carries no `zones`/`compute`
+inline: structure is the vehicle's, and software is the baseline's.
 
 Every one of those blocks is **typed and validated when the model is built** — a malformed
 `services:` entry is one error against the file the author wrote, not a surprise at `svc up`.
+
+`network.tunnels` (`docs/TASKS.md` #16, "WireGuard link setup") declares a point-to-point
+encrypted overlay the gateway itself terminates — §7's "WireGuard (in-kernel) for secure
+telemetry and OTA transport," the sibling `network.slices` doesn't cover: a slice partitions the
+*local* bridge fabric zone nodes attach to, a tunnel reaches a *remote* peer (another site's
+gateway, in the multi-host case `network.tunnels`' future `kind: vxlan` sibling shares this same
+block for):
+
+```yaml
+network:
+  tunnels:
+    - id: ota-uplink
+      kind: wireguard                  # the only kind today
+      listen_port: 51820
+      address: 10.200.0.1/24           # this side's address on the tunnel's own overlay subnet
+      peer:
+        public_key: <base64>           # the peer's key, known out of band — never this side's own
+        endpoint: 198.51.100.7:51820   # omit if this side only listens (WireGuard roaming)
+        allowed_ips: [10.200.0.0/24]
+```
+
+No local key material here, deliberately: a manifest is a versioned document, and a private key
+does not belong in one. The gateway mints its own identity on first `up` — piped straight from
+`wg genkey` into `wg set`'s stdin, never written to disk — and `vxedge status` reports the
+resulting public key back, which is what an operator hands to the peer out of band. Re-applying
+an already-existing tunnel reconfigures its peer/listen-port declaratively without touching
+that identity, so a routine reconcile pass can never silently invalidate what the peer already
+trusts.
 
 The `.vxp` descriptor holds packaging rather than content, so a version bump never touches an
 experiment file:
@@ -666,7 +694,13 @@ templating):
   optional); electrical/thermal fidelity is explicitly out of scope. gPTP/TSN (above) is the
   harness's timing layer.
 - **Tunnels:** VXLAN for inter-host communication; WireGuard (in-kernel) for secure telemetry and
-  OTA transport.
+  OTA transport — **delivered** (`docs/TASKS.md` #16): `network.tunnels` (§6.0.3), one gateway-
+  terminated point-to-point link per entry, backend-independent (a WireGuard interface is a
+  routed L3 endpoint, never enslaved to the bridge/OVS switch — the same mechanism regardless of
+  `network.data_plane`). No local key material in the manifest; the gateway mints its own
+  identity on first `up` and reports the public key back via `status`. Kernel-level correctness
+  (a real handshake between two simulated hosts, not just interface presence) verified by
+  `gateway_netns.rs`'s `tunnel_completes_a_real_handshake_between_two_simulated_hosts`.
 - **Routing:** static for lab experiments; FRR provides BGP for cloud interconnect.
 - **Firewalling:** nftables per VLAN/slice.
 - **Production NOS twin:** the same slice/VLAN/VXLAN/BGP intent is also rendered onto a
@@ -728,10 +762,12 @@ deliberately separate:
   the service binary (`vxota serve`) as a host-local child process co-located with
   `vxedged`, tracked by a pidfile the same way the microVM zone backend tracks QEMU — not
   yet scheduled onto a `vxcompute` node, since that backend doesn't exist. `config.listen`
-  (new manifest field, alongside `config.artifacts`) is the address the process binds;
-  because there is no WireGuard `ota` slice yet either (§7 trailing item), it must be an
-  address zone nodes can already reach — typically the gateway's own bridge address on the
-  slice under test. Both gaps close together when `vxcompute` and WireGuard land.
+  (new manifest field, alongside `config.artifacts`) is the address the process binds; today
+  that is still the gateway's own bridge address on the slice under test, an address zone
+  nodes can already reach without a tunnel. `network.tunnels` (§7) now exists as a mechanism
+  — a manifest can declare a WireGuard link the gateway terminates — but `vxota` is not yet
+  wired to bind `config.listen` onto one; that integration, and scheduling onto a real
+  `vxcompute` node, remain open (`vxedge/TASKS.md` §4).
 
 ---
 
