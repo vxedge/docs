@@ -376,6 +376,17 @@ block changed over a provably unchanged vehicle*, enforced by the schema rather 
 in a README. This is the only reference that crosses the structure/test boundary, and
 `vxedge experiment validate` checks it.
 
+`network:` (and everything under it — `slices`, `tunnels`, `data_plane`, `nos_check`) lives in
+the experiment document only, never inside a vehicle document, for a second reason beyond H2:
+there is exactly **one** vxgateway per experiment run (one bridge, one HTB tree — a deliberate
+fidelity choice, one vehicle has one gateway ECU, not an oversight). When an experiment
+references multiple vehicles (`vehicles: [car1, car2]`), they share that one gateway, so they
+share one `network:` block too — a per-vehicle `network:` would imply each vehicle gets its own
+separate gateway, which the system doesn't build. Vehicles that need distinct, isolated
+segments still get them: the experiment declares every slice either vehicle needs
+(`car1-adas`/`car2-adas` on separate VLANs, say), and each vehicle's own `links` references only
+the slice IDs that belong to it — `car2.yaml` never has to mention `car1-adas` at all.
+
 **Local-first.** Every ref has a local form (`./images/foo`) and a published form
 (`ghcr.io/…` + digest), same key, resolved by shape. `digest` is optional for local refs
 (content-hashed into the results archive) and **required** for published ones — a moving tag
