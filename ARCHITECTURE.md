@@ -301,11 +301,10 @@ vxedge compute rm --vxid <vxid>
 vxedge compute image push --vxid <vxid> --from <path> --registry <url?>
 
 # Services (OTA, telemetry)
-vxedge ota up --experiment <exp-manifest.yaml>
-vxedge ota down --experiment <exp-manifest.yaml>
-vxedge telemetry up --experiment <exp-manifest.yaml>
-vxedge telemetry down --experiment <exp-manifest.yaml>
-vxedge telemetry collect --manifest vxperiments/exp-001.yaml --out results/exp-001.zip
+vxedge ota up [--experiment <path>]      # cwd-resolved by default, like `experiment up`;
+vxedge ota down [--experiment <path>]    # --experiment overrides with an explicit workspace
+vxedge telemetry up|down|collect         # not yet wired to the daemon (planned);
+                                          # vxtelemetry runs standalone via its own binary today
 
 # Vehicle (software-bootstrapped SDV: gateway + zones + compute + signal plane + services)
 vxedge vehicle up --manifest vxperiments/vehicles/<vehicle>.yaml
@@ -692,7 +691,9 @@ templating):
 - All services defined under top-level `services` in the manifest.
 - `ota` and `telemetry` are the core supported types.
 - Services can be referenced in `zones` or `compute` nodes.
-- CLI deploys services on-demand via `vxedge service <name> up|down --experiment <manifest>`.
+- CLI deploys services via `vxedge ota up|down [--experiment <path>]` (cwd-resolved by
+  default), or as part of `experiment up --stage services` — the path an actual campaign
+  takes, since it sequences services after the gateway/zones they depend on.
 - Extensible: future `vxsvc-*` repos can be added and referenced in manifests. The phase-3
   **Kuksa databroker** (vehicle signal plane, COVESA VSS) is deployed via the vehicle manifest's
   `signal_plane` block rather than as an experiment service.
@@ -1130,8 +1131,8 @@ tc class add dev vxup0 parent 1:1 classid 1:50 htb rate 1mbit   ceil 500mbit pri
 2. `vxedge zone up --vxid vxzone-front-left`
 3. `vxedge zone up --vxid vxzone-front-right`
 4. `vxedge compute up --vxid vxcompute-central`
-5. `vxedge service ota up --experiment vxperiments/exp-001.yaml`
-6. `vxedge service telemetry up --experiment vxperiments/exp-001.yaml`
+5. `vxedge ota up --experiment vxperiments/exp-001.yaml`
+6. `vxedge telemetry up --experiment vxperiments/exp-001.yaml` (not yet wired to the daemon)
 7. `vxedge experiment up --manifest vxperiments/exp-001.yaml`
 8. Collect results: `vxedge telemetry collect --manifest vxperiments/exp-001.yaml --out results/exp-001.zip`
 9. Tear down: `vxedge experiment down --manifest vxperiments/exp-001.yaml` then services, compute, zones, gateway
