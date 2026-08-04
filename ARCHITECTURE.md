@@ -1126,6 +1126,15 @@ on a Linux kernel).
    XIL-style bench semantics; optional VSS power-tree modeling; hypervisor fidelity ladder
    rungs 1–2 — Xen dom0less host profile and QNX Hypervisor (freedom-from-interference
    measured per rung via exp-004).
+5. **Phase 5 — remote/multi-user deployment (backlog, no gate yet):** mTLS + OIDC auth path for
+   vxAPI's TCP transport, with viewer/operator/admin roles (§5.3's own target design — today
+   only the local Unix-socket transport, peer-credential auth, is live). Deliberately not
+   scheduled into an earlier phase: it secures *remote* access, and every frontend that would
+   use it remotely (web dashboard, Qt/QML desktop, Electron) is itself deferred to phase 3/4
+   (`docs/TASKS.md`'s 2026-08-01 re-scope — "the CLI is the only frontend any experiment uses,"
+   and the CLI only ever talks over the local socket). Building the auth layer before a real
+   remote consumer exists would be infrastructure with nothing to test it against; revisit once
+   a phase-3/4 frontend actually needs it.
 
 ### Cross-cutting track M — SysML v2 model governance (twin-readiness)
 
