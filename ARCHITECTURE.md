@@ -1126,15 +1126,21 @@ on a Linux kernel).
    XIL-style bench semantics; optional VSS power-tree modeling; hypervisor fidelity ladder
    rungs 1–2 — Xen dom0less host profile and QNX Hypervisor (freedom-from-interference
    measured per rung via exp-004).
-5. **Phase 5 — remote/multi-user deployment (backlog, no gate yet):** mTLS + OIDC auth path for
-   vxAPI's TCP transport, with viewer/operator/admin roles (§5.3's own target design — today
-   only the local Unix-socket transport, peer-credential auth, is live). Deliberately not
+5. **Phase 5 — remote/multi-user/cloud deployment (backlog, no gate yet):** mTLS + OIDC auth
+   path for vxAPI's TCP transport, with viewer/operator/admin roles (§5.3's own target design —
+   today only the local Unix-socket transport, peer-credential auth, is live). Deliberately not
    scheduled into an earlier phase: it secures *remote* access, and every frontend that would
    use it remotely (web dashboard, Qt/QML desktop, Electron) is itself deferred to phase 3/4
    (`docs/TASKS.md`'s 2026-08-01 re-scope — "the CLI is the only frontend any experiment uses,"
    and the CLI only ever talks over the local socket). Building the auth layer before a real
    remote consumer exists would be infrastructure with nothing to test it against; revisit once
-   a phase-3/4 frontend actually needs it.
+   a phase-3/4 frontend actually needs it. **FRR (BGP for cloud interconnect)** joins it for the
+   same reason, moved here 2026-08-04: unlike VXLAN (which extends an already-documented
+   `network.tunnels` schema hook), FRR has no manifest schema field anywhere in this document —
+   it would need one designed from scratch — and its only stated purpose, cloud interconnect,
+   has no current or near-term consumer; every experiment today uses static routing, which §7
+   already states is sufficient for lab experiments. Revisit alongside mTLS+OIDC once a real
+   multi-host/cloud deployment scenario exists to design and test the schema against.
 
 ### Cross-cutting track M — SysML v2 model governance (twin-readiness)
 
