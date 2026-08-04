@@ -26,9 +26,10 @@ know exactly what they're getting.
    repo is zero-risk (just a git ref, no visibility change), so it happens the moment the
    milestone is real. Going public is a separate, harder-to-reverse step gated on its own
    short punch list — see `docs/STATUS.md` "Public-visibility punch list" — not on
-   whether a tag exists. (`vxzones` is the standing exception: already public since
-   before the gate, so its tag is publicly visible immediately — nothing sensitive in it,
-   just the guest-bundle builder.)
+   whether a tag exists. (An earlier version of this note claimed `vxzones` was already
+   public and thus a standing exception — that premise was itself wrong, corrected
+   2026-07-29 via the GitHub API: every repo, `vxzones` included, was private. Moot now
+   regardless — `vxzones` is superseded by `vxparts`, see that repo's own visibility.)
 5. **Compatibility across repos.** The only thing that couples repos is **vxAPI**
    (`vxedge/proto/vxedge/v1/*.proto`) — a breaking proto change is a MINOR bump (pre-1.0)
    in `vxedge` and must be called out in every dependent repo's next `CHANGELOG.md` entry

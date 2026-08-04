@@ -35,7 +35,7 @@ It provides:
 See [GETTING-STARTED.md](GETTING-STARTED.md). Key repos:
 
 - Control plane, vxAPI & CLI: [vxedge/vxedge](https://github.com/vxedge/vxedge)
-- Zone definitions & artifacts: [vxedge/vxzones](https://github.com/vxedge/vxzones)
+- Loadable registry (zone/compute images): [vxedge/vxparts](https://github.com/vxedge/vxparts)
 - Experiment manifests: [vxedge/vxperiments](https://github.com/vxedge/vxperiments)
 
 ## License

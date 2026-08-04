@@ -29,7 +29,7 @@ folder is *not* a git repo):
 
 ```bash
 mkdir vxedge && cd vxedge
-for r in docs vxedge vxzones vxcompute vxota vxagents vxtelemetry vxperiments vxmodels; do
+for r in docs vxedge vxparts vxota vxagents vxtelemetry vxperiments vxmodels; do
   gh repo clone vxedge/$r
 done
 ```
@@ -38,7 +38,7 @@ done
 |---|---|
 | `docs` | Master spec (`ARCHITECTURE.md`), program task board, publication plan |
 | `vxedge` | **Start here** — control plane (`vxedged`), vxAPI (gRPC/Protobuf), CLI |
-| `vxzones` / `vxcompute` | Zone (virtual-ECU) and central-compute manifests + images |
+| `vxparts` | Unified loadable registry — zone (virtual-ECU) and central-compute images, published via OCI/ORAS (supersedes the former `vxzones`/`vxcompute` split) |
 | `vxota` / `vxtelemetry` | OTA and telemetry service code |
 | `vxagents` | Rust measurement agents (latency probes, traffic gen, pcap) |
 | `vxperiments` | Experiment + vehicle manifests, notebooks, results |
@@ -94,7 +94,7 @@ backends (`qemu-microvm`, `libvirt`) boot a guest *bundle* built once per host:
 
 ```bash
 sudo chmod 644 /boot/vmlinuz-$(uname -r)        # Ubuntu ships the kernel root-only
-cd vxzones && ./scripts/build-guest-bundle.sh   # -> images/linux-probe/bundle + digests
+cd vxparts && ./parts/zone/linux/stack/probe-bundle/build.sh   # -> ./bundle + digests
 ```
 
 See USER-GUIDE.md §3c for wiring a bundle into a manifest.
@@ -146,10 +146,9 @@ fronts, in order:
 
 1. `vxedge` — Open5GS/UERANSIM driver (`mode: s-nssai`) + URSP-style `slice_policy` → the
    H2 numbers (phase-2 gate)
-2. `vxcompute` — Autoware/ROS2 + CARLA + carla-ros-bridge, closed loop (first code in
-   that repo)
-3. `vxzones` — QNX SDP 8 / AAOS images + real-RTOS guest bundles (Zephyr/FreeRTOS)
-   beyond the linux-probe bundle
+2. `vxparts` (`parts/hpc/`) — Autoware/ROS2 + CARLA + carla-ros-bridge, closed loop
+3. `vxparts` (`parts/zone/`) — QNX SDP 8 / AAOS images + real-RTOS guest bundles
+   (Zephyr/FreeRTOS) beyond the linux-probe bundle
 4. Track M — M0/M1: `vxmodels` repo + the retroactive H1–H4 SysML v2 traceability model
    over the frozen archives (`docs/TASKS.md` track M; zero new experiments)
 5. Release/artifact pipeline — GHCR images with digests, cargo-dist binaries

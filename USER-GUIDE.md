@@ -119,7 +119,7 @@ VM backends boot a *bundle* (kernel + initramfs with an autostarting payload), b
 
 ```bash
 sudo chmod 644 /boot/vmlinuz-$(uname -r)      # Ubuntu ships the kernel root-only
-cd vxzones && ./scripts/build-guest-bundle.sh # -> images/linux-probe/bundle (digests in meta.json)
+cd vxparts && ./parts/zone/linux/stack/probe-bundle/build.sh # -> ./bundle (digests in meta.json)
 ```
 
 Point a node's `image.url` at the bundle dir with `kind: rtimage` and

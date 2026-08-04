@@ -156,7 +156,7 @@ The `vxgateway` data plane, relevant to `network-provisioning-patterns`.
 - **NAND / UBI** — Flash storage technology; came up as a reason Rugix (not RAUC) fits
   vxedge's QEMU/libvirt block-storage bundles (no real NAND to manage).
 
-## Compute, AI & GPU (vxcompute)
+## Compute, AI & GPU (vxparts: `hpc`-class parts)
 
 - **GPU** — Graphics Processing Unit.
 - **CUDA** — NVIDIA's parallel-compute platform/API.
