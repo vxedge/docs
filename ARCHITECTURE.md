@@ -528,33 +528,47 @@ inline: structure is the vehicle's, and software is the baseline's.
 Every one of those blocks is **typed and validated when the model is built** — a malformed
 `services:` entry is one error against the file the author wrote, not a surprise at `svc up`.
 
-`network.tunnels` (`docs/TASKS.md` #16, "WireGuard link setup") declares a point-to-point
-encrypted overlay the gateway itself terminates — §7's "WireGuard (in-kernel) for secure
-telemetry and OTA transport," the sibling `network.slices` doesn't cover: a slice partitions the
-*local* bridge fabric zone nodes attach to, a tunnel reaches a *remote* peer (another site's
-gateway, in the multi-host case `network.tunnels`' future `kind: vxlan` sibling shares this same
-block for):
+`network.tunnels` (`docs/TASKS.md` #16) declares a point-to-point link the gateway itself
+terminates, reaching a *remote* peer (another site's gateway) — distinct from `network.slices`,
+which partitions the *local* bridge fabric zone nodes attach to. Two kinds today, each with only
+the fields it needs:
 
 ```yaml
 network:
   tunnels:
     - id: ota-uplink
-      kind: wireguard                  # the only kind today
+      kind: wireguard                  # an encrypted, routed L3 endpoint
       listen_port: 51820
       address: 10.200.0.1/24           # this side's address on the tunnel's own overlay subnet
       peer:
         public_key: <base64>           # the peer's key, known out of band — never this side's own
         endpoint: 198.51.100.7:51820   # omit if this side only listens (WireGuard roaming)
         allowed_ips: [10.200.0.0/24]
+    - id: site-b-adas
+      kind: vxlan                      # extends a local slice's L2 domain across hosts
+      vni: 100                         # 24-bit VXLAN network identifier
+      remote: 198.51.100.7             # the remote gateway's reachable address (bare IP)
+      dstport: 4789                    # optional; defaults to the IANA-assigned VXLAN port
+      slices: [adas]                   # which of this experiment's own slices this link carries
 ```
 
-No local key material here, deliberately: a manifest is a versioned document, and a private key
-does not belong in one. The gateway mints its own identity on first `up` — piped straight from
-`wg genkey` into `wg set`'s stdin, never written to disk — and `vxedge status` reports the
-resulting public key back, which is what an operator hands to the peer out of band. Re-applying
-an already-existing tunnel reconfigures its peer/listen-port declaratively without touching
-that identity, so a routine reconcile pass can never silently invalidate what the peer already
-trusts.
+`wireguard` carries no local key material, deliberately: a manifest is a versioned document, and
+a private key does not belong in one. The gateway mints its own identity on first `up` — piped
+straight from `wg genkey` into `wg set`'s stdin, never written to disk — and `vxedge status`
+reports the resulting public key back, which is what an operator hands to the peer out of band.
+Re-applying an already-existing tunnel reconfigures its peer/listen-port declaratively without
+touching that identity, so a routine reconcile pass can never silently invalidate what the peer
+already trusts.
+
+`vxlan` has no key material at all — an unencrypted L2 extension, the same trust model as a
+physical inter-switch link — and is structurally the opposite of `wireguard`: a WireGuard
+interface is a routed L3 endpoint, never enslaved to the bridge/OVS switch, while a VXLAN
+interface *joins* the bridge as a trunk-like port, so `slices` (not an `address`/`peer` block)
+is what a `vxlan` tunnel actually needs — which local slice(s) it extends, validated against
+`network.slices` the same way a `links[].slice` reference is. **Model and validation only**
+(`docs/TASKS.md` #16, delivered 2026-08-04) — `GatewayPlan` refuses to plan a `kind: vxlan`
+tunnel today (`PlanError::VxlanTunnelNotYetProvisionable`), loudly rather than silently
+dropping it, since provisioning it is a separate, not-yet-built follow-on.
 
 `network.nos_check` (`docs/TASKS.md` #16/#31, schema settled 2026-08-04) opts an experiment
 into checking its `network.slices` VLAN intent against a real production network OS, alongside
@@ -735,13 +749,18 @@ templating):
   optional); electrical/thermal fidelity is explicitly out of scope. gPTP/TSN (above) is the
   harness's timing layer.
 - **Tunnels:** VXLAN for inter-host communication; WireGuard (in-kernel) for secure telemetry and
-  OTA transport — **delivered** (`docs/TASKS.md` #16): `network.tunnels` (§6.0.3), one gateway-
-  terminated point-to-point link per entry, backend-independent (a WireGuard interface is a
-  routed L3 endpoint, never enslaved to the bridge/OVS switch — the same mechanism regardless of
-  `network.data_plane`). No local key material in the manifest; the gateway mints its own
-  identity on first `up` and reports the public key back via `status`. Kernel-level correctness
-  (a real handshake between two simulated hosts, not just interface presence) verified by
-  `gateway_netns.rs`'s `tunnel_completes_a_real_handshake_between_two_simulated_hosts`.
+  OTA transport — `network.tunnels` (§6.0.3), one gateway-terminated point-to-point link per
+  entry. **WireGuard delivered** (`docs/TASKS.md` #16): backend-independent (a WireGuard
+  interface is a routed L3 endpoint, never enslaved to the bridge/OVS switch — the same
+  mechanism regardless of `network.data_plane`). No local key material in the manifest; the
+  gateway mints its own identity on first `up` and reports the public key back via `status`.
+  Kernel-level correctness (a real handshake between two simulated hosts, not just interface
+  presence) verified by `gateway_netns.rs`'s
+  `tunnel_completes_a_real_handshake_between_two_simulated_hosts`. **VXLAN: model and validation
+  delivered 2026-08-04** (`docs/TASKS.md` #16) — `kind: vxlan` (§6.0.3), structurally the
+  opposite of WireGuard: it joins the bridge as a trunk-like port, extending one or more local
+  slices' L2 domain across hosts. `GatewayPlan` provisioning is a separate, not-yet-built
+  follow-on; declaring one today is refused loudly at plan time, not silently dropped.
 - **Routing:** static for lab experiments; FRR provides BGP for cloud interconnect.
 - **Firewalling:** nftables per VLAN/slice.
 - **Production NOS twin:** the same slice/VLAN/VXLAN/BGP intent is also rendered onto a
