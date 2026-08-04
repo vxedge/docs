@@ -155,9 +155,9 @@ Canonical repos (under vxedge org):
   `vxzones` and `vxcompute`** (Track P, decided 2026-07-26): those two repos split loadables by
   deployment mechanism (VM vs. container) rather than by domain, which is exactly the kind of
   implementation detail this workspace's own single-source-of-truth discipline exists to keep
-  out of repo topology. Both get archived (GitHub archive, not deleted — their history stays
-  reachable) once their content is confirmed fully present in `vxparts` — see
-  `vxparts/TASKS.md` Track P for the migration account and current archival status.
+  out of repo topology. Both were **archived 2026-08-04** (GitHub archive, not deleted — their
+  history stays reachable, read-only) once their content was confirmed fully present in
+  `vxparts` — see `vxparts/TASKS.md` Track P for the migration account.
 - `vxedge/vxota` — OTA server, signing, manifests.
 - `vxedge/vxagents` — Rust agents, metrics exporters.
 - `vxedge/vxtelemetry` — telemetry ingestion and exporters.
