@@ -206,6 +206,15 @@ The `vxgateway` data plane, relevant to `network-provisioning-patterns`.
   images conform to.
 - **GHCR** — GitHub Container Registry: where container images get published with
   digests.
+- **MCP** — Model Context Protocol: the open standard AI agent tooling (Claude Code and
+  others) uses to call external tools. `vxmcp` (phase 3) is vxAPI's MCP server — a thin
+  frontend for agents, the same role the CLI plays for a human at a terminal.
+- **MRTR** — Multi Round-Trip Request: MCP spec 2026-07-28's mechanism for a tool call
+  that needs a follow-up (e.g. a confirmation) before it can complete, without a
+  held-open bidirectional stream — how `vxmcp`'s mutating tools ask their caller to
+  confirm before running, the agent-tooling equivalent of the CLI's own explicit verbs.
+- **rmcp** — the official Rust SDK for MCP (`modelcontextprotocol/rust-sdk`); `vxmcp`'s
+  chosen implementation, reached spec-2026-07-28 Tier-1 conformance 2026-07-31.
 
 ## Standards, modeling & simulation (track M)
 

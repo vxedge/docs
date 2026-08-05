@@ -9,7 +9,8 @@ containerized central compute runs Autoware/ROS2 and NVIDIA AD workloads (Alpama
 TensorRT); and a Rust control plane (`vxedged`) orchestrates manifest-driven vehicles,
 experiments, services, and telemetry — exposing a versioned gRPC/Protobuf API (**vxAPI**)
 consumed by thin frontends: the `vxedge` CLI today; Qt/QML, web/TypeScript, and Electron
-frontends next; locally over a Unix socket or cloud-hosted behind mTLS.
+frontends next; an MCP server (`vxmcp`) exposing the same API to AI agent tooling; locally over
+a Unix socket or cloud-hosted behind mTLS.
 
 ---
 
@@ -51,8 +52,9 @@ The platform is designed to:
 - run on a single NVIDIA GPU host (scaling to several), with an explicit later path onto NVIDIA
   hardware (Jetson AGX, DRIVE AGX / DRIVE OS, BlueField/DOCA offload);
 - be **API-first**: all orchestration lives behind vxAPI (gRPC/Protobuf) served by the `vxedged`
-  daemon. The CLI, GUIs (Qt/QML, Electron), and web dashboards are interchangeable thin clients,
-  and the same API hosts locally or in the cloud (controller mode federating multiple hosts).
+  daemon. The CLI, GUIs (Qt/QML, Electron), web dashboards, and the `vxmcp` MCP server are
+  interchangeable thin clients — human-operated or agent-operated, same rule either way — and
+  the same API hosts locally or in the cloud (controller mode federating multiple hosts).
 
 No physical router is required: the edge-gateway role is fully absorbed by `vxgateway`.
 
@@ -221,8 +223,9 @@ behind a strongly-typed IDL, with every UI a disposable thin client. vxedge adop
   job** with server-streamed progress; the reconciler compares desired (manifest) vs observed
   state — that is what makes `up|down` idempotent.
 - **Frontends** (all thin clients of the same API): desktop/researcher tooling — platform
-  administration, live status monitoring, and experiment operation for OEM engineers and SDV
-  researchers. **None of these are the in-vehicle HMI** — that role belongs to **Android
+  administration, live status monitoring, and experiment operation — for two kinds of operator:
+  OEM engineers and SDV researchers directly, and (via `vxmcp`) AI agent tooling acting on their
+  behalf. **None of these are the in-vehicle HMI** — that role belongs to **Android
   Automotive (AAOS)**, already the infotainment zone's guest OS (§9), the production-
   representative, industry-standard choice for actual in-car HMI. Frontends here are external
   tooling that operates the testbed, not something running inside a simulated vehicle.
@@ -237,6 +240,25 @@ behind a strongly-typed IDL, with every UI a disposable thin client. vxedge adop
   - **vxedge-tray** (Rust, StatusNotifierItem/SNI system tray) — at-a-glance gateway/experiment
     state + quick up/down from the desktop; pairs with a **systemd unit for vxedged**
     (socket-activated where possible). Same thin-client rule: 1:1 vxAPI calls, no logic.
+  - **`vxmcp`** (Rust, `rmcp` — the official MCP Rust SDK) — an MCP server exposing vxAPI to AI
+    agent tooling (Claude Code and others), for the same reason every frontend above exists: a
+    thin, 1:1 client over the same RPCs, this time addressed by an LLM agent's tool-call surface
+    instead of a terminal or a GUI. Every MCP tool is a direct wrapper over one vxAPI RPC
+    (`GatewayService`/`ZoneService`/`ComputeService`/`ExperimentService`/`TrafficService`/
+    `SvcService`/`JobService`/`EventService`) — never a multi-step workflow baked into the
+    server, the hard rule stated explicitly for this frontend too. Sits directly on
+    `vxedge-api`'s generated tonic bindings (a Rust-to-Rust dependency, not a second codegen
+    pipeline the way the TS/C++ SDKs are). Targets **MCP spec 2026-07-28**: stateless
+    request-response (no `initialize` handshake), with **Multi Round-Trip Requests**
+    (`InputRequiredResult`/`InputRequest::Elicitation`) as the mechanism for the one thing a
+    thin wrapper still needs — a mutating tool (`up`/`down`/`traffic up`) asking its caller to
+    confirm before it runs, the same posture a human operator gets from the CLI's own explicit
+    verbs, not something an LLM can chain unsupervised into a destructive sequence. Read tools
+    (`status`/`list`/`events subscribe`/results-archive summaries) ship first, since they carry
+    no such confirmation question and are useful standalone; mutating tools follow once the
+    MRTR confirmation flow is built and reviewed. New repo, `vxedge/vxmcp`, phase 3
+    (`docs/TASKS.md`) — frontend/tooling investment, not hardware-gated, so it doesn't wait on
+    anything phase 3's GPU items do.
 
 ### 5.2 API surface (vxAPI, `proto/vxedge/v1/`)
 
@@ -1153,8 +1175,8 @@ on a Linux kernel).
    today only the local Unix-socket transport is live, and even that lacks the peer-credential
    check §5.3 names as its own target, see that section's 2026-08-05 correction). Deliberately
    not scheduled into an earlier phase: it secures *remote* access, and every frontend that
-   would use it remotely (web dashboard, Qt/QML desktop, Electron) is itself deferred to phase
-   3/4 (`docs/TASKS.md`'s 2026-08-01 re-scope — "the CLI is the only frontend any experiment
+   would use it remotely (web dashboard, Qt/QML desktop, Electron, `vxmcp`) is itself deferred
+   to phase 3/4 (`docs/TASKS.md`'s 2026-08-01 re-scope — "the CLI is the only frontend any experiment
    uses," and the CLI only ever talks over the local socket). Building the auth layer before a
    real remote consumer exists would be infrastructure with nothing to test it against; revisit
    once a phase-3/4 frontend actually needs it. **Scoped 2026-08-05** (full account,

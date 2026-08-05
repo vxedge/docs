@@ -26,7 +26,8 @@ It provides:
 - QEMU/KVM zonal ECUs managed via libvirt (QNX SDP 8, Zephyr/FreeRTOS, Android Automotive).
 - Containerized central compute (Autoware/ROS2, NVIDIA Alpamayo/AlpaSim, DeepStream/TensorRT).
 - An API-first Rust control plane: the `vxedged` daemon exposes **vxAPI** (gRPC/Protobuf);
-  the `vxedge` CLI, and future Qt/QML, web, and Electron frontends, are thin clients.
+  the `vxedge` CLI, future Qt/QML, web, and Electron frontends, and an MCP server (`vxmcp`)
+  for AI agent tooling, are all thin clients.
 - Manifest-driven everything — up to a full software-bootstrapped vehicle
   (`vxedge vehicle up`).
 
