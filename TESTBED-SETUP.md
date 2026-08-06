@@ -10,7 +10,7 @@ install what the work in front of you needs. `vxedge doctor --tier N` (delivered
 | Requirement | Version / value | Check |
 |---|---|---|
 | OS | Ubuntu 24.04 LTS or newer (any modern systemd Linux works) | `lsb_release -a` |
-| Kernel | ≥ 6.8 (dev host: 6.17-generic) | `uname -r` |
+| Kernel | ≥ 6.8 (dev host: 7.0.0-28-generic, upgraded from 6.17.0-35 — see `STATUS.md` Environment) | `uname -r` |
 | CPU / RAM / disk | 4 cores, 8 GB, 20 GB free | — |
 | Rust | 1.96.1 (pinned by `rust-toolchain.toml`; rustup auto-installs) | `rustc --version` |
 | protoc | ≥ 3.21 (35.x current) | `protoc --version` |
@@ -37,7 +37,7 @@ Everything above, plus:
 | Requirement | Version / value | Notes |
 |---|---|---|
 | CPU / RAM / disk | 12+ cores, 64 GB, 250 GB free (NVMe) | CARLA + Autoware + zones concurrently |
-| KVM + QEMU | qemu-system-x86 ≥ 8.x | `kvm-ok`; user in `kvm`/`libvirt` groups |
+| KVM + QEMU | qemu-system-x86 ≥ 8.x | `kvm-ok`; user in `kvm`/`libvirt` groups. `qemu-microvm` zone/vehicle nodes need **no sudo entry** — confirmed live 2026-08-06: `vxedged` launches `qemu-system-x86_64` unescalated (kvm-group access to `/dev/kvm` plus `TUNSETOWNER` on the tap it attaches to, set at tap-creation time, is everything it needs). Do not add a NOPASSWD sudoers entry for `qemu-system-x86_64` — it buys nothing this backend needs and grants root code execution the daemon doesn't require |
 | libvirt | ≥ 10.x | `virsh version`; daemon enabled |
 | Open vSwitch (optional variant) | `apt install openvswitch-switch` | alternative gateway data plane; **do not** hand-create bridges — vxedge owns its bridge lifecycle |
 | WireGuard tools | `apt install wireguard-tools` | telemetry/OTA transport links |
