@@ -113,9 +113,10 @@ The `vxgateway` data plane, relevant to `network-provisioning-patterns`.
 - **ADAS** — Advanced Driver-Assistance Systems: the URLLC-like traffic class H1/H2
   test.
 - **AD** — Autonomous Driving.
-- **HMI** — Human-Machine Interface. In-vehicle: Android Automotive (AAOS), the infotainment
-  zone's guest OS (§9) — the production-representative choice. The phase-3 Qt/QML operator
-  dashboard is desktop/researcher tooling, not the in-vehicle HMI (ARCHITECTURE.md §5.1).
+- **HMI** — Human-Machine Interface. In-vehicle: Android Automotive (AAOS) or an embedded
+  Qt/QML IVI/cluster loadable — two real, alternate infotainment-zone guest baselines (§9).
+  There is no Qt/QML operator dashboard (corrected 2026-08-06); any platform monitoring
+  dashboard is web-based or the CLI (ARCHITECTURE.md §5.1).
 - **AUTOSAR** — AUTomotive Open System ARchitecture: the standard automotive software
   architecture vxedge's QNX/C++ conventions are described as "adjacent" to.
 - **OEM** — Original Equipment Manufacturer: the vehicle maker — vxedge's target
@@ -185,7 +186,7 @@ The `vxgateway` data plane, relevant to `network-provisioning-patterns`.
 - **Protobuf** — Protocol Buffers: Google's binary serialization format, the wire
   format gRPC uses.
 - **SDK** — Software Development Kit: the generated per-language vxAPI client
-  libraries (Rust/tonic, C++/Qt GRPC, TypeScript/connect-es).
+  libraries (Rust/tonic, TypeScript/connect-es).
 - **CLI** — Command-Line Interface: the `vxedge` binary, a thin vxAPI client.
 - **UDS** *(networking sense)* — Unix Domain Socket: vxedge's default local transport
   between the CLI and `vxedged`. Not to be confused with the automotive sense above.

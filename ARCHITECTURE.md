@@ -8,9 +8,11 @@ VMs managed through libvirt provide zonal ECUs (QNX, Zephyr, FreeRTOS, Android A
 containerized central compute runs Autoware/ROS2 and NVIDIA AD workloads (Alpamayo, DeepStream,
 TensorRT); and a Rust control plane (`vxedged`) orchestrates manifest-driven vehicles,
 experiments, services, and telemetry — exposing a versioned gRPC/Protobuf API (**vxAPI**)
-consumed by thin frontends: the `vxedge` CLI today; Qt/QML, web/TypeScript, and Electron
-frontends next; an MCP server (`vxmcp`) exposing the same API to AI agent tooling; locally over
-a Unix socket or cloud-hosted behind mTLS.
+consumed by thin frontends: the `vxedge` CLI today; web/TypeScript and Electron frontends next;
+an MCP server (`vxmcp`) exposing the same API to AI agent tooling; locally over a Unix socket
+or cloud-hosted behind mTLS. (Qt/QML is not an operator-dashboard frontend here — see §5.1 for
+its two real, unrelated roles: an in-vehicle embedded IVI loadable, and a future `vxmodels`
+graphical design tool.)
 
 ---
 
@@ -52,7 +54,7 @@ The platform is designed to:
 - run on a single NVIDIA GPU host (scaling to several), with an explicit later path onto NVIDIA
   hardware (Jetson AGX, DRIVE AGX / DRIVE OS, BlueField/DOCA offload);
 - be **API-first**: all orchestration lives behind vxAPI (gRPC/Protobuf) served by the `vxedged`
-  daemon. The CLI, GUIs (Qt/QML, Electron), web dashboards, and the `vxmcp` MCP server are
+  daemon. The CLI, GUIs (Electron), web dashboards, and the `vxmcp` MCP server are
   interchangeable thin clients — human-operated or agent-operated, same rule either way — and
   the same API hosts locally or in the cloud (controller mode federating multiple hosts).
 
@@ -148,7 +150,7 @@ Canonical repos (under vxedge org):
 
 - `vxedge/vxedge` — Rust workspace: `vxedge-core` (domain lib), `vxedged` (daemon, vxAPI),
   `vxedge-cli` (thin client), `proto/` (vxAPI Protobuf IDL — the source for all generated SDKs:
-  Rust/tonic, C++/Qt GRPC, TypeScript/connect-es), plus **gateway provisioning templates**
+  Rust/tonic, TypeScript/connect-es), plus **gateway provisioning templates**
   (netlink/OVS/nftables/tc, libvirt domain XML templates).
 - `vxedge/vxparts` — the unified loadable registry: zone VM/kernel/RTOS bundles, central-compute
   container images, gateway/TCU images, agent binaries, and platform-service images — every
@@ -201,10 +203,10 @@ behind a strongly-typed IDL, with every UI a disposable thin client. vxedge adop
 ### 5.1 Layers & frontends
 
 ```
- frontends:  vxedge CLI │ Qt/QML + WASM dashboard │ web dashboard (TS) │ Electron "vxedge Studio" (future)
-                 │            │              │                      │
-                 └──────┬─────┴──────┬───────┴─────────┬────────────┘
-                        ▼ generated SDKs (Rust · C++/Qt GRPC · TypeScript/connect-es)
+ frontends:  vxedge CLI │ web dashboard (TS) │ Electron "vxedge Studio" (future)
+                 │              │                      │
+                 └──────┬───────┴─────────┬────────────┘
+                        ▼ generated SDKs (Rust · TypeScript/connect-es)
                 ┌───────────────────────────────────────────────┐
                 │ vxAPI — gRPC/Protobuf, package vxedge.v1      │
                 │ (UDS local · mTLS TCP remote · gRPC-Web)      │
@@ -222,19 +224,20 @@ behind a strongly-typed IDL, with every UI a disposable thin client. vxedge adop
 - **vxedged** (Rust daemon, tonic + tonic-web): hosts vxAPI. Every mutating verb is an **async
   job** with server-streamed progress; the reconciler compares desired (manifest) vs observed
   state — that is what makes `up|down` idempotent.
-- **Frontends** (all thin clients of the same API): desktop/researcher tooling — platform
-  administration, live status monitoring, and experiment operation — for two kinds of operator:
-  OEM engineers and SDV researchers directly, and (via `vxmcp`) AI agent tooling acting on their
-  behalf. **None of these are the in-vehicle HMI** — that role belongs to **Android
-  Automotive (AAOS)**, already the infotainment zone's guest OS (§9), the production-
-  representative, industry-standard choice for actual in-car HMI. Frontends here are external
-  tooling that operates the testbed, not something running inside a simulated vehicle.
+- **Frontends** (all thin clients of the same API): platform administration, live status
+  monitoring, and experiment operation — for two kinds of operator: OEM engineers and SDV
+  researchers directly, and (via `vxmcp`) AI agent tooling acting on their behalf. **None of
+  these are the in-vehicle HMI** — that role belongs to **Android Automotive (AAOS)**, already
+  the infotainment zone's guest OS, or an **embedded Qt/QML IVI loadable** (running under a
+  QEMU ARM zone node or hosted atop QNX — the production pattern several OEMs actually run;
+  both are real, alternate in-vehicle-HMI baselines, §9). Frontends here are external tooling
+  that operates the testbed, not something running inside a simulated vehicle. **Correction
+  (2026-08-06): there is no Qt/QML operator dashboard** — any platform monitoring dashboard is
+  web-based (TS) or the CLI, never Qt. A separate, future, not-yet-built Qt/QML tool is planned
+  for `vxmodels`' MBSE tooling (§6.3) — a graphical experiment designer, not an operator
+  dashboard and not a vxAPI frontend the way the items below are.
   - **`vxedge` CLI** (Rust) — unchanged UX; local Unix socket by default, `--endpoint` for
     remote; auto-spawns an ephemeral local daemon for single-host lab use.
-  - **Qt/QML desktop dashboard** (C++; Qt ≥ 6.8 speaks gRPC natively into QML via Qt GRPC; a
-    **WASM build is planned** so the same dashboard runs browser-hosted with no native install)
-    — an admin/status console: live slice and experiment state, gateway health, job progress —
-    for OEM engineers and SDV researchers operating the platform, not an in-vehicle surface.
   - **Web dashboard / Electron** (TypeScript; connect-es-generated SDK over gRPC-Web) — cloud
     console first, "vxedge Studio" desktop app later.
   - **vxedge-tray** (Rust, StatusNotifierItem/SNI system tray) — at-a-glance gateway/experiment
@@ -367,7 +370,7 @@ vxedge traffic up --manifest ...
 signal plane up (Kuksa, phase 3) → services up. `vehicle down` tears down in reverse.
 
 Every CLI verb is a 1:1 wrapper over a vxAPI RPC — anything the CLI can do, every other frontend
-(QML, web, Electron, scripts against the TS/C++ SDKs) can do identically.
+(web, Electron, scripts against the TS SDK) can do identically.
 
 ---
 
@@ -747,6 +750,13 @@ experiments is structural, not aspirational.
 Out of model scope, by rule: Rust internals, the vxAPI IDL (Protobuf stays the contract,
 SDKs stay generated), and anything zone/compute manifests are authoritative for.
 
+**Future graphical frontend (not yet built, added 2026-08-06)**: a Qt/QML desktop tool —
+analogous to the planned Electron "vxedge Studio," an MBSE/CAD-style variant of the same idea —
+to help OEM engineers design experiments visually instead of hand-authoring `.sysml` text
+directly. It would still read/write the same textual, git-diffable `.sysml` sources (the
+construct-mapping table above stays the contract either way); a graphical editor is a view onto
+that source, not a second model format. Explicitly deferred — no design work done here yet.
+
 Terminology (matches `PUBLICATION.md`): track M makes vxedge a **model-governed executable
 virtual prototype**. "Digital twin" is an earned claim reserved for phase-4 hardware parity
 — track M supplies the model half; phase 4 supplies the physical half.
@@ -895,6 +905,14 @@ deliberately separate:
     production ADAS and cockpit controllers run, which anchors OEM relevance.
   - **Zephyr / FreeRTOS** — microVM images for sensor/ECU nodes.
   - **Android Automotive (AAOS)** — infotainment zone; QEMU with virtio-gpu or GPU passthrough.
+  - **Embedded Qt/QML IVI/cluster loadable** — an alternate infotainment/cluster baseline to
+    AAOS, not desktop tooling (**correction, 2026-08-06**: earlier drafts of this document
+    wrongly scoped Qt/QML as an operator dashboard only — it has no such role, see §5.1). Runs
+    either as an app/middleware layer atop the QNX guest above (the production QNX+Qt
+    cluster/IVI pattern several OEMs actually ship) or under a bare QEMU ARM zone node —
+    exercises the same "one vehicle, many baselines" mechanism (`ARCHITECTURE.md` §6.0) that
+    lets an experiment swap AAOS for Qt/QML (or vice versa) on the same infotainment zone
+    without touching the vehicle's structural definition.
   - **Containers** — for nodes where packaging as a container is the experimental variable.
 - **Fidelity caveat (stated honestly in publications):** production zonal controllers invert this
   stacking — silicon runs a Type-1 hypervisor (QNX Hypervisor and peers) hosting guests, whereas
@@ -1109,10 +1127,13 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
 - **Rust** — `vxedge-core`, `vxedged` daemon (vxAPI/tonic), `vxedge` CLI, `vxagents`, gateway
   provisioning (rtnetlink/OVSDB, `virt` crate for libvirt).
 - **C++** — everything touching ROS 2/DDS/Autoware, DeepStream/TensorRT plugins, QNX-side
-  components (automotive-native, AUTOSAR-adjacent), and the Qt/QML operator dashboard (Qt GRPC
-  client; not the in-vehicle HMI — see §5.1).
+  components (automotive-native, AUTOSAR-adjacent), and the embedded Qt/QML IVI/cluster
+  loadable (an in-vehicle-HMI baseline alongside AAOS — see §5.1, §9).
 - **Python** — Sionna, notebooks, analysis pipelines.
 - **TypeScript** — web dashboard, Electron "vxedge Studio", generated vxAPI SDK (connect-es).
+- **Qt/QML** (future, not yet built) — a graphical `vxmodels` MBSE frontend for designing
+  experiments visually (see §5.1, §6.3); an Electron-style desktop variant, not an operator
+  dashboard.
 - **Shell** — glue only.
 - **SysML v2** (track M) — authoring-time system models in `vxmodels`, rendered to YAML
   manifests by `vxmodel`. Deliberately *not* a third runtime interface.
@@ -1151,9 +1172,9 @@ on a Linux kernel).
 3. **Phase 3 — production SDV alignment:** vehicle manifest end-to-end (`vxedge vehicle up`);
    Kuksa/VSS signal plane; rmw_zenoh/uProtocol comms; Ankaios workload orchestration; Sionna
    channel realism (NVIDIA 6G Developer Program); Alpamayo/AlpaSim workload; optional
-   Rugix-Ctrl-based atomic slot updates on vxzones guest bundles (§8 OTA design); Qt/QML
-   operator dashboard (Qt GRPC), WASM build; cloud-hosted `vxedged --controller` federating
-   multiple GPU hosts;
+   Rugix-Ctrl-based atomic slot updates on vxzones guest bundles (§8 OTA design); embedded
+   Qt/QML IVI/cluster loadable (an alternate in-vehicle-HMI baseline to AAOS, §9); cloud-hosted
+   `vxedged --controller` federating multiple GPU hosts;
    Electron
    "vxedge Studio" groundwork; vxedge-tray (Rust SNI tray, thin vxAPI client) + vxedged
    systemd unit; ARM64 zone/compute/agent variants (Jetson + Snapdragon
@@ -1175,7 +1196,7 @@ on a Linux kernel).
    today only the local Unix-socket transport is live, and even that lacks the peer-credential
    check §5.3 names as its own target, see that section's 2026-08-05 correction). Deliberately
    not scheduled into an earlier phase: it secures *remote* access, and every frontend that
-   would use it remotely (web dashboard, Qt/QML desktop, Electron, `vxmcp`) is itself deferred
+   would use it remotely (web dashboard, Electron, `vxmcp`) is itself deferred
    to phase 3/4 (`docs/TASKS.md`'s 2026-08-01 re-scope — "the CLI is the only frontend any experiment
    uses," and the CLI only ever talks over the local socket). Building the auth layer before a
    real remote consumer exists would be infrastructure with nothing to test it against; revisit
