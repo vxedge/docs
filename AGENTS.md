@@ -18,6 +18,11 @@ spec** — every other repo's AGENTS.md and TASKS.md derive from it and must not
   at the bottom of the file as a frozen historical archive).
 - `TESTBED-SETUP.md` — single-machine host requirements, tiered by phase (OS, resources,
   software versions). Anything the testbed needs that it doesn't list is a bug in it.
+- `NODE-PROVISIONING.md` — master spec for the in-process node-provisioning engine
+  (`vxedge-core`'s `ZoneBackend` seam + the `containers` module): the provisioning stack, design
+  principles, CLI-vs-library decision test, and a reviewed-and-rejected verdict on building a
+  from-scratch in-process KVM hypervisor. Extends `ARCHITECTURE.md` §9/§15, doesn't replace them.
+  Maps to `TASKS.md` Track V.
 - `ARCHITECTURE.md` — the master spec (16 sections). Key anchors: §2 hypotheses H1–H4,
   §5 vxAPI/control plane, §6 manifest schemas (experiment + vehicle), §7 vxgateway network
   model, §9 virtualization (libvirt/QEMU/QNX), §15 language policy + 4-phase roadmap,
