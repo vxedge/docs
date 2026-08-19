@@ -110,8 +110,9 @@ A dir already holding a campaign's archives is never overwritten in place — fu
 refuse it, repro checks and quick runs get their own dirs (`scripts/lib/results_dir.sh`).
 
 Numbers from `--quick` runs are pipeline validation only and are marked NOT reportable.
-Reference result (2026-07-10, full campaign): ADAS slice p99 held at 0.93x baseline under
-1.2x offered overload from the infotainment slice, zero loss (see STATUS.md).
+Reference result (2026-08-03 corrected campaign, superseding the original 2026-07-10 run
+— see STATUS.md's Phase 1 row for why): ADAS slice p99 held at 0.91x baseline under 1.2x
+offered overload from the infotainment slice, zero loss (see STATUS.md).
 
 ### c) VM-backed zones (guest bundles)
 
