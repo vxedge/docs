@@ -260,7 +260,7 @@ behind a strongly-typed IDL, with every UI a disposable thin client. vxedge adop
     (`status`/`list`/`events subscribe`/results-archive summaries) ship first, since they carry
     no such confirmation question and are useful standalone; mutating tools follow once the
     MRTR confirmation flow is built and reviewed. New repo, `vxedge/vxmcp`, phase 3
-    (`docs/TASKS.md`) — frontend/tooling investment, not hardware-gated, so it doesn't wait on
+    (`docs/ROADMAP.md`) — frontend/tooling investment, not hardware-gated, so it doesn't wait on
     anything phase 3's GPU items do.
 
 ### 5.2 API surface (vxAPI, `proto/vxedge/v1/`)
@@ -305,13 +305,13 @@ the core.
   (`vxedged/src/audit.rs`) has no actor field at all today, because there has only ever been
   one, local, unauthenticated caller. Remote access without that field would produce an audit
   log that says what happened but not who did it — not acceptable once "who" is a real
-  question. Full scope: `docs/TASKS.md`'s Phase 5 section.
+  question. Full scope: `docs/ROADMAP.md`'s Phase 5 section.
 - **Cloud-hosted (planned, Phase 3):** `vxedged --controller` runs anywhere and federates one
   or more site daemons (one per GPU host, reached over WireGuard + mTLS) behind the **same
   vxAPI**. Frontends never know whether they talk to a single host or a fleet controller, and
   never touch hypervisors directly. A related but distinct concern from Remote access above:
   federation is site-daemon-to-controller plumbing, not the human/CLI-to-daemon auth path —
-  see `docs/TASKS.md`'s Phase 5 section for why the two are scoped separately.
+  see `docs/ROADMAP.md`'s Phase 5 section for why the two are scoped separately.
 
 ### 5.4 CLI — commands & semantics
 
@@ -575,7 +575,7 @@ inline: structure is the vehicle's, and software is the baseline's.
 Every one of those blocks is **typed and validated when the model is built** — a malformed
 `services:` entry is one error against the file the author wrote, not a surprise at `svc up`.
 
-`network.tunnels` (`docs/TASKS.md` #16) declares a point-to-point link the gateway itself
+`network.tunnels` (`docs/ROADMAP.md` #16) declares a point-to-point link the gateway itself
 terminates, reaching a *remote* peer (another site's gateway) — distinct from `network.slices`,
 which partitions the *local* bridge fabric zone nodes attach to. Two kinds today, each with only
 the fields it needs:
@@ -613,11 +613,11 @@ interface is a routed L3 endpoint, never enslaved to the bridge/OVS switch, whil
 interface *joins* the bridge as a trunk-like port, so `slices` (not an `address`/`peer` block)
 is what a `vxlan` tunnel actually needs — which local slice(s) it extends, validated against
 `network.slices` the same way a `links[].slice` reference is. **Model and validation only**
-(`docs/TASKS.md` #16, delivered 2026-08-04) — `GatewayPlan` refuses to plan a `kind: vxlan`
+(`docs/ROADMAP.md` #16, delivered 2026-08-04) — `GatewayPlan` refuses to plan a `kind: vxlan`
 tunnel today (`PlanError::VxlanTunnelNotYetProvisionable`), loudly rather than silently
 dropping it, since provisioning it is a separate, not-yet-built follow-on.
 
-`network.nos_check` (`docs/TASKS.md` #16/#31, schema settled 2026-08-04) opts an experiment
+`network.nos_check` (`docs/ROADMAP.md` #16/#31, schema settled 2026-08-04) opts an experiment
 into checking its `network.slices` VLAN intent against a real production network OS, alongside
 — never instead of — the actual measured path (`network.data_plane`). Absent by default; most
 experiments don't declare it:
@@ -711,7 +711,7 @@ document is and where to go instead.
 These two schemas are gone: the structs are deleted from `vxedge-core`, nothing parses them, and
 no tool emits them. §6.0 is the only schema.
 
-They are named here rather than silently dropped because results archives, `STATUS.md` entries
+They are named here rather than silently dropped because results archives, `RESULTS.md` entries
 and the frozen `vxperiments/experiments/exp-*.yaml` files all reference them. A §6.1 experiment
 manifest was one document carrying `experiment`/`network`/`zones`/`compute`/`links`/
 `traffic_profiles`/`telemetry`/`results`, with software attached to a node as a flat `image:`;
@@ -757,7 +757,7 @@ directly. It would still read/write the same textual, git-diffable `.sysml` sour
 construct-mapping table above stays the contract either way); a graphical editor is a view onto
 that source, not a second model format. Explicitly deferred — no design work done here yet.
 
-Terminology (matches `PUBLICATION.md`): track M makes vxedge a **model-governed executable
+Terminology (matches `ROADMAP.md`): track M makes vxedge a **model-governed executable
 virtual prototype**. "Digital twin" is an earned claim reserved for phase-4 hardware parity
 — track M supplies the model half; phase 4 supplies the physical half.
 
@@ -804,14 +804,14 @@ templating):
   harness's timing layer.
 - **Tunnels:** VXLAN for inter-host communication; WireGuard (in-kernel) for secure telemetry and
   OTA transport — `network.tunnels` (§6.0.3), one gateway-terminated point-to-point link per
-  entry. **WireGuard delivered** (`docs/TASKS.md` #16): backend-independent (a WireGuard
+  entry. **WireGuard delivered** (`docs/ROADMAP.md` #16): backend-independent (a WireGuard
   interface is a routed L3 endpoint, never enslaved to the bridge/OVS switch — the same
   mechanism regardless of `network.data_plane`). No local key material in the manifest; the
   gateway mints its own identity on first `up` and reports the public key back via `status`.
   Kernel-level correctness (a real handshake between two simulated hosts, not just interface
   presence) verified by `gateway_netns.rs`'s
   `tunnel_completes_a_real_handshake_between_two_simulated_hosts`. **VXLAN: model and validation
-  delivered 2026-08-04** (`docs/TASKS.md` #16) — `kind: vxlan` (§6.0.3), structurally the
+  delivered 2026-08-04** (`docs/ROADMAP.md` #16) — `kind: vxlan` (§6.0.3), structurally the
   opposite of WireGuard: it joins the bridge as a trunk-like port, extending one or more local
   slices' L2 domain across hosts. `GatewayPlan` provisioning is a separate, not-yet-built
   follow-on; declaring one today is refused loudly at plan time, not silently dropped.
@@ -1197,11 +1197,11 @@ on a Linux kernel).
    check §5.3 names as its own target, see that section's 2026-08-05 correction). Deliberately
    not scheduled into an earlier phase: it secures *remote* access, and every frontend that
    would use it remotely (web dashboard, Electron, `vxmcp`) is itself deferred
-   to phase 3/4 (`docs/TASKS.md`'s 2026-08-01 re-scope — "the CLI is the only frontend any experiment
+   to phase 3/4 (`docs/ROADMAP.md`'s 2026-08-01 re-scope — "the CLI is the only frontend any experiment
    uses," and the CLI only ever talks over the local socket). Building the auth layer before a
    real remote consumer exists would be infrastructure with nothing to test it against; revisit
    once a phase-3/4 frontend actually needs it. **Scoped 2026-08-05** (full account,
-   `docs/TASKS.md` Phase 5 section) into six concrete sub-items — TCP listener support in
+   `docs/ROADMAP.md` Phase 5 section) into six concrete sub-items — TCP listener support in
    `vxedged`/`vxedge-cli` (neither accepts anything but `unix://` today), mTLS (cert
    provisioning is an open design question, not just a library choice), OIDC bearer-token
    validation, a per-RPC role/authorization model, actor-aware audit logging (a real, present
@@ -1217,16 +1217,16 @@ on a Linux kernel).
    **Deliberately excluded from this scope**: `vxedged --controller` federation (still Phase 3
    — a site-daemon-to-controller plumbing concern, not the human/CLI-to-daemon auth path this
    item covers) and the cloud-hosted persistence/multi-tenant-session/event-streaming question
-   (`docs/TASKS.md`'s "Beyond phase 4" — explicitly speculative, no phase assigned, its own
+   (`docs/ROADMAP.md`'s "Beyond phase 4" — explicitly speculative, no phase assigned, its own
    separate sign-off needed before scoping).
 
 ### Cross-cutting track M — SysML v2 model governance (twin-readiness)
 
 Not phase-gated; runs alongside phases 2–3 and gates nothing in phases 1–4. All public
 claims keep the *executable virtual prototype* vocabulary until phase-4 hardware parity
-earns the term "digital twin" (`PUBLICATION.md` terminology rule); track M builds the
+earns the term "digital twin" (`ROADMAP.md` terminology rule); track M builds the
 model half of that claim. Details in §6.3; work items on the program board
-(`docs/TASKS.md`) and, once created, `vxmodels/TASKS.md`.
+(`docs/ROADMAP.md`) and, once created, `vxmodels/TASKS.md`.
 
 - **M0 — governance & home:** this section + §4/§6.3 scoping; `vxedge/vxmodels` created
   and seeded (AGENTS.md/TASKS.md/skills) — all done 2026-07-13.
@@ -1250,7 +1250,7 @@ model half of that claim. Details in §6.3; work items on the program board
   slice/workload via the DCGM/NVML hooks) as verified requirements; V2X multi-vehicle
   scenario families in phase 3.
 
-Paper #3 (`PUBLICATION.md`) draws on M1–M4; the twin claim attaches only if phase 4 lands.
+Paper #3 (`ROADMAP.md`) draws on M1–M4; the twin claim attaches only if phase 4 lands.
 
 ---
 

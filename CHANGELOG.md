@@ -6,6 +6,10 @@ All notable changes to this repo are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- Open-source release preparation: `LICENSE` (Apache-2.0), `NOTICE`, rewritten `README.md`. Program board, status journal and publication plan moved out; public summaries now live in `RESULTS.md` and `ROADMAP.md`.
+
 ## [0.1.0] - 2026-07-13
 
 **Phase-1 gate passed**: `ARCHITECTURE.md` §2's H1, H3, and H4 hypotheses all have
@@ -18,10 +22,10 @@ release across the phase-1-participating repos.
   network model (§7), service model incl. OTA/Uptane design (§8), virtualization/hypervisor
   fidelity ladder (§9), compute model (§10), metrics/methodology (§12), reproducibility
   rules (§13), language policy + phase roadmap (§15), worked examples (§16).
-- `TASKS.md` — program-level task board: critical path, phase gates 1-4, the devops/
+- `ROADMAP.md` — program-level task board: critical path, phase gates 1-4, the devops/
   release-engineering board.
-- `STATUS.md` — living progress report, updated every push that moves progress.
-- `PUBLICATION.md` — arXiv/venue plan, paper skeletons, partner-selection procedure, the
+- `RESULTS.md` — living progress report, updated every push that moves progress.
+- `ROADMAP.md` — arXiv/venue plan, paper skeletons, partner-selection procedure, the
   publication gate.
 - `GETTING-STARTED.md`, `TESTBED-SETUP.md` (host requirements tiered by phase),
   `USER-GUIDE.md` (public-facing usage doc, CLI verb state table).

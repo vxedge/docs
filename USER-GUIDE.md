@@ -2,7 +2,7 @@
 
 For SDV / automotive engineers using vxedge as a testbed. Onboarding lives in
 [GETTING-STARTED.md](GETTING-STARTED.md); the full spec in [ARCHITECTURE.md](ARCHITECTURE.md);
-host requirements in [TESTBED-SETUP.md](TESTBED-SETUP.md); live progress in [STATUS.md](STATUS.md).
+host requirements in [TESTBED-SETUP.md](TESTBED-SETUP.md); live progress in [RESULTS.md](RESULTS.md).
 
 **Honest state banner:** vxedge is a research-grade *executable virtual prototype* of a zonal
 SDV E/E architecture — not a certified tool and not a "digital twin" of any physical vehicle
@@ -111,8 +111,8 @@ refuse it, repro checks and quick runs get their own dirs (`scripts/lib/results_
 
 Numbers from `--quick` runs are pipeline validation only and are marked NOT reportable.
 Reference result (2026-08-03 corrected campaign, superseding the original 2026-07-10 run
-— see STATUS.md's Phase 1 row for why): ADAS slice p99 held at 0.91x baseline under 1.2x
-offered overload from the infotainment slice, zero loss (see STATUS.md).
+— see RESULTS.md's Phase 1 row for why): ADAS slice p99 held at 0.91x baseline under 1.2x
+offered overload from the infotainment slice, zero loss (see RESULTS.md).
 
 ### c) VM-backed zones (guest bundles)
 
@@ -160,8 +160,8 @@ kernel, userspace timestamps).
 ## 7. Getting help / contributing
 
 Each repo carries `AGENTS.md` (scope + rules) and `TASKS.md` (work items);
-`docs/TASKS.md` is the program board. Quality bars are codified as repo skills
+`docs/ROADMAP.md` is the program board. Quality bars are codified as repo skills
 (`.claude/skills/`): `rust-patterns`, `testbed-quality`, `experiment-methodology`,
 `gateway-verification` (vxedge), `sysml-authoring` (vxmodels).
 A verb that prints "not wired to the daemon yet (scaffold)" is truthfully unimplemented —
-check STATUS.md before assuming a bug.
+check RESULTS.md before assuming a bug.

@@ -45,7 +45,7 @@ done
 | `vxmodels` | SysML v2 system models + `vxmodel` manifest renderer — track M (`ARCHITECTURE.md` §6.3) |
 
 Every repo has an `AGENTS.md` (scope + rules) and `TASKS.md` (phased work items);
-`docs/TASKS.md` is the program-level board with the cross-repo critical path.
+`docs/ROADMAP.md` is the program-level board with the cross-repo critical path.
 
 ## 3. Build everything
 
@@ -84,7 +84,7 @@ frozen campaign's archives is never overwritten in place.
 The `--quick` numbers are pipeline validation only (marked NOT reportable). The full
 campaign is `./scripts/run-exp-001.sh` without flags: ~35 minutes, 5 repetitions x 5 load
 levels, 60k samples per point — keep the machine otherwise idle and prefer the
-`performance` CPU governor. Reference result and methodology: STATUS.md and the
+`performance` CPU governor. Reference result and methodology: RESULTS.md and the
 `experiment-methodology` skill.
 
 ## 5. Zones and VM guest bundles
@@ -139,7 +139,7 @@ consistency. Experiment manifests live in `vxperiments/experiments/`, vehicle ma
 
 ## 9. Where to contribute next
 
-Check `docs/TASKS.md` (program board) and `STATUS.md` (what's done vs open). **The phase-1
+Check `docs/ROADMAP.md` (program board) and `RESULTS.md` (what's done vs open). **The phase-1
 gate has passed** (2026-07-13): H1, H3, and H4 all hold with second-campaign
 reproducibility checks, and `v0.1.0` is tagged across the delivering repos. Current open
 fronts, in order:
@@ -150,7 +150,7 @@ fronts, in order:
 3. `vxparts` (`parts/zone/`) — QNX SDP 8 / AAOS images + real-RTOS guest bundles
    (Zephyr/FreeRTOS) beyond the linux-probe bundle
 4. Track M — M0/M1: `vxmodels` repo + the retroactive H1–H4 SysML v2 traceability model
-   over the frozen archives (`docs/TASKS.md` track M; zero new experiments)
+   over the frozen archives (`docs/ROADMAP.md` track M; zero new experiments)
 5. Release/artifact pipeline — GHCR images with digests, cargo-dist binaries
 
 Conventions to know before your first PR: manifests are the sole source of truth; no

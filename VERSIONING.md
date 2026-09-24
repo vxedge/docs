@@ -22,14 +22,8 @@ know exactly what they're getting.
    hand). Tagged: `docs`, `vxedge`, `vxagents`, `vxtelemetry`, `vxota`, `vxperiments`,
    `vxzones` — the seven repos that actually delivered phase-1 content. Not tagged:
    `vxcompute`, `vxgo`, `vxslice` — empty, a tag on nothing is meaningless.
-   **Tagging and going public are deliberately decoupled**: cutting a tag on a private
-   repo is zero-risk (just a git ref, no visibility change), so it happens the moment the
-   milestone is real. Going public is a separate, harder-to-reverse step gated on its own
-   short punch list — see `docs/STATUS.md` "Public-visibility punch list" — not on
-   whether a tag exists. (An earlier version of this note claimed `vxzones` was already
-   public and thus a standing exception — that premise was itself wrong, corrected
-   2026-07-29 via the GitHub API: every repo, `vxzones` included, was private. Moot now
-   regardless — `vxzones` is superseded by `vxparts`, see that repo's own visibility.)
+   **Tagging and visibility are decoupled**: a tag is cut the moment a milestone is real,
+   independent of whether the repository is public yet.
 5. **Compatibility across repos.** The only thing that couples repos is **vxAPI**
    (`vxedge/proto/vxedge/v1/*.proto`) — a breaking proto change is a MINOR bump (pre-1.0)
    in `vxedge` and must be called out in every dependent repo's next `CHANGELOG.md` entry
@@ -49,5 +43,5 @@ know exactly what they're getting.
 Cutting tags and writing changelogs by hand doesn't scale past the first release, and none
 of the CI automation for it exists yet (no `git-cliff`/Conventional-Commits enforcement, no
 tag-triggered GitHub Release workflow, no cross-repo compatibility-matrix generation). That
-work is tracked as its own devops board section — see `docs/TASKS.md` "Release engineering
+work is tracked as its own devops board section — see `docs/ROADMAP.md` "Release engineering
 & versioning (devops)" — rather than implemented ad hoc here.

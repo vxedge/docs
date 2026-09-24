@@ -10,7 +10,7 @@ install what the work in front of you needs. `vxedge doctor --tier N` (delivered
 | Requirement | Version / value | Check |
 |---|---|---|
 | OS | Ubuntu 24.04 LTS or newer (any modern systemd Linux works) | `lsb_release -a` |
-| Kernel | ≥ 6.8 (dev host: 7.0.0-28-generic, upgraded from 6.17.0-35 — see `STATUS.md` Environment) | `uname -r` |
+| Kernel | ≥ 6.8 (each results summary records the kernel it ran on) | `uname -r` |
 | CPU / RAM / disk | 4 cores, 8 GB, 20 GB free | — |
 | Rust | 1.96.1 (pinned by `rust-toolchain.toml`; rustup auto-installs) | `rustc --version` |
 | protoc | ≥ 3.21 (35.x current) | `protoc --version` |
@@ -23,8 +23,8 @@ Everything in Tier 0, plus:
 
 | Requirement | Notes |
 |---|---|
-| CAP_NET_ADMIN | **Two mechanisms now, not one** — corrected 2026-08-05 after a live `exp-010` `--repro` run failed against the 2026-07-17 guidance below. The 2026-08-04 rtnetlink port (`docs/TASKS.md` #16) moved bridge/veth/VLAN/address/route creation, WireGuard device creation, and the fiveg host-attachment path off the `ip`/`bridge` shell-out and into `vxedged`'s own in-process syscalls — for exactly that portion, `sudo setcap cap_net_admin+ep <path-to-vxedged>` now **does** work (no child process involved, so the fork+exec propagation problem below doesn't apply), and needs re-running after every rebuild since a fresh binary carries no capability. `tc`, `nft`, `wg` (key/peer config), and `ovs-vsctl` are **still** shell-outs, unchanged, and still need the NOPASSWD-sudo config below (e.g. `<user> ALL=(root) NOPASSWD: /usr/sbin/ip, /usr/sbin/bridge, /usr/sbin/tc, /usr/sbin/nft, /usr/bin/wg, /usr/bin/ovs-vsctl`) — a cached interactive sudo credential (`sudo -v`, kept alive) works just as well as NOPASSWD for these, and is what every current campaign runner actually uses. Do not run `vxedged` itself as root either way — phase 2's fiveg driver needs `podman` to keep running as the deploying user's own identity (see Tier 2). *Original 2026-07-17 finding, still true for the shell-out half*: capabilities don't propagate across `fork`+`exec` to separate child processes, which is why `setcap` alone was insufficient before the rtnetlink port and still doesn't cover `tc`/`nft`/`wg`/`ovs-vsctl` today |
-| iproute2 + nftables | already present on the dev host |
+| CAP_NET_ADMIN | **Two mechanisms now, not one** — corrected 2026-08-05 after a live `exp-010` `--repro` run failed against the 2026-07-17 guidance below. The 2026-08-04 rtnetlink port (`docs/ROADMAP.md` #16) moved bridge/veth/VLAN/address/route creation, WireGuard device creation, and the fiveg host-attachment path off the `ip`/`bridge` shell-out and into `vxedged`'s own in-process syscalls — for exactly that portion, `sudo setcap cap_net_admin+ep <path-to-vxedged>` now **does** work (no child process involved, so the fork+exec propagation problem below doesn't apply), and needs re-running after every rebuild since a fresh binary carries no capability. `tc`, `nft`, `wg` (key/peer config), and `ovs-vsctl` are **still** shell-outs, unchanged, and still need the NOPASSWD-sudo config below (e.g. `<user> ALL=(root) NOPASSWD: /usr/sbin/ip, /usr/sbin/bridge, /usr/sbin/tc, /usr/sbin/nft, /usr/bin/wg, /usr/bin/ovs-vsctl`) — a cached interactive sudo credential (`sudo -v`, kept alive) works just as well as NOPASSWD for these, and is what every current campaign runner actually uses. Do not run `vxedged` itself as root either way — phase 2's fiveg driver needs `podman` to keep running as the deploying user's own identity (see Tier 2). *Original 2026-07-17 finding, still true for the shell-out half*: capabilities don't propagate across `fork`+`exec` to separate child processes, which is why `setcap` alone was insufficient before the rtnetlink port and still doesn't cover `tc`/`nft`/`wg`/`ovs-vsctl` today |
+| iproute2 + nftables | present on most Linux distributions |
 | CPU isolation (recommended) | pin gateway + probe cores: `isolcpus`/`cpuset` — record in results metadata |
 | Kernel flavour caveat | generic (non-PREEMPT_RT) is fine for first numbers; **must** be recorded as a determinism caveat (§12). PREEMPT_RT (Ubuntu Pro real-time kernel) is the upgrade path |
 
@@ -60,7 +60,7 @@ effect on results** and no host-resource requirements beyond an editor.
 |---|---|---|
 | SysIDE (parse/type gate) | **0.9.1** (`syside-languageserver.zip`, sha256 `1c3da428…`) | headless via `vxmodels/scripts/validate-sysml.mjs` (LSP driver; SysIDE has no one-shot CLI); VS Code extension of the same version for authoring |
 | SysML v2 standard library | **SysML-v2-Release 2026-04** `sysml.library` (tarball sha256 `44996ee2…`) | required for stdlib imports (`ScalarValues::*` …) to resolve |
-| Node | ≥ 20 (dev host: 22) | runs the language server + driver |
+| Node | ≥ 20 | runs the language server + driver |
 | OMG pilot implementation (optional) | 2026-05 (Jupyter kernel) | semantic reference / visualization; not in the CI gate |
 | `vxmodel` renderer | Rust (Tier 0 toolchain) | builds with the same toolchain once the crate lands (M2) |
 | Validation loop | — | model gate above, then `vxmodel render` output must pass `vxedge manifest validate --json` (Tier 0 binaries) |

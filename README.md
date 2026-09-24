@@ -1,45 +1,45 @@
-# vxedge Docs
+# docs
 
-This repository hosts documentation, reproducibility guides, and research artifacts
-for the **vxedge** project.
+Specification, results and user documentation for vxedge.
 
-## Contents
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Docs: CC BY 4.0](https://img.shields.io/badge/docs-CC%20BY%204.0-lightgrey.svg)](LICENSE-DOCS)
+[![Release](https://img.shields.io/github/v/tag/vxedge/docs?label=release)](https://github.com/vxedge/docs/tags)
 
-- [STATUS.md](STATUS.md) — living progress report: phases, critical path, per-repo state.
-- [GETTING-STARTED.md](GETTING-STARTED.md) — prerequisites, workspace setup, first experiment.
-- [USER-GUIDE.md](USER-GUIDE.md) — concepts, CLI reference, workflows, results, SDV vocabulary map.
-- [TESTBED-SETUP.md](TESTBED-SETUP.md) — single-machine host requirements, tiered by phase.
-- [ARCHITECTURE.md](ARCHITECTURE.md) — complete system architecture, research design, and manifest schemas.
-- [TASKS.md](TASKS.md) — program-level task board: phase gates and the cross-repo critical path.
-- [PUBLICATION.md](PUBLICATION.md) — arXiv/venue plan, paper skeletons, partner-selection procedure.
-- Reproducibility Guide (coming soon) — how to re-run published experiments step by step.
-- Experiment Reports — structured results and analysis from `vxedge/vxperiments`.
+vxedge is an open, all-software testbed for mapping 5G network slices onto zonal and central software-defined-vehicle (SDV) E/E architectures on a single machine. Every published number ships with the manifest and image digests that produced it.
 
-## About vxedge
+The vxedge specification and user documentation.
 
-vxedge is a research-grade orchestration and experiment platform to evaluate **5G
-network-slice mapping to zonal & central SDV E/E architectures — entirely in software**.
-It provides:
+| Document | What |
+|---|---|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | The master spec: research goals and hypotheses, topology, vxAPI, manifest schemas, network/service/virtualization models, methodology, phased roadmap |
+| [RESULTS.md](RESULTS.md) | Measured results for H1–H4, with numbers, verdicts and caveats |
+| [ROADMAP.md](ROADMAP.md) | Phase status and open work |
+| [GETTING-STARTED.md](GETTING-STARTED.md) | From zero to a measured experiment |
+| [USER-GUIDE.md](USER-GUIDE.md) | Concepts, CLI reference, workflows, SDV vocabulary map |
+| [TESTBED-SETUP.md](TESTBED-SETUP.md) | Host requirements, tiered by experiment class |
+| [PROVISIONING.md](PROVISIONING.md) | How zones, gateway and services are provisioned |
+| [VERSIONING.md](VERSIONING.md) | SemVer and changelog conventions across repos |
+| [ACRONYMS.md](ACRONYMS.md) | Glossary |
+| [diagrams/](diagrams/) | E/E architecture diagrams (draw.io) |
 
-- **vxgateway** — a software-defined virtual edge gateway (OVS/Linux bridge VLANs, tc queue
-  trees, VXLAN, WireGuard, FRR), with real 5G slicing via Open5GS + UERANSIM.
-- QEMU/KVM zonal ECUs managed via libvirt (QNX SDP 8, Zephyr/FreeRTOS, Android Automotive).
-- Containerized central compute (Autoware/ROS2, NVIDIA Alpamayo/AlpaSim, DeepStream/TensorRT).
-- An API-first Rust control plane: the `vxedged` daemon exposes **vxAPI** (gRPC/Protobuf);
-  the `vxedge` CLI, future web and Electron frontends, and an MCP server (`vxmcp`)
-  for AI agent tooling, are all thin clients.
-- Manifest-driven everything — up to a full software-bootstrapped vehicle
-  (`vxedge vehicle up`).
+## Repositories
 
-## Getting Started
+| Repo | What |
+|---|---|
+| [vxedge](https://github.com/vxedge/vxedge) | **Start here.** The control plane (`vxedged`), vxAPI, CLI, and vxgateway |
+| [vxagents](https://github.com/vxedge/vxagents) | Measurement agents: probes and traffic generation |
+| [vxtelemetry](https://github.com/vxedge/vxtelemetry) | Telemetry ingestion and results archiving |
+| [vxota](https://github.com/vxedge/vxota) | OTA server and signing (the H4 workload) |
+| [vxperiments](https://github.com/vxedge/vxperiments) | Experiments, analysis, frozen results |
+| [vxparts](https://github.com/vxedge/vxparts) | OCI/ORAS registry of every loadable the platform boots |
+| [vxmodels](https://github.com/vxedge/vxmodels) | SysML v2 models and the manifest renderer |
+| [vxmcp](https://github.com/vxedge/vxmcp) | MCP server over vxAPI |
 
-See [GETTING-STARTED.md](GETTING-STARTED.md). Key repos:
+## Links
 
-- Control plane, vxAPI & CLI: [vxedge/vxedge](https://github.com/vxedge/vxedge)
-- Loadable registry (zone/compute images): [vxedge/vxparts](https://github.com/vxedge/vxparts)
-- Experiment manifests: [vxedge/vxperiments](https://github.com/vxedge/vxperiments)
-
-## License
-
-Documentation is licensed under **CC-BY 4.0** unless otherwise noted.
-Code artifacts referenced follow their respective repo licenses (MIT/Apache-2.0).
+- Site: <https://vxedge.dev>
+- Architecture: [`docs/ARCHITECTURE.md`](https://github.com/vxedge/docs/blob/main/ARCHITECTURE.md)
+- Results: [`docs/RESULTS.md`](https://github.com/vxedge/docs/blob/main/RESULTS.md) · Roadmap: [`docs/ROADMAP.md`](https://github.com/vxedge/docs/blob/main/ROADMAP.md)
+- Contributing: [CONTRIBUTING](https://github.com/vxedge/.github/blob/main/CONTRIBUTING.md) · Security: [SECURITY](https://github.com/vxedge/.github/blob/main/SECURITY.md)
+- License: Apache-2.0 ([`LICENSE`](LICENSE)) for code; CC BY 4.0 ([`LICENSE-DOCS`](LICENSE-DOCS)) for docs, results, figures and models

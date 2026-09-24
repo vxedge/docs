@@ -2,7 +2,7 @@
 
 Single, self-contained working document for this initiative: design, use-case manifests,
 functional requirements, and task-board status, all in one place (consolidated 2026-08-10 from a
-separate `NODE-PROVISIONING.md` + `docs/TASKS.md` Track V split — this work is substantial enough
+separate `NODE-PROVISIONING.md` + `docs/ROADMAP.md` Track V split — this work is substantial enough
 to pick up in isolation without juggling files). Governs `crates/vxedge-core/src/zones/`, the new
 `crates/vxedge-core/src/containers/` module, their relationship to `crates/vxedge-core/src/
 fiveg/`, and (Track F) a multi-vehicle-instance layer above `VehicleService`. Read `ARCHITECTURE.md`
@@ -26,7 +26,7 @@ automotive ECU, and not a functional-safety-certified target. `ARCHITECTURE.md`'
 "entirely in software," QEMU/KVM VMs "managed via libvirt by default with a raw-QEMU microVM
 backend option." The metrics this platform is built to produce (§12: p50/p95/p99 slice latency,
 jitter, packet loss, OTA delivery latency, telemetry completeness) are all measured **above** the
-virtualization layer, not inside it. Nothing in the platform's phase gates (H1–H4, `docs/TASKS.md`)
+virtualization layer, not inside it. Nothing in the platform's phase gates (H1–H4, `docs/ROADMAP.md`)
 depends on hypervisor boot latency, vCPU-exit handling cost, or virtio ring-buffer throughput —
 those would matter enormously if vxedge *were* building production ECU firmware; they are not
 what phase 1–3 gates measure.
@@ -413,21 +413,21 @@ Track F (multi-vehicle fleet layer) does not start until Track V is at a high su
 
 ## 10. Task board
 
-Moved here from `docs/TASKS.md` 2026-08-10, consolidating design and task status into one file.
+Moved here from `docs/ROADMAP.md` 2026-08-10, consolidating design and task status into one file.
 **Status as of 2026-08-10: design phase. §4's use case is drafted and awaiting validation; no
 Track V or Track F item has started implementation.** This section is the live status —
 update it in place as items move, rather than appending a separate changelog.
 
 ### Track V — node-provisioning engine (single vehicle)
 
-Extends Track C (`docs/TASKS.md`), gates nothing in phases 1–3. Blocked on §4's use case being
+Extends Track C (`docs/ROADMAP.md`), gates nothing in phases 1–3. Blocked on §4's use case being
 validated (§3) before V0/V1 implementation starts — the use case is what confirms the design in
 §§5–9 actually holds at realistic scale before Rust API surface commits to it.
 
 - [ ] V0 — `LibvirtBackend`: `virsh` CLI → `virt` crate (`vxedge-core::zones::backend`). Removes
       the last CLI-shell privilege-escalation exposure on the VM side entirely (in-process FFI
       against `libvirtd`, group-membership/polkit authorized, no `sudo` at all — stronger than
-      the qemu-microvm tap-ownership fix, `docs/TASKS.md` 2026-08-06 entry). New build-time
+      the qemu-microvm tap-ownership fix, `docs/ROADMAP.md` 2026-08-06 entry). New build-time
       dependency on libvirt headers (`libvirt-dev`) — add to `docs/TESTBED-SETUP.md` Tier 2 in
       the same change, not as a follow-up. `libvirt_domain_xml`'s XML generation is untouched
       (pure, transport-independent); only `virsh()`'s CLI transport is replaced.
