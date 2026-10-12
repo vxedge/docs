@@ -10,6 +10,9 @@ that board.
 
 ## Phase status
 
+The phase, track and delivery states below are registered in [`FACTS.md`](FACTS.md); change them
+there first.
+
 | Phase | Gate | Status |
 |---|---|---|
 | **1** — slicing core, API-first | Reproducible H1/H3/H4 numbers | **Gate passed.** All three hold and were independently reproduced. See [`RESULTS.md`](RESULTS.md) |

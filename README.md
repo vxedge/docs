@@ -14,6 +14,7 @@ The vxedge specification and user documentation.
 |---|---|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | The master spec: research goals and hypotheses, topology, vxAPI, manifest schemas, network/service/virtualization models, methodology, phased roadmap |
 | [RESULTS.md](RESULTS.md) | Measured results for H1–H4, with numbers, verdicts and caveats |
+| [FACTS.md](FACTS.md) | **The registry of every published number and state.** The website and every README quote it |
 | [ROADMAP.md](ROADMAP.md) | Phase status and open work |
 | [GETTING-STARTED.md](GETTING-STARTED.md) | From zero to a measured experiment |
 | [USER-GUIDE.md](USER-GUIDE.md) | Concepts, CLI reference, workflows, SDV vocabulary map |
