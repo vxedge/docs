@@ -7,6 +7,9 @@ central SDV (software-defined vehicle) E/E architectures: a virtual edge gateway
 [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full picture; this page gets you from
 zero to a measured experiment; day-to-day usage lives in [USER-GUIDE.md](USER-GUIDE.md).
 
+**Pre-release (0.x).** The manifest schema and vxAPI may change between minor versions
+([`VERSIONING.md`](VERSIONING.md)); published results are frozen and do not change.
+
 ## 1. Prerequisites
 
 Verified versions as of 2026-07:
