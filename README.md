@@ -8,6 +8,8 @@ Specification, results and user documentation for vxedge.
 
 vxedge is an open, all-software testbed for mapping 5G network slices onto zonal and central software-defined-vehicle (SDV) E/E architectures on a single machine. Every published number ships with the manifest and image digests that produced it.
 
+**Pre-release (0.x):** the manifest schema and vxAPI may change between minor versions; published results are frozen.
+
 The vxedge specification and user documentation.
 
 | Document | What |
