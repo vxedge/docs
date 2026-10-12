@@ -24,6 +24,10 @@ spec** — every other repo's AGENTS.md and TASKS.md derive from it and must not
   validated, before functional requirements or implementation. Includes a reviewed-and-rejected
   verdict on building a from-scratch in-process KVM hypervisor. Extends `ARCHITECTURE.md` §9/§15,
   doesn't replace them. `docs/ROADMAP.md` carries only a one-line pointer here, not the task board.
+- `FACTS.md` — **the registry of every published number and state**: measured values (copied from
+  `vxperiments` frozen summaries), verdicts, phase/track states, the parity ledger, delivery states.
+  The website builds every number it shows from this file; `RESULTS.md` and the GitHub READMEs
+  quote it. Machine-read by `scripts/facts.py` (`json` for the website, `check` for docs).
 - `ARCHITECTURE.md` — the master spec (16 sections). Key anchors: §2 hypotheses H1–H4,
   §5 vxAPI/control plane, §6 manifest schemas (experiment + vehicle), §7 vxgateway network
   model, §9 virtualization (libvirt/QEMU/QNX), §15 language policy + 4-phase roadmap,
@@ -48,8 +52,11 @@ spec** — every other repo's AGENTS.md and TASKS.md derive from it and must not
 
 - Any change to manifest schemas, vxAPI surface, CLI command shape, or the phase roadmap MUST
   be made in `ARCHITECTURE.md` first, then propagated to affected repos' AGENTS.md/TASKS.md.
-- When a phase gate is reached, update `ROADMAP.md` and `RESULTS.md` here in the same change set
+- When a phase gate is reached, update `FACTS.md`, `ROADMAP.md` and `RESULTS.md` here in the same change set
   as the per-repo TASKS.md updates.
+- **Numbers live in `FACTS.md`.** A result, phase state or delivery state changes there first, in
+  the same change as the summary or state that moved; then `python3 scripts/facts.py check` (CI
+  runs it). Never type a measured number into another page — quote the registered value.
 - Prose style: state fidelity caveats honestly (shared-host gateway, QNX-as-guest inversion);
   reproducibility claims must name the mechanism (digests, versioned manifests, idempotent CLI).
 

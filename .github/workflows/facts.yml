@@ -1,0 +1,18 @@
+name: facts
+
+# FACTS.md is the registry of every published number and state. This checks that it parses
+# and that every measurement-shaped number on the pages quoting it is registered there.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/facts.py check
