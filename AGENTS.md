@@ -11,11 +11,9 @@ spec** — every other repo's AGENTS.md and TASKS.md derive from it and must not
 - `USER-GUIDE.md` — public-facing usage doc (concepts, per-verb CLI state, workflows,
   results, production-vocabulary mapping). Update its CLI-state table whenever a verb goes
   live or changes shape — OEM engineers read this first.
-- `RESULTS.md` — reference document (phases %, H1 critical path, per-repo state, environment
-  gaps, versioning/public-visibility punch list, risks). **Update at phase boundaries**, not
-  per push — the day-by-day progress narrative lives in `ROADMAP.md`'s "State snapshot" section
-  instead (consolidated 2026-08-02; RESULTS.md's own pre-consolidation changelog is preserved
-  at the bottom of the file as a frozen historical archive).
+- `RESULTS.md` — measured results for H1–H4: what each hypothesis tests, the verdict, and the caveat
+  that matters most. The numbers themselves are registered in `FACTS.md` and quoted here; update
+  this page when a campaign is re-frozen or a caveat changes.
 - `TESTBED-SETUP.md` — single-machine host requirements, tiered by phase (OS, resources,
   software versions). Anything the testbed needs that it doesn't list is a bug in it.
 - `PROVISIONING.md` — self-contained design + use-case manifests + task board (Track V/Track F)
@@ -32,10 +30,8 @@ spec** — every other repo's AGENTS.md and TASKS.md derive from it and must not
   §5 vxAPI/control plane, §6 manifest schemas (experiment + vehicle), §7 vxgateway network
   model, §9 virtualization (libvirt/QEMU/QNX), §15 language policy + 4-phase roadmap,
   §16 worked examples.
-- `ROADMAP.md` — the program-level task board: phase gates and cross-repo critical path.
-  Per-repo TASKS.md files hold the detailed work items.
-- `ROADMAP.md` — arXiv/venue plan, paper skeletons, partner-selection procedure, and the
-  publication gate (never preprint before repos are public and results rerun reproducibly).
+- `ROADMAP.md` — the public phase status and open work: phase gates and the cross-repo critical
+  path. Per-repo `TASKS.md` files hold the detailed work items.
 - `VERSIONING.md` — SemVer + `CHANGELOG.md` (Keep a Changelog) conventions every repo
   follows; when tags get cut (not before the phase-1 gate) and what stays out of scope for
   hand-maintained docs vs. the devops board (`ROADMAP.md`).
