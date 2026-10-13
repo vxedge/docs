@@ -75,17 +75,17 @@ manifest and then fails with an actionable message (by design).
 The flagship walkthrough: a full slice-isolation measurement, one command per step.
 
 ```bash
-cd vxperiments
-sudo -E env "PATH=$PATH" ./scripts/run-exp-001.sh --quick   # ~1 min pipeline validation
-python3 notebooks/analyze_exp001.py results/exp-001-quick    # table + H1 verdict
+cd vxperiments/experiments/exp-001-ws
+sudo -E env "PATH=$PATH" ./scripts/run.sh --quick                              # ~1 min pipeline validation
+python3 ../../notebooks/analyze_exp001.py ../../results/exp-001-quick          # table + H1 verdict
 ```
 
-Quick runs write to `results/exp-001-quick/` (disposable); a full campaign owns
-`results/exp-001/`, and later reruns use `--repro` (date-suffixed dir) — a dir holding a
+Results land in `vxperiments/results/`. Quick runs write to `results/exp-001-quick/` (disposable);
+the frozen campaign owns `results/exp-001/`, and reruns use `--repro` (date-suffixed dir) — a dir holding a
 frozen campaign's archives is never overwritten in place.
 
 The `--quick` numbers are pipeline validation only (marked NOT reportable). The full
-campaign is `./scripts/run-exp-001.sh` without flags: ~35 minutes, 5 repetitions x 5 load
+campaign is `./scripts/run.sh --repro` (it never overwrites the frozen `results/exp-001/`): ~35 minutes, 5 repetitions x 5 load
 levels, 60k samples per point — keep the machine otherwise idle and prefer the
 `performance` CPU governor. Reference result and methodology: RESULTS.md and the
 `experiment-methodology` skill.
