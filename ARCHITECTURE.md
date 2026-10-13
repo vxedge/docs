@@ -92,9 +92,9 @@ hugepages) are part of the method, and their effect is itself reported.
 
 ## 3 — High-level architecture (topology & components)
 
-![vxedge topology: an operator edge with the 5G core, an emulated backhaul, and one host where vxgateway trunks VLAN slices to zone controllers and to central compute. Solid boxes are built today; dashed boxes are specified and not built yet.](diagrams/zonal-topology.svg)
+[![vxedge topology: an operator edge with the 5G core, an emulated backhaul, and one host where vxgateway trunks VLAN slices to zone controllers and to central compute. Solid boxes are built today; dashed boxes are specified and not built yet.](diagrams/zonal-topology.svg)](diagrams/zonal-topology.svg)
 
-*Figure 3.1: the topology. Box states follow the parity ledger in [`FACTS.md`](FACTS.md): solid is built
+*Figure 3.1: the topology (click for full size). Box states follow the parity ledger in [`FACTS.md`](FACTS.md): solid is built
 today (real, emulated or building), dashed is specified and not built yet. Source:
 [`diagrams/topology.py`](diagrams/topology.py).*
 
@@ -173,9 +173,9 @@ behind a strongly-typed IDL, with every UI a disposable thin client. vxedge adop
 
 ### 5.1 Layers & frontends
 
-![vxAPI layers: thin frontends call the vxAPI through generated SDKs; on the host, vxAPI fronts the vxedged daemon, which sits on vxedge-core and its backends. Solid boxes are built today; dashed boxes are specified and not built yet.](diagrams/vxapi-layers.svg)
+[![vxAPI layers: thin frontends call the vxAPI through generated SDKs; on the host, vxAPI fronts the vxedged daemon, which sits on vxedge-core and its backends. Solid boxes are built today; dashed boxes are specified and not built yet.](diagrams/vxapi-layers.svg)](diagrams/vxapi-layers.svg)
 
-*Figure 5.1: layers and frontends. Box states follow the parity ledger in [`FACTS.md`](FACTS.md).
+*Figure 5.1: layers and frontends (click for full size). Box states follow the parity ledger in [`FACTS.md`](FACTS.md).
 Source: [`diagrams/layers.py`](diagrams/layers.py).*
 
 - **vxedge-core** (Rust lib): pure domain logic; no user-facing I/O.

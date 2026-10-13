@@ -15,10 +15,13 @@ def add(s: str) -> None:
     out.append(s)
 
 
+K = 1.15  # type scale: diagrams are shown at about two thirds of their width, so the text is drawn large
+
+
 def text(x, y, s, size=13, weight=400, fill=INK, anchor="start", mono=False, spacing=None):
     fam = "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" if mono else "ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif"
     ls = f' letter-spacing="{spacing}"' if spacing else ""
-    add(f'<text x="{x}" y="{y}" font-family="{fam}" font-size="{size}" font-weight="{weight}" fill="{fill}" text-anchor="{anchor}"{ls}>{escape(s)}</text>')
+    add(f'<text x="{x}" y="{y}" font-family="{fam}" font-size="{round(size * K, 1)}" font-weight="{weight}" fill="{fill}" text-anchor="{anchor}"{ls}>{escape(s)}</text>')
 
 
 def box(x, y, w, h, title, sub="", state="", dashed=False, fill="#FFFFFF", rx=5):
