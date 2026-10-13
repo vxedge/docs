@@ -1,4 +1,4 @@
-# FACTS.md — every number and state vxedge publishes
+# Facts registry
 
 This file is the single registry of published facts: measured numbers, verdicts, phase states,
 the parity ledger and what has been delivered. The website ([vxedge.dev](https://vxedge.dev))

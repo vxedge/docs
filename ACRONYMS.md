@@ -1,4 +1,4 @@
-# ACRONYMS.md — glossary
+# Acronyms and glossary
 
 Every acronym used across `ARCHITECTURE.md` and the other program docs, explained in
 plain language and grouped by field. Not auto-generated — update it by hand alongside

@@ -1,4 +1,4 @@
-# PROVISIONING.md — node-provisioning engine + vehicle-fleet layer
+# Provisioning
 
 Single, self-contained working document for this initiative: design, use-case manifests,
 functional requirements, and task-board status, all in one place (consolidated 2026-08-10 from a

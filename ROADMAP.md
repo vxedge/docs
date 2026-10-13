@@ -1,4 +1,4 @@
-# ROADMAP.md — phases and open work
+# Roadmap
 
 Where vxedge stands, phase by phase. The full phase definitions are in
 [`ARCHITECTURE.md`](ARCHITECTURE.md) §15, and the measured results are in [`RESULTS.md`](RESULTS.md).
