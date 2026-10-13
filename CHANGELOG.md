@@ -6,9 +6,18 @@ All notable changes to this repo are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-13
+
 ### Added
 
+- `FACTS.md`: the registry of every published number and state, read by `scripts/facts.py` (CI runs `check`); the website and READMEs quote it.
+- Generated architecture diagrams (`diagrams/topology.py`, `layers.py`) replacing the ASCII figures in `ARCHITECTURE.md`, with a CI sync check.
 - Open-source release preparation: `LICENSE` (Apache-2.0), `NOTICE`, rewritten `README.md`. Program board, status journal and publication plan moved out; public summaries now live in `RESULTS.md` and `ROADMAP.md`.
+
+### Changed
+
+- Reproduction commands in `GETTING-STARTED.md` and `USER-GUIDE.md` corrected to `experiments/exp-001-ws/scripts/run.sh`; `vehicle up` documented as live on a bare vehicle.
+- Page titles cleaned up for the rendered docs.
 
 ## [0.1.0] - 2026-07-13
 
