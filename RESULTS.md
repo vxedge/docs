@@ -33,6 +33,13 @@ same network namespace. That defect was fixed with real netns isolation and is n
 CI regression test. The numbers above are the corrected re-run.
 [Summary](https://github.com/vxedge/vxperiments/blob/main/results/exp-001/exp-001-summary.md)
 
+**Repeats on a newer kernel.** Two further runs on kernel 7.0.0-38-generic (input sha
+`ac2496e3f58e…`, 25 archives each) keep the verdict: p99 at the highest load is 0.94× and 1.00× of idle,
+against 0.91× in the frozen run, and the second repeat sits inside the first's IQR on 12 of 15 metric ×
+load pairs (values in [`FACTS.md` § H1](FACTS.md#h1--isolation-exp-001)). Both read a few microseconds
+below the frozen run at the two highest loads. The cause is not isolated; the kernel change is the leading
+suspect and has not been tested. The frozen numbers stay the published ones; these are supplementary checks.
+
 ## H2 — real slicing vs static mapping (`exp-010`)
 
 S-NSSAI PDU sessions through Open5GS + UERANSIM, compared against `exp-001`'s VLAN arm. The

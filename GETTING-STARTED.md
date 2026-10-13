@@ -84,8 +84,15 @@ After pulling new commits, rebuild all three binaries before a run (`cargo build
 `vxagents` and `vxtelemetry`, as your own user, not root). The runner refuses to measure with a binary older
 than its source and tells you the exact command, including a `touch` of the rebuilt binaries.
 
-Zone images are pulled from `ghcr.io/vxedge/parts/...`. While those packages are private, run
-`sudo env "PATH=$PATH" oras login ghcr.io` once (the daemon runs as root); the `exp-001` runner does not need it.
+Zone bundles for a bare vehicle are built on your own host, not pulled from a registry, so no registry
+login is needed. For `vx-vehicle-01`, from the workspace root:
+`vxparts/parts/zone/linux/stack/probe-bundle/build.sh "$PWD/vxperiments/vehicles/vx-vehicle-01/bundle"`
+(`bundle/` is git-ignored). The bundle embeds your host kernel, so its digest differs per host, and
+`vehicle up` stops before provisioning anything if it is missing. Two host details to know:
+the root daemon creates its socket owned by root with mode 755, so a non-root `vxedge` client needs
+`sudo chown $USER` on the socket (or run it with `sudo`); and on Ubuntu `/boot/vmlinuz-*` is mode 600,
+so `build.sh` fails until the kernel image is readable (copy it somewhere readable and pass `KERNEL=`).
+The `exp-001` runner needs neither the bundle nor a login.
 
 Results land in `vxperiments/results/`. Quick runs write to `results/exp-001-quick/` (disposable);
 the frozen campaign owns `results/exp-001/`, and reruns use `--repro` (date-suffixed dir) — a dir holding a

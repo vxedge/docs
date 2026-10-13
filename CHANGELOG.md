@@ -6,6 +6,14 @@ All notable changes to this repo are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- Supplementary `exp-001` repeats on kernel 7.0.0-38 registered in `FACTS.md` (`h1r.*`) and summarised in `RESULTS.md`; the frozen numbers are unchanged.
+
+### Changed
+
+- Getting started and the user guide: the example vehicle boots a locally built, per-host zone bundle, so no registry login is needed; added the daemon-socket and `/boot/vmlinuz` host notes.
+
 ## [0.2.0] - 2026-10-13
 
 ### Added
