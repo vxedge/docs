@@ -94,38 +94,11 @@ hugepages) are part of the method, and their effect is itself reported.
 
 ## 3 — High-level architecture (topology & components)
 
-```
-                       Cloud / Operator Edge (optional)
-        +--------------------------------------------------------------+
-        |  Open5GS 5G core (slices/S-NSSAI) · NOC · OTA repo · Grafana |
-        |  SONiC-VS "production NOS twin" · (NVIDIA Air sandbox)       |
-        +-------------------------------+------------------------------+
-                                        |
-                            Internet / emulated 5G backhaul
-                            (UERANSIM gNB/UE · optional Sionna
-                             channel realism via NVIDIA 6G program)
-                                        |
-        +----------------- NVIDIA GPU host(s) — PREEMPT_RT ------------+
-        |                                                              |
-        |  +--------------------------------------------------------+  |
-        |  | vxgateway (virtual edge gateway — VM or netns set)     |  |
-        |  |  OVS/bridge VLAN trunk · tc queue trees per slice ·    |  |
-        |  |  VXLAN inter-host · WireGuard · FRR (BGP)              |  |
-        |  +----+---------------------+---------------------+------+  |
-        |       | 802.1q trunk        |                     |          |
-        |  Zones (QEMU/KVM via libvirt):                Compute        |
-        |   - zone-front-left   QNX SDP 8 / RTOS (ADAS)  (containers): |
-        |   - zone-front-right  QNX SDP 8 / RTOS (ADAS)   - Autoware/  |
-        |   - zone-rear-left    comfort, BMS, clients       ROS2       |
-        |   - zone-rear-right   comfort, BMS, clients     - Alpamayo/  |
-        |   - zone-central-hpc  (maps to compute below)     AlpaSim    |
-        |   - zone-gateway      uplink into vxgateway     - DeepStream |
-        |                                                 - TensorRT   |
-        |  Signal plane: Eclipse Kuksa databroker (COVESA VSS)         |
-        |  Comms: DDS / rmw_zenoh · uProtocol (phase 3)                |
-        |  World: CARLA server (GPU) → carla-ros-bridge → Autoware     |
-        +--------------------------------------------------------------+
-```
+![vxedge topology: an operator edge with the 5G core, an emulated backhaul, and one host where vxgateway trunks VLAN slices to zone controllers and to central compute. Solid boxes are built today; dashed boxes are specified and not built yet.](diagrams/zonal-topology.svg)
+
+*Figure 3.1: the topology. Box states follow the parity ledger in [`FACTS.md`](FACTS.md): solid is built
+today (real, emulated or building), dashed is specified and not built yet. Source:
+[`diagrams/topology.py`](diagrams/topology.py).*
 
 **Key components:**
 
