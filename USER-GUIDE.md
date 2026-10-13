@@ -99,11 +99,10 @@ Campaigns are orchestrated by a runner script that encodes the methodology (warm
 the probe window, ≥5 repetitions, environment metadata, archive per run):
 
 ```bash
-cd vxperiments
-sudo -E env "PATH=$PATH" ./scripts/run-exp-001.sh --quick   # ~1 min pipeline validation -> results/exp-001-quick/
-sudo -E env "PATH=$PATH" ./scripts/run-exp-001.sh           # full campaign (~35 min, idle host) -> results/exp-001/
-sudo -E env "PATH=$PATH" ./scripts/run-exp-001.sh --repro   # later rerun -> results/exp-001-repro-<date>/
-python3 notebooks/analyze_exp001.py results/exp-001          # archives -> table + verdict
+cd vxperiments/experiments/exp-001-ws
+sudo -E env "PATH=$PATH" ./scripts/run.sh --quick   # ~1 min pipeline validation -> ../../results/exp-001-quick/
+sudo -E env "PATH=$PATH" ./scripts/run.sh --repro   # full rerun (~35 min, idle host) -> ../../results/exp-001-repro-<date>/
+python3 ../../notebooks/analyze_exp001.py ../../results/exp-001   # archives -> table + verdict
 ```
 
 A dir already holding a campaign's archives is never overwritten in place — full runs
