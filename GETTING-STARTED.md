@@ -80,6 +80,13 @@ sudo -E env "PATH=$PATH" ./scripts/run.sh --quick                              #
 python3 ../../notebooks/analyze_exp001.py ../../results/exp-001-quick          # table + H1 verdict
 ```
 
+After pulling new commits, rebuild all three binaries before a run (`cargo build --workspace` in `vxedge`,
+`vxagents` and `vxtelemetry`, as your own user, not root). The runner refuses to measure with a binary older
+than its source and tells you the exact command, including a `touch` of the rebuilt binaries.
+
+Zone images are pulled from `ghcr.io/vxedge/parts/...`. While those packages are private, run
+`sudo env "PATH=$PATH" oras login ghcr.io` once (the daemon runs as root); the `exp-001` runner does not need it.
+
 Results land in `vxperiments/results/`. Quick runs write to `results/exp-001-quick/` (disposable);
 the frozen campaign owns `results/exp-001/`, and reruns use `--repro` (date-suffixed dir) — a dir holding a
 frozen campaign's archives is never overwritten in place.
