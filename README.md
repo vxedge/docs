@@ -1,4 +1,4 @@
-# docs
+# vxedge documentation
 
 Specification, results and user documentation for vxedge.
 

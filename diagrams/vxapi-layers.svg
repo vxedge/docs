@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" width="1200" height="640" role="img" aria-labelledby="t d">
+<title id="t">vxAPI layers: frontends, generated SDKs, vxAPI, vxedged and vxedge-core</title>
+<desc id="d">Thin frontends call the vxAPI through generated SDKs. On the host, vxAPI fronts the vxedged daemon (job engine, event bus, reconciler, audit log), which sits on vxedge-core (manifests, validation and the libvirt, network, container, 5G and traffic backends). Solid boxes are built today; dashed boxes are specified and not built yet.</desc>
+<rect width="1200" height="640" rx="10" fill="#FAFAF8" stroke="#C9C9C4"/>
+<rect x="40" y="30" width="1120" height="120" rx="8" fill="#F3F3F0" stroke="#C9C9C4" stroke-width="1.2"/>
+<text x="58" y="54" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.5" font-weight="600" fill="#5A5E66" text-anchor="start" letter-spacing=".6">FRONTENDS  (THIN CLIENTS: NO ORCHESTRATION LOGIC)</text>
+<rect x="70" y="62" width="250" height="70" rx="5" fill="#FFFFFF" stroke="#1E2023" stroke-width="1.5"/>
+<text x="86" y="86" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14.5" font-weight="700" fill="#1E2023" text-anchor="start">vxedge CLI</text>
+<text x="86" y="107" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#5A5E66" text-anchor="start">primary frontend · Rust</text>
+<text x="306" y="82" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10" font-weight="600" fill="#0E7C6B" text-anchor="end" letter-spacing="1">REAL</text>
+<path d="M195 150L195 190" stroke="#1E2023" stroke-width="1.5" fill="none"/>
+<rect x="340" y="62" width="250" height="70" rx="5" fill="#FFFFFF" stroke="#1E2023" stroke-width="1.5"/>
+<text x="356" y="86" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14.5" font-weight="700" fill="#1E2023" text-anchor="start">vxmcp</text>
+<text x="356" y="107" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#5A5E66" text-anchor="start">MCP server for AI agent tooling</text>
+<text x="576" y="82" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10" font-weight="600" fill="#5A5E66" text-anchor="end" letter-spacing="1">BUILDING</text>
+<path d="M465 150L465 190" stroke="#1E2023" stroke-width="1.5" fill="none"/>
+<rect x="610" y="62" width="250" height="70" rx="5" fill="#FFFFFF" stroke="#5A5E66" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="626" y="86" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14.5" font-weight="700" fill="#1E2023" text-anchor="start">Web dashboard</text>
+<text x="626" y="107" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#5A5E66" text-anchor="start">TypeScript</text>
+<text x="846" y="82" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10" font-weight="600" fill="#5A5E66" text-anchor="end" letter-spacing="1">PLANNED</text>
+<path d="M735 150L735 190" stroke="#5A5E66" stroke-width="1.5" fill="none" stroke-dasharray="5 4"/>
+<rect x="880" y="62" width="250" height="70" rx="5" fill="#FFFFFF" stroke="#5A5E66" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="896" y="86" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14.5" font-weight="700" fill="#1E2023" text-anchor="start">vxedge Studio</text>
+<text x="896" y="107" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#5A5E66" text-anchor="start">Electron, future</text>
+<text x="1116" y="82" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10" font-weight="600" fill="#5A5E66" text-anchor="end" letter-spacing="1">PLANNED</text>
+<path d="M1005 150L1005 190" stroke="#5A5E66" stroke-width="1.5" fill="none" stroke-dasharray="5 4"/>
+<rect x="70" y="190" width="1060" height="66" rx="5" fill="#FFFFFF" stroke="#1E2023" stroke-width="1.5"/>
+<text x="86" y="214" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14.5" font-weight="700" fill="#1E2023" text-anchor="start">Generated SDKs</text>
+<text x="86" y="235" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#5A5E66" text-anchor="start">Rust (built) · TypeScript / connect-es and C++ (planned): generated from the IDL, never hand-written</text>
+<text x="1116" y="210" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10" font-weight="600" fill="#5A5E66" text-anchor="end" letter-spacing="1">BUILDING</text>
+<path d="M600 256L600 285" stroke="#1E2023" stroke-width="1.5" fill="none"/>
+<rect x="40" y="285" width="1120" height="290" rx="8" fill="#F3F3F0" stroke="#C9C9C4" stroke-width="1.2"/>
+<text x="58" y="309" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.5" font-weight="600" fill="#5A5E66" text-anchor="start" letter-spacing=".6">ONE HOST</text>
+<rect x="70" y="318" width="1060" height="66" rx="5" fill="#FFFFFF" stroke="#1E2023" stroke-width="1.5"/>
+<text x="86" y="342" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14.5" font-weight="700" fill="#1E2023" text-anchor="start">vxAPI</text>
+<text x="86" y="363" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#5A5E66" text-anchor="start">gRPC / Protobuf, package vxedge.v1 · Unix socket locally · mTLS TCP remote and gRPC-Web are planned (phase 5)</text>
+<text x="1116" y="338" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10" font-weight="600" fill="#0E7C6B" text-anchor="end" letter-spacing="1">REAL</text>
+<rect x="70" y="398" width="1060" height="66" rx="5" fill="#FFFFFF" stroke="#1E2023" stroke-width="1.5"/>
+<text x="86" y="422" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14.5" font-weight="700" fill="#1E2023" text-anchor="start">vxedged</text>
+<text x="86" y="443" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#5A5E66" text-anchor="start">async job engine · event bus · reconciler (desired vs observed) · audit log</text>
+<text x="1116" y="418" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10" font-weight="600" fill="#0E7C6B" text-anchor="end" letter-spacing="1">REAL</text>
+<rect x="70" y="478" width="1060" height="80" rx="5" fill="#FFFFFF" stroke="#1E2023" stroke-width="1.5"/>
+<text x="86" y="502" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14.5" font-weight="700" fill="#1E2023" text-anchor="start">vxedge-core</text>
+<text x="86" y="523" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#5A5E66" text-anchor="start">manifests · validation · backends</text>
+<text x="1116" y="498" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="10" font-weight="600" fill="#0E7C6B" text-anchor="end" letter-spacing="1">REAL</text>
+<text x="86" y="545" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" font-weight="400" fill="#5A5E66" text-anchor="start">libvirt · rtnetlink / OVSDB · containers · Open5GS · traffic</text>
+<path d="M600 384L600 398" stroke="#1E2023" stroke-width="1.5" fill="none"/>
+<path d="M600 464L600 478" stroke="#1E2023" stroke-width="1.5" fill="none"/>
+<rect x="40" y="600" width="22" height="12" rx="2" fill="#FFFFFF" stroke="#1E2023" stroke-width="1.5"/>
+<text x="70" y="610" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="11.5" font-weight="400" fill="#5A5E66" text-anchor="start">built today (real, emulated or building)</text>
+<rect x="360" y="600" width="22" height="12" rx="2" fill="#FFFFFF" stroke="#5A5E66" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="390" y="610" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="11.5" font-weight="400" fill="#5A5E66" text-anchor="start">specified, not built yet</text>
+<text x="1160" y="610" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="11.5" font-weight="400" fill="#5A5E66" text-anchor="end">every verb is a vxAPI call; every mutating call returns a job</text>
+</svg>

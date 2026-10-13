@@ -1,4 +1,4 @@
-# Getting Started with vxedge
+# Getting started
 
 vxedge is an all-software research platform for mapping 5G network slices onto zonal &
 central SDV (software-defined vehicle) E/E architectures: a virtual edge gateway
