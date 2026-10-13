@@ -1,4 +1,4 @@
-# VERSIONING.md — release versioning & changelogs across the vxedge workspace
+# Versioning and changelogs
 
 Each repo under `github.com/vxedge/` is an **independent git repo with its own version
 history** (see workspace `CLAUDE.md`) — there is no single "vxedge version." This document

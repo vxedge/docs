@@ -1,4 +1,4 @@
-# vxedge User Guide
+# User guide
 
 For SDV / automotive engineers using vxedge as a testbed. Onboarding lives in
 [GETTING-STARTED.md](GETTING-STARTED.md); the full spec in [ARCHITECTURE.md](ARCHITECTURE.md);

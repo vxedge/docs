@@ -1,4 +1,4 @@
-# RESULTS.md — measured results
+# Results
 
 What vxedge has measured so far, one row per hypothesis, with the caveat that matters most for
 each. Hypotheses are defined in [`ARCHITECTURE.md`](ARCHITECTURE.md) §2; methodology in §12.

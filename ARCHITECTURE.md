@@ -1,18 +1,16 @@
-# vxedge Research Plan and ARCHITECTURE
+# Architecture
 
-Project: vxedge
-Purpose: Research-grade orchestration and experiment platform to evaluate 5G network-slice mapping
-to zonal & central SDV E/E architectures — **entirely in software**. A software-defined virtual
-gateway (`vxgateway`, built on the Linux networking stack) replaces physical edge gear; KVM/QEMU
-VMs managed through libvirt provide zonal ECUs (QNX, Zephyr, FreeRTOS, Android Automotive);
-containerized central compute runs Autoware/ROS2 and NVIDIA AD workloads (Alpamayo, DeepStream,
-TensorRT); and a Rust control plane (`vxedged`) orchestrates manifest-driven vehicles,
-experiments, services, and telemetry — exposing a versioned gRPC/Protobuf API (**vxAPI**)
-consumed by thin frontends: the `vxedge` CLI today; web/TypeScript and Electron frontends next;
-an MCP server (`vxmcp`) exposing the same API to AI agent tooling; locally over a Unix socket
-or cloud-hosted behind mTLS. (Qt/QML is not an operator-dashboard frontend here — see §5.1 for
-its two real, unrelated roles: an in-vehicle embedded IVI loadable, and a future `vxmodels`
-graphical design tool.)
+*The master specification for vxedge: research goals, topology, vxAPI, manifest schemas, the network, service and virtualization models, methodology, and the phased roadmap.*
+
+vxedge is a research-grade orchestration and experiment platform that evaluates 5G network-slice mapping onto zonal and central software-defined-vehicle (SDV) E/E architectures, **entirely in software**. In short:
+
+- **Gateway.** `vxgateway`, built on the Linux networking stack, replaces physical edge gear.
+- **Zones.** KVM/QEMU VMs managed through libvirt provide zonal ECUs (QNX, Zephyr, FreeRTOS, Android Automotive).
+- **Compute.** Containerized central compute runs Autoware/ROS 2 and NVIDIA AD workloads (Alpamayo, DeepStream, TensorRT).
+- **Control plane.** A Rust daemon (`vxedged`) orchestrates manifest-driven vehicles, experiments, services and telemetry, and exposes a versioned gRPC/Protobuf API (**vxAPI**).
+- **Frontends.** Thin clients of that API: the `vxedge` CLI today; web/TypeScript and Electron frontends next; and an MCP server (`vxmcp`) for AI agent tooling. Locally over a Unix socket, or cloud-hosted behind mTLS.
+
+*Qt/QML is not an operator-dashboard frontend here; see §5.1 for its two real, unrelated roles: an in-vehicle embedded IVI loadable, and a future `vxmodels` graphical design tool.*
 
 ---
 
@@ -175,23 +173,10 @@ behind a strongly-typed IDL, with every UI a disposable thin client. vxedge adop
 
 ### 5.1 Layers & frontends
 
-```
- frontends:  vxedge CLI │ web dashboard (TS) │ Electron "vxedge Studio" (future)
-                 │              │                      │
-                 └──────┬───────┴─────────┬────────────┘
-                        ▼ generated SDKs (Rust · TypeScript/connect-es)
-                ┌───────────────────────────────────────────────┐
-                │ vxAPI — gRPC/Protobuf, package vxedge.v1      │
-                │ (UDS local · mTLS TCP remote · gRPC-Web)      │
-                ├───────────────────────────────────────────────┤
-                │ vxedged — daemon: async job engine, event bus,│
-                │ reconciler (desired vs observed), audit log   │
-                ├───────────────────────────────────────────────┤
-                │ vxedge-core — manifests, validation, backends:│
-                │ libvirt · rtnetlink/OVSDB · containers ·      │
-                │ Open5GS · traffic                             │
-                └───────────────────────────────────────────────┘
-```
+![vxAPI layers: thin frontends call the vxAPI through generated SDKs; on the host, vxAPI fronts the vxedged daemon, which sits on vxedge-core and its backends. Solid boxes are built today; dashed boxes are specified and not built yet.](diagrams/vxapi-layers.svg)
+
+*Figure 5.1: layers and frontends. Box states follow the parity ledger in [`FACTS.md`](FACTS.md).
+Source: [`diagrams/layers.py`](diagrams/layers.py).*
 
 - **vxedge-core** (Rust lib): pure domain logic; no user-facing I/O.
 - **vxedged** (Rust daemon, tonic + tonic-web): hosts vxAPI. Every mutating verb is an **async

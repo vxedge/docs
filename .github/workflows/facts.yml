@@ -1,6 +1,6 @@
 name: facts
 
-# FACTS.md is the registry of every published number and state. This checks that it parses
+# Two checks. FACTS.md is the registry of every published number and state. This checks that it parses
 # and that every measurement-shaped number on the pages quoting it is registered there.
 on:
   push:
@@ -16,3 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 scripts/facts.py check
+      - name: Diagrams are in sync with their generators
+        run: |
+          python3 diagrams/topology.py
+          python3 diagrams/layers.py
+          git diff --exit-code -- diagrams
