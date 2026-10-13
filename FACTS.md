@@ -253,6 +253,6 @@ How a generated experiment reaches the bench.
 | Key | Value | Source |
 |---|---|---|
 | `retarget.validate` | live | an experiment retargets to another vehicle by id and validates |
-| `vehicle.up` | live | `vxedge vehicle up\|down\|status` on a bare vehicle: gateway and zones (verified 2026-10-13, one-zone vehicle). The phase-3 gate, a full vehicle end to end, is not claimed |
+| `vehicle.up` | live | the `vehicle` verbs (up, down, status) on a bare vehicle: gateway and zones (verified 2026-10-13, one-zone vehicle). The phase-3 gate, a full vehicle end to end, is not claimed |
 | `retarget.fleet` | planned | two vehicles at once (fleet layer, [`PROVISIONING.md`](PROVISIONING.md)) |
 | `paper.1` | in preparation | phase-1 dataset (H1/H3/H4) for arXiv, [`ROADMAP.md`](ROADMAP.md) |
