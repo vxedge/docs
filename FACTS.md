@@ -111,6 +111,19 @@ configuration, not measurements.
 | `h1.ratio` | 0.91× | p99 at max load ÷ p99 idle |
 | `h1.loss` | 0.0 % | packet loss at every load level |
 
+Supplementary repeats on a newer host kernel. The frozen campaign above is unchanged; these two
+repeats confirm the verdict on kernel 7.0.0-38-generic (the frozen run used 7.0.0-28-generic).
+Source: [`exp-001-repro-check.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-001-repro-check.md).
+
+| Key | Value | Source |
+|---|---|---|
+| `h1r.kernel` | 7.0.0-38-generic | host kernel of both repeats |
+| `h1r.sha` | `ac2496e3f58e…` | input manifest sha256 of both repeats (differs from the frozen `2666fbf561ae…` by a tolerance fix in the pinning helper and comment edits) |
+| `h1r.ratio_run1` | 0.94× | repeat 1: p99 at max load ÷ p99 idle |
+| `h1r.ratio_run2` | 1.00× | repeat 2: p99 at max load ÷ p99 idle |
+| `h1r.within` | 12 of 15 | metric × load pairs of repeat 2 whose median lies inside repeat 1's IQR |
+| `h1r.archives` | 25 archives | per repeat |
+
 Per load level. Latency in µs with the IQR across repetitions in brackets.
 Source: [`exp-001-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-001/exp-001-summary.md).
 
@@ -253,6 +266,6 @@ How a generated experiment reaches the bench.
 | Key | Value | Source |
 |---|---|---|
 | `retarget.validate` | live | an experiment retargets to another vehicle by id and validates |
-| `vehicle.up` | live | the `vehicle` verbs (up, down, status) on a bare vehicle: gateway and zones (verified 2026-10-13, one-zone vehicle). The phase-3 gate, a full vehicle end to end, is not claimed |
+| `vehicle.up` | live | the `vehicle` verbs (up, down, status) on a bare vehicle: gateway and zones (verified 2026-10-13, one-zone vehicle, idempotent second `up`, clean `down`). The example vehicle boots a zone bundle you build locally, per host, so no registry login is needed; the guest answering on its probe port is not yet verified. The phase-3 gate, a full vehicle end to end, is not claimed |
 | `retarget.fleet` | planned | two vehicles at once (fleet layer, [`PROVISIONING.md`](PROVISIONING.md)) |
 | `paper.1` | in preparation | phase-1 dataset (H1/H3/H4) for arXiv, [`ROADMAP.md`](ROADMAP.md) |
