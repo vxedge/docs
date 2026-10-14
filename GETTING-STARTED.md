@@ -17,7 +17,7 @@ Verified versions as of 2026-07:
 | Tool | Version | Install |
 |---|---|---|
 | Rust | 1.96+ (pinned by `rust-toolchain.toml` — with rustup installed, the first `cargo` command in the repo fetches the right toolchain automatically) | `curl https://sh.rustup.rs -sSf \| sh` |
-| protoc | any recent (35.x current) | distro package, or the [release zip](https://github.com/protocolbuffers/protobuf/releases) → `~/.local/bin` |
+| protoc | any recent (36.x current upstream, as of 2026-10) | distro package, or the [release zip](https://github.com/protocolbuffers/protobuf/releases) → `~/.local/bin` |
 | buf | 1.71+ (optional: proto lint/SDK gen) | [release binary](https://github.com/bufbuild/buf/releases) → `~/.local/bin` |
 | git + gh | any recent | distro package |
 
@@ -171,5 +171,5 @@ fronts, in order:
 5. Release/artifact pipeline — GHCR images with digests, cargo-dist binaries
 
 Conventions to know before your first PR: manifests are the sole source of truth; no
-orchestration logic in any frontend; every image is digest-tagged; commits without a
+orchestration logic in any frontend; every image is digest-tagged; commits carry no
 Co-Authored-By trailer. Details per repo in its `AGENTS.md`.
