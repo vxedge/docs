@@ -1,7 +1,7 @@
 # AGENTS.md — vxedge/docs
 
-Master documentation repo for the vxedge platform. **`ARCHITECTURE.md` is the single master
-spec** — every other repo's AGENTS.md and TASKS.md derive from it and must not contradict it.
+Documentation repo for the vxedge platform. **`ARCHITECTURE.md` is the single architecture
+specification** — every other repo's AGENTS.md and TASKS.md derive from it and must not contradict it.
 
 ## Contents
 
@@ -26,7 +26,7 @@ spec** — every other repo's AGENTS.md and TASKS.md derive from it and must not
   `vxperiments` frozen summaries), verdicts, phase/track states, the parity ledger, delivery states.
   The website builds every number it shows from this file; `RESULTS.md` and the GitHub READMEs
   quote it. Machine-read by `scripts/facts.py` (`json` for the website, `check` for docs).
-- `ARCHITECTURE.md` — the master spec (16 sections). Key anchors: §2 hypotheses H1–H4,
+- `ARCHITECTURE.md` — the architecture specification (16 sections). Key anchors: §2 hypotheses H1–H4,
   §5 vxAPI/control plane, §6 manifest schemas (experiment + vehicle), §7 vxgateway network
   model, §9 virtualization (libvirt/QEMU/QNX), §15 language policy + 4-phase roadmap,
   §16 worked examples.
@@ -56,7 +56,7 @@ spec** — every other repo's AGENTS.md and TASKS.md derive from it and must not
 - Prose style: state fidelity caveats honestly (shared-host gateway, QNX-as-guest inversion);
   reproducibility claims must name the mechanism (digests, versioned manifests, idempotent CLI).
 
-## Project skills
+## Quality bars
 
-AI/contributor skills in `.claude/skills/`: **testbed-quality** and **experiment-methodology**
+Two contributor guides: **testbed-quality** and **experiment-methodology**
 — the quality bars every repo change and every reported number are judged against.

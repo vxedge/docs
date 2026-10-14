@@ -34,7 +34,7 @@ reproducible numbers (`vxperiments`' exp-001/exp-002/exp-002b/exp-003). First ta
 release across the phase-1-participating repos.
 
 ### Added
-- `ARCHITECTURE.md` (16 sections) — the master spec: hypotheses H1-H4 (§2), vxAPI
+- `ARCHITECTURE.md` (16 sections) — the architecture specification: hypotheses H1-H4 (§2), vxAPI
   control-plane design (§5), manifest schemas for experiments and vehicles (§6), vxgateway
   network model (§7), service model incl. OTA/Uptane design (§8), virtualization/hypervisor
   fidelity ladder (§9), compute model (§10), metrics/methodology (§12), reproducibility

@@ -1,6 +1,6 @@
 # Architecture
 
-*The master specification for vxedge: research goals, topology, vxAPI, manifest schemas, the network, service and virtualization models, methodology, and the phased roadmap.*
+*The architecture specification for vxedge: research goals, topology, vxAPI, manifest schemas, the network, service and virtualization models, methodology, and the phased roadmap.*
 
 vxedge is a research-grade orchestration and experiment platform that evaluates 5G network-slice mapping onto zonal and central software-defined-vehicle (SDV) E/E architectures, **entirely in software**. In short:
 
@@ -1187,7 +1187,7 @@ model half of that claim. Details in §6.3; work items on the program board
 (`docs/ROADMAP.md`) and, once created, `vxmodels/TASKS.md`.
 
 - **M0 — governance & home:** this section + §4/§6.3 scoping; `vxedge/vxmodels` created
-  and seeded (AGENTS.md/TASKS.md/skills) — all done 2026-07-13.
+  and seeded (AGENTS.md/TASKS.md/quality guides) — all done 2026-07-13.
 - **M1 — retroactive traceability:** H1–H4 as `requirement` definitions with `verify`
   links to the frozen exp-001/exp-002b/exp-003 archives (manifest digests). Zero new
   experiments; demonstrates the requirement → analysis-case → manifest → archive chain on

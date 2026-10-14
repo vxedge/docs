@@ -44,7 +44,7 @@ done
 
 | Repo | What |
 |---|---|
-| `docs` | Master spec (`ARCHITECTURE.md`), program task board, publication plan |
+| `docs` | Architecture specification (`ARCHITECTURE.md`), program task board, publication plan |
 | `vxedge` | **Start here** — control plane (`vxedged`), vxAPI (gRPC/Protobuf), CLI |
 | `vxparts` | Unified loadable registry — zone (virtual-ECU) and central-compute images, published via OCI/ORAS (supersedes the former `vxzones`/`vxcompute` split) |
 | `vxota` / `vxtelemetry` | OTA and telemetry service code |

@@ -16,6 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 scripts/facts.py check
+      - name: Reader-facing wording
+        run: scripts/check-wording.sh
       - name: Diagrams are in sync with their generators
         run: |
           python3 diagrams/topology.py

@@ -8,8 +8,8 @@ Editable architecture diagrams for the vxedge platform. Source format is native 
 |---|---|
 | `sdv-ee-architecture.drawio` | Next-generation SDV zonal E/E architecture, two pages: **1 — Hardware (physical E/E)** and **2 — Software (logical stack)** |
 
-Both pages derive from `../ARCHITECTURE.md`. **That file stays the master spec** — if a diagram
-and `ARCHITECTURE.md` disagree, the diagram is wrong. Change the spec first, then the diagram.
+Both pages derive from `../ARCHITECTURE.md`. **That file stays the source of truth** — if a diagram
+and `ARCHITECTURE.md` disagree, the diagram is wrong. Change the specification first, then the diagram.
 
 ## The two perspectives
 
