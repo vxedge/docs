@@ -53,6 +53,8 @@ specification** — every other repo's AGENTS.md and TASKS.md derive from it and
 - **Numbers live in `FACTS.md`.** A result, phase state or delivery state changes there first, in
   the same change as the summary or state that moved; then `python3 scripts/facts.py check` (CI
   runs it). Never type a measured number into another page — quote the registered value.
+- The org profile README (`vxedge/.github`, `profile/README.md`) quotes `h1.ratio` in its results table and is not
+  covered by `scripts/facts.py check`: when that fact changes, update the README in the same change set.
 - Prose style: state fidelity caveats honestly (shared-host gateway, QNX-as-guest inversion);
   reproducibility claims must name the mechanism (digests, versioned manifests, idempotent CLI).
 
