@@ -202,7 +202,7 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
     state + quick up/down from the desktop; pairs with a **systemd unit for vxedged**
     (socket-activated where possible). Same thin-client rule: 1:1 vxAPI calls, no logic.
   - **`vxmcp`** (Rust, `rmcp` — the official MCP Rust SDK) — an MCP server exposing vxAPI to AI
-    agent tooling (Claude Code and others), for the same reason every frontend above exists: a
+    agent tooling (any MCP client), for the same reason every frontend above exists: a
     thin, 1:1 client over the same RPCs, this time addressed by an LLM agent's tool-call surface
     instead of a terminal or a GUI. Every MCP tool is a direct wrapper over one vxAPI RPC
     (`GatewayService`/`ZoneService`/`ComputeService`/`ExperimentService`/`TrafficService`/
@@ -1198,7 +1198,7 @@ model half of that claim. Details in §6.3; work items on the program board
   generated manifest (§4 single-source rule).
 - **M3 — analysis cases + variants (the GenAI generation target):** experiments as
   `analysis case`s; arms (packaging choice, vlan vs s-nssai) as variant points enumerated
-  mechanically; a `sysml-authoring` skill so LLM sessions compose typed model elements —
+  mechanically; a `sysml-authoring` skill so LLM tooling composes typed model elements —
   generated experiments pass the §6.3 double gate before touching the testbed. Aligns
   with phase 2 (the S-NSSAI driver gives variants something real to enumerate).
 - **M4 — scenarios + fidelity ledger:** traffic/transportation scenarios as

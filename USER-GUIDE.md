@@ -159,8 +159,7 @@ kernel, userspace timestamps).
 ## 7. Getting help / contributing
 
 Each repo carries `AGENTS.md` (scope + rules) and `TASKS.md` (work items);
-`docs/ROADMAP.md` is the program board. Quality bars are codified as repo skills
-(`.claude/skills/`): `rust-patterns`, `testbed-quality`, `experiment-methodology`,
+`docs/ROADMAP.md` is the program board. Quality bars are codified per repo: `rust-patterns`, `testbed-quality`, `experiment-methodology`,
 `gateway-verification` (vxedge), `sysml-authoring` (vxmodels).
 A verb that prints "not wired to the daemon yet (scaffold)" is truthfully unimplemented —
 check RESULTS.md before assuming a bug.

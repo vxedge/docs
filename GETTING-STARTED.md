@@ -176,5 +176,4 @@ fronts, in order:
 5. Release/artifact pipeline — GHCR images with digests, cargo-dist binaries
 
 Conventions to know before your first PR: manifests are the sole source of truth; no
-orchestration logic in any frontend; every image is digest-tagged; commits without a
-Co-Authored-By trailer. Details per repo in its `AGENTS.md`.
+orchestration logic in any frontend; every image is digest-tagged. Details per repo in its `AGENTS.md`.

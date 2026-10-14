@@ -1,7 +1,7 @@
 # Versioning and changelogs
 
 Each repo under `github.com/vxedge/` is an **independent git repo with its own version
-history** (see workspace `CLAUDE.md`) — there is no single "vxedge version." This document
+history** (see the workspace contributor guide) — there is no single "vxedge version." This document
 is the convention every repo follows so an OEM engineer can clone one, read one file, and
 know exactly what they're getting.
 
@@ -14,7 +14,7 @@ know exactly what they're getting.
    an `## [Unreleased]` section accumulates entries as work lands; cutting a tag moves
    that section under a dated version heading and opens a fresh `## [Unreleased]`.
    Categories: `Added`, `Changed`, `Fixed`, `Deprecated`, `Removed`, `Security`. Every
-   `CHANGELOG.md` gets a repo-local `AGENTS.md`/`CLAUDE.md` pointer alongside the other
+   `CHANGELOG.md` gets a repo-local `AGENTS.md` pointer alongside the other
    docs it already lists.
 3. **No tag before the entry exists.** A version is cut by moving `[Unreleased]` content
    under a new heading in the same commit as the tag — never tag first and backfill later.

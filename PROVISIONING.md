@@ -9,8 +9,8 @@ fiveg/`, and (Track F) a multi-vehicle-instance layer above `VehicleService`. Re
 §9 (virtualization) and §15 (containerization policy) first — this doc extends both, contradicts
 neither.
 
-**How to read this document, in order:** §1–2 grounds scope and reviews an external proposal that
-prompted this work. §3 is the **use-case-driven methodology** this initiative follows — real YAML
+**How to read this document, in order:** §1–2 grounds scope and reviews an alternative design proposal (a from-scratch in-process VMM)
+that was considered for this work. §3 is the **use-case-driven methodology** this initiative follows — real YAML
 manifests first, validated, before any Rust abstraction is designed. §4 is the current draft use
 case (a six-zone reference vehicle) awaiting that validation. §§5–9 are the design derived from
 existing patterns (written before §3's methodology was adopted as house process for this
@@ -43,10 +43,9 @@ If vxedge's mission changes — if a later phase genuinely targets a real embedd
 target rather than a dev-host research testbed — revisit §2's verdict. Nothing here forecloses
 that; it just isn't today's problem.
 
-## 2. Review of the external proposal ("Gemini brief")
+## 2. Review of the alternative proposal: a from-scratch in-process VMM
 
-An external proposal (pasted into this repo's task history 2026-08-07, not otherwise recorded)
-argued for a from-scratch, in-process VMM: `vxedge-core` opens `/dev/kvm` directly, issues
+An alternative design proposal (considered 2026-08-07) argued for a from-scratch, in-process VMM: `vxedge-core` opens `/dev/kvm` directly, issues
 `KVM_CREATE_VM`/`KVM_RUN` ioctls itself, runs vCPU loops on native threads, implements VirtIO ring
 buffers by hand, and adds a WASM-capsule execution mode for RTOS/MCU-class nodes — explicitly to
 avoid shelling out to `qemu-system-*`/`firecracker`/`libvirtd`/incus. It asked for this "as fast as
@@ -57,9 +56,8 @@ their own merits, at a much narrower scope than proposed.**
 
 ### 2.1 Fact-check of the named components
 
-The proposal cites specific crates/projects as the stack. Checked against real sources (not taken
-on faith, since a proposal this specific deserves the same verification this repo applies to any
-other technical claim):
+The proposal cites specific crates/projects as the stack. Each was checked against primary sources,
+the same verification this repo applies to any other technical claim:
 
 | Named component | Verdict |
 |---|---|
@@ -408,7 +406,7 @@ Summary: Track V phase 1 (containers module + fiveg migration, libvirt→virt cr
 ready to start once §4's use case is validated; Track V phase 2 (Cloud Hypervisor spike) follows
 once phase 1 lands; the WASM-capsule prototype (§7.3) is an independent, parallel-track
 evaluation; the in-process-VMM direction (§2) is recorded as reviewed and rejected, not silently
-dropped, so a future session doesn't re-propose it without this document's reasoning in view;
+dropped, so a future revisit starts from this document's reasoning;
 Track F (multi-vehicle fleet layer) does not start until Track V is at a high success rate.
 
 ## 10. Task board
@@ -473,14 +471,14 @@ validated (§3) before V0/V1 implementation starts — the use case is what conf
       run a `.wasm` module via `wasmtime` directly, in-process, for zone nodes simulable as a
       sandboxed control loop rather than a full guest kernel — a real, currently-unserved gap for
       the Zephyr/FreeRTOS "sensor/ECU node" class (today's only option is a full microVM boot).
-      Deliberately decoupled from the external proposal's `treVM`/Ariel-OS coupling — `wasmtime`
+      Deliberately decoupled from the alternative proposal's `treVM`/Ariel-OS coupling — `wasmtime`
       alone is the only new dependency, mature and audited independent of that pairing.
       **Evaluate-and-decide, not committed infrastructure**: build one, run it against one real
       sensor-node manifest, decide based on results whether it earns permanent status.
 - [ ] V6 (parked, not scheduled) — `fdt-rs` for synthetic device-tree injection, if/when an ARM
       guest (AAOS on ARM) needs it. No action until that's a real, scheduled guest target.
 
-**Explicitly rejected, recorded so it isn't re-proposed without this reasoning in view**: a
+**Explicitly rejected, recorded so any revisit starts from this reasoning**: a
 from-scratch, in-process KVM hypervisor (raw `kvm-ioctls` VM/vCPU management, hand-rolled VirtIO
 ring buffers, custom seccomp filters) as this project's provisioning backend. Full reasoning in §2.
 
