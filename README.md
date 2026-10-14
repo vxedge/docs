@@ -28,16 +28,19 @@ The vxedge specification and user documentation.
 
 ## Repositories
 
+The repositories are being opened in order, starting with this one. A name below becomes a link
+when its repository is published.
+
 | Repo | What |
 |---|---|
-| [vxedge](https://github.com/vxedge/vxedge) | **Start here.** The control plane (`vxedged`), vxAPI, CLI, and vxgateway |
-| [vxagents](https://github.com/vxedge/vxagents) | Measurement agents: probes and traffic generation |
-| [vxtelemetry](https://github.com/vxedge/vxtelemetry) | Telemetry ingestion and results archiving |
-| [vxota](https://github.com/vxedge/vxota) | OTA server and signing (the H4 workload) |
-| [vxperiments](https://github.com/vxedge/vxperiments) | Experiments, analysis, frozen results |
-| [vxparts](https://github.com/vxedge/vxparts) | OCI/ORAS registry of every loadable the platform boots |
-| [vxmodels](https://github.com/vxedge/vxmodels) | SysML v2 models and the manifest renderer |
-| [vxmcp](https://github.com/vxedge/vxmcp) | MCP server over vxAPI |
+| vxedge | The control plane (`vxedged`), vxAPI, CLI, and vxgateway |
+| vxagents | Measurement agents: probes and traffic generation |
+| vxtelemetry | Telemetry ingestion and results archiving |
+| vxota | OTA server and signing (the H4 workload) |
+| vxperiments | Experiments, analysis, frozen results |
+| vxparts | OCI/ORAS registry of every loadable the platform boots |
+| vxmodels | SysML v2 models and the manifest renderer |
+| vxmcp | MCP server over vxAPI |
 
 ## Links
 
