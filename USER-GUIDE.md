@@ -4,7 +4,7 @@ For SDV / automotive engineers using vxedge as a testbed. Onboarding lives in
 [GETTING-STARTED.md](GETTING-STARTED.md); the full spec in [ARCHITECTURE.md](ARCHITECTURE.md);
 host requirements in [TESTBED-SETUP.md](TESTBED-SETUP.md); live progress in [RESULTS.md](RESULTS.md).
 
-**Honest state banner:** vxedge is a research-grade *executable virtual prototype* of a zonal
+**State banner:** vxedge is a research-grade *executable virtual prototype* of a zonal
 SDV E/E architecture — not a certified tool and not a "digital twin" of any physical vehicle
 (that word is reserved for hardware-in-the-loop parity, phase 4). What is verified today is
 listed per-verb below; everything else fails loudly rather than pretending.
@@ -32,7 +32,7 @@ listed per-verb below; everything else fails loudly rather than pretending.
   structure/test boundary, and `experiment validate` checks it.
 - **Slices** are the network partitions under test: `mode: vlan` (per-slice VLAN + HTB
   queue-tree reservation on the virtual gateway — the H1 mechanism, verified) or
-  `mode: s-nssai` (real 5G slices via Open5GS/UERANSIM — the H2 mechanism, verified).
+  `mode: s-nssai` (5G core slices via Open5GS with a simulated UERANSIM radio — the H2 mechanism, verified).
 - **vxgateway** is the software edge gateway the daemon provisions from the vehicle/experiment:
   a VLAN-filtering bridge (`network.data_plane: kernel-bridge`, default) or an OVS bridge
   (`ovs`) — same plan, pluggable rendering backend — a shaped trunk uplink (the shared
@@ -161,5 +161,5 @@ kernel, userspace timestamps).
 Each repo carries `AGENTS.md` (scope + rules) and `TASKS.md` (work items);
 `docs/ROADMAP.md` is the program board. Quality bars are codified per repo: `rust-patterns`, `testbed-quality`, `experiment-methodology`,
 `gateway-verification` (vxedge), `sysml-authoring` (vxmodels).
-A verb that prints "not wired to the daemon yet (scaffold)" is truthfully unimplemented —
+A verb that prints "not wired to the daemon yet (scaffold)" is unimplemented —
 check RESULTS.md before assuming a bug.

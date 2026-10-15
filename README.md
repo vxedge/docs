@@ -21,7 +21,6 @@ The vxedge specification and user documentation.
 | [GETTING-STARTED.md](GETTING-STARTED.md) | From zero to a measured experiment |
 | [USER-GUIDE.md](USER-GUIDE.md) | Concepts, CLI reference, workflows, SDV vocabulary map |
 | [TESTBED-SETUP.md](TESTBED-SETUP.md) | Host requirements, tiered by experiment class |
-| [PROVISIONING.md](PROVISIONING.md) | How zones, gateway and services are provisioned |
 | [VERSIONING.md](VERSIONING.md) | SemVer and changelog conventions across repos |
 | [ACRONYMS.md](ACRONYMS.md) | Glossary |
 | [diagrams/](diagrams/) | E/E architecture diagrams (draw.io) |

@@ -10,6 +10,16 @@ Documentation, experiment results, figures, and models are licensed under CC BY 
 
 ---
 
+Trademarks
+
+All product, company and standard names mentioned in this repository (for example NVIDIA Jetson,
+DRIVE and BlueField, QNX, Android Automotive, Autoware, ROS 2, Open5GS, UERANSIM, Eclipse SDV, SOAFEE,
+5GAA and COVESA) are the property of their respective owners and are used only to identify
+compatibility or subject matter. vxedge is an independent project and is not affiliated with,
+sponsored by or endorsed by any of them.
+
+---
+
 Third-party notices
 
 No third-party content is redistributed in this repository.

@@ -267,5 +267,5 @@ How a generated experiment reaches the bench.
 |---|---|---|
 | `retarget.validate` | live | an experiment retargets to another vehicle by id and validates |
 | `vehicle.up` | live | the `vehicle` verbs (up, down, status) on a bare vehicle: gateway and zones (verified 2026-10-13, one-zone vehicle, idempotent second `up`, clean `down`). The example vehicle boots a zone bundle you build locally, per host, so no registry login is needed; the guest answering on its probe port is not yet verified. The phase-3 gate, a full vehicle end to end, is not claimed |
-| `retarget.fleet` | planned | two vehicles at once (fleet layer, [`PROVISIONING.md`](PROVISIONING.md)) |
+| `retarget.fleet` | planned | two vehicles at once (fleet layer) |
 | `paper.1` | in preparation | phase-1 dataset (H1/H3/H4) for arXiv, [`ROADMAP.md`](ROADMAP.md) |

@@ -255,7 +255,7 @@ the core.
   The access boundary today is filesystem permissions on the socket path, not a per-call
   identity check — no `SO_PEERCRED`/`UCred` peer-credential extraction exists anywhere in the
   code yet. "Peer-credential auth" below is the target for this mode, not its current
-  behavior; stated honestly here per this doc's own fidelity rule (§14 / `testbed-quality`)
+  behavior; stated here per this doc's own fidelity rule (§14 / `testbed-quality`)
   rather than implying it already gates local connections.
 - **Remote (planned, Phase 5):** TCP + mTLS, OIDC bearer tokens; roles viewer/operator/admin;
   every mutating call audit-logged **with the calling actor's identity attached** — a second
@@ -470,7 +470,7 @@ it lives in the vehicle rather than the experiment because it states a structura
 ECU answers here"), which is what keeps one vehicle usable by many baselines.
 
 `carried_by` binds a channel to the links carrying it, and validation requires the channel's
-endpoints to be genuinely **reachable** over those links. This is what makes latency and loss
+endpoints to be **reachable** over those links. This is what makes latency and loss
 attributable **per topic per slice** rather than only per link — the measurement §12 exists to
 produce. Without the reachability check, `carried_by` would be an unchecked assertion.
 
@@ -513,7 +513,7 @@ have to agree: a container backend boots a container image, libvirt and qemu-mic
 guest bundle. The `local/…` namespace is conclusive on its own (a host process, never a
 bundle), and a published vxparts ref is deliberately **not** read for this — its class says
 what kind of node the part loads onto, not how it is packaged, and a zone guest is legitimately
-a container under the netns backend. Only a bare path is genuinely ambiguous, and there `kind`
+a container under the netns backend. Only a bare path is ambiguous, and there `kind`
 is how the author says so. A stated kind is validated against the device's backend, so a
 baseline pointing an H3 libvirt arm at a container image is rejected with both halves named
 rather than silently accepted and failed at boot. `vxedge manifest bom` derives them for display,
@@ -831,7 +831,7 @@ deliberately separate:
   updates, both irrelevant to our QEMU/libvirt block-storage bundles — become a
   blocker). Maps naturally onto vxzones guest bundles, which are already
   kernel+initramfs "slots" in Rugix/RAUC's sense.
-- **v1 service backend (fidelity caveat, stated honestly):** `SvcService.Up` (§5) spawns
+- **v1 service backend (fidelity caveat):** `SvcService.Up` (§5) spawns
   the service binary (`vxota serve`) as a host-local child process co-located with
   `vxedged`, tracked by a pidfile the same way the microVM zone backend tracks QEMU — not
   yet scheduled onto a `vxcompute` node, since that backend doesn't exist. `config.listen`
@@ -872,7 +872,7 @@ deliberately separate:
     lets an experiment swap AAOS for Qt/QML (or vice versa) on the same infotainment zone
     without touching the vehicle's structural definition.
   - **Containers** — for nodes where packaging as a container is the experimental variable.
-- **Fidelity caveat (stated honestly in publications):** production zonal controllers invert this
+- **Fidelity caveat (stated in publications):** production zonal controllers invert this
   stacking — silicon runs a Type-1 hypervisor (QNX Hypervisor and peers) hosting guests, whereas
   here KVM plays the hypervisor and QNX is a guest. Functionally equivalent for slice-isolation
   research; the gap closes via the **hypervisor fidelity ladder** below and, ultimately, DRIVE OS

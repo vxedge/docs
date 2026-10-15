@@ -149,7 +149,7 @@ consistency. Experiment manifests live in `vxperiments/experiments/`, vehicle ma
 - **`cannot reach vxedged at unix:///run/vxedge.sock`** — the default socket path needs
   root-writable `/run`; for development pass a user-writable path to *both* sides
   (`--listen`/`--endpoint unix:///tmp/vxedge.sock`) or set `VXEDGE_ENDPOINT`.
-- **A verb prints "not wired to the daemon yet (scaffold)"** — truthfully unimplemented;
+- **A verb prints "not wired to the daemon yet (scaffold)"** — intentionally unimplemented;
   USER-GUIDE.md §2 lists each verb's state. Check it before assuming a bug.
 - **An experiment runner refuses with "older than source file …"** — the staleness gate:
   rebuild as your user (`cargo build --workspace && touch <binary>`; cargo doesn't relink

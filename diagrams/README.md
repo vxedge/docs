@@ -77,7 +77,7 @@ lands at:
 | **A3 landscape** | ~6 pt | **recommended for handouts and design reviews** |
 | A2 landscape | ~8 pt | comfortable; the right size for a wall or poster session |
 
-Screen and PDF are unaffected — zoom is free there. If you need a genuinely readable A4, print a
+Screen and PDF are unaffected — zoom is free there. If you need a readable A4, print a
 region rather than shrinking the whole page: select a zone (or the legend) and use *File ▸ Print ▸
 Selection Only*.
 

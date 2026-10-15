@@ -5,7 +5,7 @@ plain language and grouped by field. Not auto-generated — update it by hand al
 `ARCHITECTURE.md` when a new acronym enters the vocabulary (same discipline as
 `AGENTS.md`'s other cross-referenced docs).
 
-Two acronyms are genuinely ambiguous in this project's own docs, depending on context —
+Two acronyms are ambiguous in this project's own docs, depending on context —
 flagged inline where they occur: **UDS** (Unix Domain Socket vs. Unified Diagnostic
 Services) and **OSI** (ASAM's simulator interface vs. the classic 7-layer networking
 model — vxedge only ever means the former).

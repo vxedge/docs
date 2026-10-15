@@ -16,16 +16,6 @@ specification** — every other repo's AGENTS.md and TASKS.md derive from it and
   this page when a campaign is re-frozen or a caveat changes.
 - `TESTBED-SETUP.md` — single-machine host requirements, tiered by phase (OS, resources,
   software versions). Anything the testbed needs that it doesn't list is a bug in it.
-- `PROVISIONING.md` — self-contained design + use-case manifests + task board (Track V/Track F)
-  for the node-provisioning engine (`vxedge-core`'s `ZoneBackend` seam + the `containers` module)
-  and the multi-vehicle-fleet layer above it. Use-case-driven: real vehicle/baseline YAML first,
-  validated, before functional requirements or implementation. Includes a reviewed-and-rejected
-  verdict on building a from-scratch in-process KVM hypervisor. Extends `ARCHITECTURE.md` §9/§15,
-  doesn't replace them. `docs/ROADMAP.md` carries only a one-line pointer here, not the task board.
-- `FACTS.md` — **the registry of every published number and state**: measured values (copied from
-  `vxperiments` frozen summaries), verdicts, phase/track states, the parity ledger, delivery states.
-  The website builds every number it shows from this file; `RESULTS.md` and the GitHub READMEs
-  quote it. Machine-read by `scripts/facts.py` (`json` for the website, `check` for docs).
 - `ARCHITECTURE.md` — the architecture specification (16 sections). Key anchors: §2 hypotheses H1–H4,
   §5 vxAPI/control plane, §6 manifest schemas (experiment + vehicle), §7 vxgateway network
   model, §9 virtualization (libvirt/QEMU/QNX), §15 language policy + 4-phase roadmap,
@@ -55,7 +45,7 @@ specification** — every other repo's AGENTS.md and TASKS.md derive from it and
   runs it). Never type a measured number into another page — quote the registered value.
 - The org profile README (`vxedge/.github`, `profile/README.md`) quotes `h1.ratio` in its results table and is not
   covered by `scripts/facts.py check`: when that fact changes, update the README in the same change set.
-- Prose style: state fidelity caveats honestly (shared-host gateway, QNX-as-guest inversion);
+- Prose style: state fidelity caveats plainly (shared-host gateway, QNX-as-guest inversion);
   reproducibility claims must name the mechanism (digests, versioned manifests, idempotent CLI).
 
 ## Quality bars
