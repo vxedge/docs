@@ -85,6 +85,9 @@ sudo -E env "PATH=$PATH" ./scripts/run.sh --quick                              #
 python3 ../../notebooks/analyze_exp001.py ../../results/exp-001-quick          # table + H1 verdict
 ```
 
+`sudo -E` is ignored by sudo-rs, the default on Ubuntu 26 (it prints a notice). That is harmless: the explicit
+`env "PATH=$PATH"` is what carries your toolchain into the root process, so the command works the same either way.
+
 After pulling new commits, rebuild all three binaries before a run (`cargo build --workspace` in `vxedge`,
 `vxagents` and `vxtelemetry`, as your own user, not root). The runner refuses to measure with a binary older
 than its source and tells you the exact command, including a `touch` of the rebuilt binaries.

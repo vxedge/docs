@@ -6,13 +6,19 @@ All notable changes to this repo are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-19
+
 ### Added
 
-- Supplementary `exp-001` repeats on kernel 7.0.0-38 registered in `FACTS.md` (`h1r.*`) and summarised in `RESULTS.md`; the frozen numbers are unchanged.
+- `FACTS.md`: per-zone (`zone.*`) and per-frontend (`frontend.*`) states, so the website quotes them instead of typing them.
+- Supplementary `exp-001` repeats on kernel 7.0.0-38 registered in `FACTS.md` (`h1r.*`) and summarised in `RESULTS.md`, with a note on why a current checkout's workspace hash matches neither run; the frozen numbers are unchanged.
 
 ### Changed
 
-- Getting started and the user guide: the example vehicle boots a locally built, per-host zone bundle, so no registry login is needed; added the daemon-socket and `/boot/vmlinuz` host notes.
+- Getting started and the user guide: the example vehicle boots a locally built, per-host zone bundle, so no registry login is needed; added the daemon-socket and `/boot/vmlinuz` host notes and a note that `sudo -E` is ignored under sudo-rs.
+- Repositories that are not public yet are no longer linked (README, `RESULTS.md`, `FACTS.md`), and `GETTING-STARTED.md` clones only `docs`.
+- protoc "current" is 36.x in `GETTING-STARTED.md` and `TESTBED-SETUP.md`.
+- `AGENTS.md`: the org profile quotes `h1.ratio`, so it changes with it.
 
 ## [0.2.0] - 2026-10-13
 
