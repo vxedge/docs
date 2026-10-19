@@ -225,6 +225,34 @@ How close each part of the virtual vehicle is to production today, and what clos
 | `parity.compute` | Central compute | Autoware and ROS 2 in containers | planned | DRIVE AGX · p4 |
 | `parity.timing` | Timing | Userspace timestamps on a shared host | caveat | Kernel timestamps · open |
 
+### Zones
+
+State of each zone of the reference vehicle (`vx-vehicle-01` family, [`ARCHITECTURE.md`](ARCHITECTURE.md) §3
+topology figure). `parity.zones` above is the ledger row for the zone ECUs as a class; this table is per zone.
+The front zones run the ADAS slice and are planned until their QNX / RTOS guests land.
+
+| Key | Zone | Role | State |
+|---|---|---|---|
+| `zone.front_left` | front-left | QNX SDP 8 / RTOS, ADAS | planned |
+| `zone.front_right` | front-right | QNX SDP 8 / RTOS, ADAS | planned |
+| `zone.rear_left` | rear-left | comfort, BMS, clients | emulated |
+| `zone.rear_right` | rear-right | comfort, BMS, clients | emulated |
+| `zone.central` | central | maps to central compute | emulated |
+| `zone.gateway` | gateway | uplink into `vxgateway` | emulated |
+
+### Frontends
+
+The clients of the vxAPI ([`ARCHITECTURE.md`](ARCHITECTURE.md) §5.1 layers figure). Every one is a thin client:
+no orchestration logic lives in a frontend.
+
+| Key | Frontend | Role | State |
+|---|---|---|---|
+| `frontend.cli` | vxedge CLI | primary frontend, Rust | real |
+| `frontend.mcp` | vxmcp | MCP server for AI agent tooling | building |
+| `frontend.sdk` | Generated SDKs | Rust built; TypeScript and C++ planned | building |
+| `frontend.web` | Web dashboard | TypeScript | planned |
+| `frontend.studio` | vxedge Studio | Electron, future | planned |
+
 ### Use cases
 
 | Key | Use case | State | Evidence |
