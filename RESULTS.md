@@ -40,6 +40,11 @@ load pairs (values in [`FACTS.md` § H1](FACTS.md#h1--isolation-exp-001)). Both 
 below the frozen run at the two highest loads. The cause is not isolated; the kernel change is the leading
 suspect and has not been tested. The frozen numbers stay the published ones; these are supplementary checks.
 
+**Workspace hashes.** A workspace's input hash covers every file in it, comments included, so it changes with any
+edit. The hash of a current checkout of `exp-001-ws` therefore matches neither the frozen campaign's nor the
+repeats': a header comment in `run.sh` was edited after the repeats (vxperiments#3). Compare against the commit
+the archive names, not against the hash of whatever is checked out.
+
 ## H2 — real slicing vs static mapping (`exp-010`)
 
 S-NSSAI PDU sessions through Open5GS + UERANSIM, compared against `exp-001`'s VLAN arm. The
