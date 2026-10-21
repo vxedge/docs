@@ -55,7 +55,22 @@ done
 Every repo has an `AGENTS.md` (scope + rules) and `TASKS.md` (phased work items);
 `docs/ROADMAP.md` is the program-level board with the cross-repo critical path.
 
-## 3. Build everything
+## 3. Get the binaries
+
+**Prebuilt (CLI and daemon, Linux x86-64 and ARM64):** download the latest `vxedge` release, check it, and run it.
+Each release carries `SHA256SUMS` and build provenance.
+
+```bash
+gh release download -R vxedge/vxedge --pattern '*x86_64*' --pattern SHA256SUMS      # aarch64 on ARM
+sha256sum --ignore-missing -c SHA256SUMS                                             # must say OK
+gh attestation verify vxedge-*-x86_64-unknown-linux-gnu.tar.gz -R vxedge/vxedge     # needs gh 2.49 or newer
+tar xzf vxedge-*-x86_64-unknown-linux-gnu.tar.gz                                     # vxedge, vxedged, LICENSE, NOTICE
+```
+
+The binaries are built on Ubuntu 24.04 (glibc 2.39), so they run on 24.04 and newer. The experiment runner
+below uses the binaries built from source in the next step, because it also needs `vxagents` and `vxtelemetry`.
+
+### Or build everything from source
 
 ```bash
 for r in vxedge vxagents vxtelemetry; do (cd $r && cargo build --workspace); done
