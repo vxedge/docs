@@ -34,7 +34,7 @@ when its repository is published.
 | vxagents | Measurement agents: probes and traffic generation |
 | vxtelemetry | Telemetry ingestion and results archiving |
 | vxota | OTA server and signing (the H4 workload) |
-| vxperiments | Experiments, analysis, frozen results |
+| [vxperiments](https://github.com/vxedge/vxperiments) | Experiments, analysis, frozen results |
 | vxparts | OCI/ORAS registry of every loadable the platform boots |
 | vxmodels | SysML v2 models and the manifest renderer |
 | vxmcp | MCP server over vxAPI |
