@@ -32,7 +32,7 @@ when its repository is published.
 
 | Repo | What |
 |---|---|
-| vxedge | The control plane (`vxedged`), vxAPI, CLI, and vxgateway |
+| [vxedge](https://github.com/vxedge/vxedge) | The control plane (`vxedged`), vxAPI, CLI, and vxgateway |
 | vxagents | Measurement agents: probes and traffic generation |
 | vxtelemetry | Telemetry ingestion and results archiving |
 | vxota | OTA server and signing (the H4 workload) |

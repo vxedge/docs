@@ -10,7 +10,7 @@ zero to a measured experiment; day-to-day usage lives in [USER-GUIDE.md](USER-GU
 **Pre-release (0.x).** The manifest schema and vxAPI may change between minor versions
 ([`VERSIONING.md`](VERSIONING.md)); published results are frozen and do not change.
 
-**Repository status.** Only `docs` is public today; the other repositories open in order (the
+**Repository status.** Only `docs` and `vxedge` are public today; the other repositories open in order (the
 README's repository table lists them, and a name becomes a link when its repository is
 published). From section 2 on, this page describes the workspace as it will be once they are, so
 until then read it as a walkthrough rather than steps you can run end to end.
@@ -37,8 +37,8 @@ folder is *not* a git repo):
 
 ```bash
 mkdir vxedge && cd vxedge
-for r in docs; do        # only docs is public today; add each repository below as it is published:
-  gh repo clone vxedge/$r  # vxedge vxparts vxota vxagents vxtelemetry vxperiments vxmodels
+for r in docs vxedge; do        # public today; add each repository below as it is published:
+  gh repo clone vxedge/$r  # vxparts vxota vxagents vxtelemetry vxperiments vxmodels
 done
 ```
 
