@@ -18,7 +18,7 @@ until then read it as a walkthrough rather than steps you can run end to end.
 
 ## 1. Prerequisites
 
-Verified versions as of 2026-07:
+Verified versions as of 2026-10:
 
 | Tool | Version | Install |
 |---|---|---|
