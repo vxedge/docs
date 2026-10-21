@@ -50,8 +50,8 @@ Cross-cutting tracks:
 
 **Release engineering**
 
-- A tag-triggered GitHub Release per repository.
-- `cargo-dist` binaries for `vxedge`/`vxedged`.
+- A tag-triggered GitHub Release per repository: done for `vxedge` (first release `v0.2.0`, with `SHA256SUMS` and build provenance); the other repositories are still to do.
+- Release binaries for `vxedge` and `vxedged` on x86-64 and ARM64 Linux: done as of `v0.2.0`.
 - GHCR images with recorded digests.
 - A cross-repository compatibility matrix.
 
