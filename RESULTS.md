@@ -12,16 +12,16 @@ they are quoted from.
 
 | Hypothesis | Experiment | Verdict | Headline number |
 |---|---|---|---|
-| **H1** — isolation: VLAN + tc queue-tree reservations keep ADAS p99 near baseline under infotainment load | `exp-001` | **Holds** | ADAS p99 at 600 mbit load: 81.9 µs vs 89.6 µs baseline (0.91×; threshold 2.0×) |
-| **H2** — real S-NSSAI slicing vs static VLAN mapping | `exp-010` | **Holds** | p99 growth, baseline → 600 mbit: S-NSSAI 0.95× vs VLAN 0.91× (tolerance 1.1×) |
-| **H3** — virtual-ECU packaging affects zone-to-compute latency | `exp-002` → `exp-002b` | **Holds** | Virtio transport is the dominant factor: MMIO → PCI Δp50 −26.0 µs (IQR 2.2 µs) |
-| **H4** — co-located OTA does not compromise the ADAS slice | `exp-003` | **Holds** | ADAS p50: 52.2 µs baseline vs 51.9 µs under OTA burst (Δ −0.3 µs, inside the 6.0 µs IQR) |
+| **H1** (isolation): VLAN + tc queue-tree reservations keep ADAS p99 near baseline under infotainment load | `exp-001` | **Holds** | ADAS p99 at 600 mbit load: 81.9 µs vs 89.6 µs baseline (0.91×; threshold 2.0×) |
+| **H2**: real S-NSSAI slicing vs static VLAN mapping | `exp-010` | **Holds** | p99 growth, baseline → 600 mbit: S-NSSAI 0.95× vs VLAN 0.91× (tolerance 1.1×) |
+| **H3**: virtual-ECU packaging affects zone-to-compute latency | `exp-002` → `exp-002b` | **Holds** | Virtio transport is the dominant factor: MMIO → PCI Δp50 −26.0 µs (IQR 2.2 µs) |
+| **H4**: co-located OTA does not compromise the ADAS slice | `exp-003` | **Holds** | ADAS p50: 52.2 µs baseline vs 51.9 µs under OTA burst (Δ −0.3 µs, inside the 6.0 µs IQR) |
 
 Every campaign above is 5 repetitions per arm or load point, 1000 pps × 60 s per point
 (60 000 probes), with a 10 s warmup discarded. Each result has been reproduced by an independent
 second campaign (`--repro`) that reached the same verdict.
 
-## H1 — isolation (`exp-001`)
+## H1: isolation (`exp-001`)
 
 The ADAS tail does not grow with load: p99 is 89.6 µs idle and 81.9 µs at 600 mbit, and loss is
 0.0 % at every level. Full table: [`FACTS.md` § H1](FACTS.md#h1--isolation-exp-001).
@@ -45,7 +45,7 @@ edit. The hash of a current checkout of `exp-001-ws` therefore matches neither t
 repeats': a header comment in `run.sh` was edited after the repeats (vxperiments#3). Compare against the commit
 the archive names, not against the hash of whatever is checked out.
 
-## H2 — real slicing vs static mapping (`exp-010`)
+## H2: real slicing vs static mapping (`exp-010`)
 
 S-NSSAI PDU sessions through Open5GS + UERANSIM, compared against `exp-001`'s VLAN arm. The
 S-NSSAI path has a higher absolute floor (p99 ≈ 317–337 µs, since it crosses a software UPF and
@@ -59,7 +59,7 @@ then re-run with host-noise mitigations (CPU governor, core pinning, randomized 
 All intermediate campaigns are kept in the results directory.
 Summary: `vxperiments/results/exp-010/exp-010-summary.md`
 
-## H3 — virtualization choice (`exp-002b`)
+## H3: virtualization choice (`exp-002b`)
 
 Six packaging arms, from `container` to `microvm-mmio`, with p50/p99, CPU and RSS per arm:
 [`FACTS.md` § H3](FACTS.md#h3--virtualization-choice-exp-002b).
@@ -73,7 +73,7 @@ vhost-net alone −9.5 µs. Machine type
 ranking but wrong about the cause. `exp-002b` was designed specifically to separate the factors.
 Summary: `vxperiments/results/exp-002b/exp-002b-summary.md`
 
-## H4 — OTA co-location (`exp-003`)
+## H4: OTA co-location (`exp-003`)
 
 Both arms, with p50/p95/p99 and OTA deliveries (361 ok, 0 failed per repetition):
 [`FACTS.md` § H4](FACTS.md#h4--ota-co-location-exp-003).
@@ -86,9 +86,9 @@ Summary: `vxperiments/results/exp-003/exp-003-summary.md`
 
 ## Other completed experiments
 
-- **`exp-005`** — cold-start / first-packet latency after zone boot. The effect was confirmed in 20 of 20
+- **`exp-005`**: cold-start / first-packet latency after zone boot. The effect was confirmed in 20 of 20
   repetitions. It explains the inflated first-arm tails seen incidentally in `exp-001`/`002`/`003`.
-- **`exp-014`** — wiring-harness topology as a variable: star vs daisy-chained zones. The expected
+- **`exp-014`**: wiring-harness topology as a variable: star vs daisy-chained zones. The expected
   hop-count effect holds.
 
 ## Methodology caveats that apply to everything above
