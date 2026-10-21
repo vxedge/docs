@@ -1,7 +1,7 @@
 # Results
 
 What vxedge has measured so far, one row per hypothesis, with the caveat that matters most for
-each. Hypotheses are defined in [`ARCHITECTURE.md`](ARCHITECTURE.md) §2; methodology in §12.
+each. Hypotheses are defined in [`ARCHITECTURE.md`](ARCHITECTURE.md) §2; methodology in §12. Acronyms are defined in [`ACRONYMS.md`](ACRONYMS.md).
 Every number below comes from a frozen summary in
 `vxperiments/results/` (that repository is not public yet), which records
 the input manifest's sha256 alongside it. Each one is registered in [`FACTS.md`](FACTS.md), which
@@ -53,8 +53,8 @@ GTP-U), but its tail grows no faster under load than the VLAN path does, which i
 hypothesis tests.
 
 **Caveat:** the first campaign did **not** hold, because nothing in the 5G path applied
-per-slice QoS. The fix was real HTB enforcement on the slice path. We checked first whether
-5QI/AMBR configuration alone would do it, and it did not change anything. The campaign was
+per-slice QoS. The fix was real HTB enforcement on the slice path. Configuring
+5QI/AMBR alone was checked first and changed nothing. The campaign was
 then re-run with host-noise mitigations (CPU governor, core pinning, randomized load order).
 All intermediate campaigns are kept in the results directory.
 Summary: `vxperiments/results/exp-010/exp-010-summary.md`

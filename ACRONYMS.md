@@ -66,6 +66,8 @@ The `vxedge` core-network/RAN stack (Open5GS + UERANSIM), relevant to H2 and the
 - **V2V** / **V2I** — Vehicle-to-Vehicle / Vehicle-to-Infrastructure.
 - **RSU** — Roadside Unit: a V2I endpoint (phase-3 node type).
 - **PC5** — The 3GPP sidelink interface used for direct V2X (no core network hop).
+- **5QI** — 5G QoS Identifier: the class a 5G core assigns to a traffic flow (delay budget, priority).
+- **AMBR** — Aggregate Maximum Bit Rate: the rate cap a 5G core enforces on a session or UE.
 
 ## SDN & Linux networking (vxgateway)
 
@@ -101,6 +103,14 @@ The `vxgateway` data plane, relevant to `network-provisioning-patterns`.
 - **SocketCAN** / **vcan** — Linux's native CAN subsystem / its virtual-CAN device.
 - **DBC** — A CAN database file format defining frame layouts (used by restbus
   simulation to map CAN ↔ VSS).
+- **DSCP** — Differentiated Services Code Point: the IP header field that marks a packet's traffic class.
+- **QoS** — Quality of Service: rate, delay and priority guarantees for a class of traffic.
+- **netns** — Linux network namespace: an isolated network stack; the `container` zone backend and the
+  probes use one each.
+- **NIC** — Network Interface Card.
+- **UDP** — User Datagram Protocol: the connectionless transport the probes and `vxtraffic` use.
+- **PHY** — Physical layer: the transceiver that drives the wire (100/1000BASE-T1 in a vehicle).
+- **PCAP** — Packet capture: the file format for recorded network traffic.
 
 ## SDV & automotive E/E architecture
 
@@ -134,6 +144,11 @@ The `vxgateway` data plane, relevant to `network-provisioning-patterns`.
   sense below.
 - **DoIP** — Diagnostics over IP: carries UDS diagnostics over Ethernet/IP.
 - **SAE** — Society of Automotive Engineers: standards body (e.g. the WCX venue).
+- **IVI** — In-Vehicle Infotainment.
+- **LIN** — Local Interconnect Network: a low-cost in-vehicle serial bus, usually behind a zone controller.
+- **SOAFEE** — Scalable Open Architecture for Embedded Edge: an industry group for cloud-native vehicle software.
+- **Kuksa** — Eclipse Kuksa: an open-source data broker that serves VSS signals inside a vehicle.
+- **QML** — Qt Modeling Language: the declarative UI language of an embedded Qt infotainment loadable.
 
 ## Virtualization & zones
 
@@ -156,6 +171,8 @@ The `vxgateway` data plane, relevant to `network-provisioning-patterns`.
   device models / Renode expose to guests.
 - **NAND / UBI** — Flash storage technology; came up as a reason Rugix (not RAUC) fits
   vxedge's QEMU/libvirt block-storage bundles (no real NAND to manage).
+- **MMIO** — Memory-Mapped I/O: the virtio transport of QEMU's `microvm` machine type (compared with PCI in H3).
+- **PCI** — Peripheral Component Interconnect: the virtio transport of the `q35` machine type (compared with MMIO in H3).
 
 ## Compute, AI & GPU (vxparts: `hpc`-class parts)
 
@@ -174,6 +191,7 @@ The `vxgateway` data plane, relevant to `network-provisioning-patterns`.
 - **CARLA** — Open-source autonomous-driving simulator (proper name, not an acronym);
   the source of realistic sensor/perception traffic.
 - **LLM** — Large Language Model: relevant to track M's GenAI-authored-experiment goal.
+- **HPC** — High-Performance Compute: the central compute node of a zonal vehicle (`role: hpc`).
 
 ## API & software architecture (vxAPI)
 
@@ -216,6 +234,7 @@ The `vxgateway` data plane, relevant to `network-provisioning-patterns`.
   confirm before running, the agent-tooling equivalent of the CLI's own explicit verbs.
 - **rmcp** — the official Rust SDK for MCP (`modelcontextprotocol/rust-sdk`); `vxmcp`'s
   chosen implementation, reached spec-2026-07-28 Tier-1 conformance 2026-07-31.
+- **ORAS** — OCI Registry As Storage: the client `vxparts` uses to publish and pull loadables as OCI artifacts.
 
 ## Standards, modeling & simulation (track M)
 
@@ -263,7 +282,7 @@ The `vxgateway` data plane, relevant to `network-provisioning-patterns`.
   "worst-case-ish" tail latency figure.
 - **RSS** — Resident Set Size: a process's actual in-memory footprint, one of H3's
   resource-cost metrics.
-- **SHA256** — The cryptographic hash algorithm used to digest-tag every manifest,
+- **SHA256** / **SHA-256** — The cryptographic hash algorithm used to digest-tag every manifest,
   image, and archive for reproducibility.
 - **CSV** — Comma-Separated Values: the tabular result-export format.
 - **SemVer** — Semantic Versioning: the `MAJOR.MINOR.PATCH` convention every repo
@@ -274,3 +293,9 @@ The `vxgateway` data plane, relevant to `network-provisioning-patterns`.
 - **NOPASSWD** — A sudoers option letting a specific command run without a password
   prompt — how `vxedged` gets `CAP_NET_ADMIN`-requiring privileges without running as
   root.
+- **DCO** — Developer Certificate of Origin: the `Signed-off-by` line (`git commit -s`) every contribution carries; there is no CLA.
+- **CLA** — Contributor License Agreement: not used here.
+- **SLA** — Service Level Agreement: the latency and loss target a slice must keep (H4 checks the ADAS one).
+- **DOI** — Digital Object Identifier: the permanent citation handle for an archived bundle.
+- **PREEMPT_RT** — The Linux real-time kernel configuration; the testbed host class does not use it, which is a stated caveat.
+- **SO_TIMESTAMPING** — Linux socket option for kernel (and hardware) packet timestamps; probes use userspace timestamps today.

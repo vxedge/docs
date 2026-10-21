@@ -2,7 +2,8 @@
 
 Where vxedge stands, phase by phase. The full phase definitions are in
 [`ARCHITECTURE.md`](ARCHITECTURE.md) §15, and the measured results are in [`RESULTS.md`](RESULTS.md).
-Per-repo work items live in each repository's own `TASKS.md`.
+Per-repo work items live in each repository's own `TASKS.md`. Acronyms are defined in
+[`ACRONYMS.md`](ACRONYMS.md).
 
 References elsewhere in this repository to numbered program-board items (`#14`, `#28`, …) and
 dated state snapshots point to the maintainers' internal working board. This page is the public summary of
