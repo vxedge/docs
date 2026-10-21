@@ -45,5 +45,5 @@ of the automation now exists: `vxedge` has a tag-triggered release workflow
 (`.github/workflows/release.yml`) that builds the CLI and daemon for x86-64 and ARM64 Linux, writes
 `SHA256SUMS` and attaches build provenance; `v0.2.0` (2026-10-21) is its first release. The other
 repos have none yet, and there is still no `git-cliff`/Conventional-Commits enforcement and no
-cross-repo compatibility-matrix generation. That work is tracked as its own devops board section — see `docs/ROADMAP.md` "Release engineering
-& versioning (devops)" — rather than implemented ad hoc here.
+cross-repo compatibility-matrix generation. That work is tracked as its own devops board section — see `docs/ROADMAP.md`
+"Release engineering" — rather than implemented ad hoc here.

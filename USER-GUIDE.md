@@ -2,7 +2,8 @@
 
 For SDV / automotive engineers using vxedge as a testbed. Onboarding lives in
 [GETTING-STARTED.md](GETTING-STARTED.md); the full spec in [ARCHITECTURE.md](ARCHITECTURE.md);
-host requirements in [TESTBED-SETUP.md](TESTBED-SETUP.md); live progress in [RESULTS.md](RESULTS.md).
+host requirements in [TESTBED-SETUP.md](TESTBED-SETUP.md); results in [RESULTS.md](RESULTS.md); phase
+status in [ROADMAP.md](ROADMAP.md); acronyms in [ACRONYMS.md](ACRONYMS.md).
 
 **State banner:** vxedge is a research-grade *executable virtual prototype* of a zonal
 SDV E/E architecture — not a certified tool and not a "digital twin" of any physical vehicle
@@ -60,7 +61,7 @@ All lifecycle verbs follow `up|down[|status]`; operations are idempotent.
 
 | Command | State | Notes |
 |---|---|---|
-| `vxedged serve --listen unix://… --runtime-dir …` | live | needs CAP_NET_ADMIN for real `up` (sudo or setcap) |
+| `vxedged --listen unix://… --runtime-dir …` | live | needs CAP_NET_ADMIN for real `up` (sudo or setcap) |
 | `vxedge up\|down --manifest <workspace-dir>` | live | provisions/removes the gateway; sets the daemon's active experiment. `--manifest` names a §6.0 workspace directory (or one file of `---`-separated documents) |
 | `vxedge status` | live | observed gateway + per-slice state |
 | `vxedge zone up\|down --vxid <zone-id\|device-id>` | live | runs the nodes of a zone (a region), or a single device by its own id; needs an active experiment |
@@ -72,7 +73,7 @@ All lifecycle verbs follow `up|down[|status]`; operations are idempotent.
 | `vxedge ota up\|down [--experiment <path>]` | live | spawns/manages `vxota serve` from the workspace's `services.ota` block; cwd-resolved by default like `experiment` verbs, `--experiment` overrides. A campaign normally reaches this through `experiment up --stage services` (what exp-003 actually does) rather than calling it standalone |
 | `vxedge telemetry up\|down\|collect` | planned | vxtelemetry runs standalone today (see §4); daemon wiring open |
 | `vxedge compute up\|down --vxid <id>` / `list` | live | a second RPC surface over the same node backends as `zone`, filtered to `role: hpc` devices — not a separate provisioning path. `add`/`rm`/`image push` planned |
-| `vxedge vehicle up\|down\|status --manifest <vehicle workspace>` | live | brings up the gateway, its slices and every zone of a bare vehicle (`kind: vehicle` + `kind: baseline`, no experiment file), and tears it down again; services start only if the vehicle declares them. Verified 2026-10-13 on a one-zone vehicle (a microVM zone from a bundle built locally on the host: `vxparts/parts/zone/linux/stack/probe-bundle/build.sh <vehicle>/bundle`; `up` refuses before provisioning if the bundle is missing, and no registry login is needed). Not yet exercised on a multi-zone vehicle, and `manifest validate` still requires an experiment file, so it rejects a bare vehicle that `vehicle up` accepts |
+| `vxedge vehicle up\|down\|status --manifest <vehicle workspace>` | live | brings up the gateway, its slices and every zone of a bare vehicle (`kind: vehicle` + `kind: baseline`, no experiment file), and tears it down again; services start only if the vehicle declares them. Verified 2026-10-13 on a one-zone vehicle (a microVM zone from a bundle built locally on the host: `vxparts/parts/zone/linux/stack/probe-bundle/build.sh <vehicle>/bundle`; `up` refuses before provisioning if the bundle is missing, and no registry login is needed). Not yet exercised on a multi-zone vehicle. `manifest validate` accepts a bare vehicle too, validating it the way `vehicle up` loads it |
 | `vxedge experiment new <id> [--template minimal\|slicing]` | live | scaffolds a workspace folder; no daemon, no network, no GPU |
 | `vxedge experiment validate` | live | local-only; loads the workspace here and runs every cross-file check, reporting all problems at once |
 | `vxedge experiment up\|down\|status` | live | acts on the workspace in the **current directory** (the single `.vxp`); no name, no `--manifest`. `--chdir <dir>` to run from elsewhere. `up` provisions gateway → zones → services and **does not start traffic** — use `vxedge traffic up`. `--stage gateway\|zones\|services` (repeatable) restricts it: a campaign measuring on the host-side veth peers stages only the gateway, and one whose isolation contract is a single arm at a time stages the gateway then brings each arm up with `zone up --vxid` |
@@ -162,4 +163,4 @@ Each repo carries `AGENTS.md` (scope + rules) and `TASKS.md` (work items);
 `docs/ROADMAP.md` is the program board. Quality bars are codified per repo: `rust-patterns`, `testbed-quality`, `experiment-methodology`,
 `gateway-verification` (vxedge), `sysml-authoring` (vxmodels).
 A verb that prints "not wired to the daemon yet (scaffold)" is unimplemented —
-check RESULTS.md before assuming a bug.
+check the CLI reference in §2 before assuming a bug.

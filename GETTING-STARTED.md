@@ -5,7 +5,8 @@ central SDV (software-defined vehicle) E/E architectures: a virtual edge gateway
 (`vxgateway`), QEMU/KVM virtual ECUs, containerized AD compute, and a Rust control plane
 (`vxedged`) driven entirely by YAML manifests. Read
 [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full picture; this page gets you from
-zero to a measured experiment; day-to-day usage lives in [USER-GUIDE.md](USER-GUIDE.md).
+zero to a measured experiment; day-to-day usage lives in [USER-GUIDE.md](USER-GUIDE.md), and
+every acronym is defined in [`ACRONYMS.md`](ACRONYMS.md).
 
 **Pre-release (0.x).** The manifest schema and vxAPI may change between minor versions
 ([`VERSIONING.md`](VERSIONING.md)); published results are frozen and do not change.
@@ -37,20 +38,21 @@ folder is *not* a git repo):
 
 ```bash
 mkdir vxedge && cd vxedge
-for r in docs vxedge; do        # public today; add each repository below as it is published:
-  gh repo clone vxedge/$r  # vxparts vxota vxagents vxtelemetry vxperiments vxmodels
+for r in docs vxedge; do   # public today; add each repository below as it is published:
+  gh repo clone vxedge/$r  # vxparts vxota vxagents vxtelemetry vxperiments vxmodels vxmcp
 done
 ```
 
 | Repo | What |
 |---|---|
-| `docs` | Architecture specification (`ARCHITECTURE.md`), program task board, publication plan |
+| `docs` | Architecture specification (`ARCHITECTURE.md`), user documentation, results, roadmap and the facts registry (`FACTS.md`) |
 | `vxedge` | **Start here** — control plane (`vxedged`), vxAPI (gRPC/Protobuf), CLI |
 | `vxparts` | Unified loadable registry — zone (virtual-ECU) and central-compute images, published via OCI/ORAS (supersedes the former `vxzones`/`vxcompute` split) |
 | `vxota` / `vxtelemetry` | OTA and telemetry service code |
 | `vxagents` | Rust measurement agents (latency probes, traffic gen, pcap) |
 | `vxperiments` | Experiment + vehicle manifests, notebooks, results |
 | `vxmodels` | SysML v2 system models + `vxmodel` manifest renderer — track M (`ARCHITECTURE.md` §6.3) |
+| `vxmcp` | MCP (Model Context Protocol) server over vxAPI, for agent tooling |
 
 Every repo has an `AGENTS.md` (scope + rules) and `TASKS.md` (phased work items);
 `docs/ROADMAP.md` is the program-level board with the cross-repo critical path.
@@ -179,19 +181,17 @@ consistency. Experiment manifests live in `vxperiments/experiments/`, vehicle ma
 
 ## 9. Where to contribute next
 
-Check `docs/ROADMAP.md` (program board) and `RESULTS.md` (what's done vs open). **The phase-1
-gate has passed** (2026-07-13): H1, H3, and H4 all hold with second-campaign
-reproducibility checks, and `v0.1.0` is tagged across the delivering repos. Current open
-fronts, in order:
+Check `docs/ROADMAP.md` (program board) and `RESULTS.md` (what's done vs open). Phases 1 and 2 are
+complete and phase 3 is in progress ([`FACTS.md`](FACTS.md)); `v0.1.0` was tagged across the delivering
+repos when the phase-1 gate passed (2026-07-13). Current open fronts, from the roadmap's open work:
 
-1. `vxedge` — Open5GS/UERANSIM driver (`mode: s-nssai`) + URSP-style `slice_policy` → the
-   H2 numbers (phase-2 gate)
-2. `vxparts` (`parts/hpc/`) — Autoware/ROS2 + CARLA + carla-ros-bridge, closed loop
+1. `vxedge` — `vxedge vehicle up` end to end (the phase-3 gate)
+2. `vxparts` (`parts/hpc/`) — Autoware/ROS 2 + CARLA + carla-ros-bridge, closed loop (needs a Tier 2 GPU host)
 3. `vxparts` (`parts/zone/`) — QNX SDP 8 / AAOS images + real-RTOS guest bundles
    (Zephyr/FreeRTOS) beyond the linux-probe bundle
-4. Track M — M0/M1: `vxmodels` repo + the retroactive H1–H4 SysML v2 traceability model
-   over the frozen archives (`docs/ROADMAP.md` track M; zero new experiments)
-5. Release/artifact pipeline — GHCR images with digests, cargo-dist binaries
+4. Track M — M4 (scenario models, fidelity ledger), which waits on a GPU host
+5. Release pipeline — GHCR images with digests, and a tag-triggered release for the repositories
+   other than `vxedge`
 
 Conventions to know before your first PR: manifests are the sole source of truth; no
 orchestration logic in any frontend; every image is digest-tagged. Details per repo in its `AGENTS.md`.
