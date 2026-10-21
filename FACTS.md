@@ -6,7 +6,7 @@ builds every number and state it shows from this file and nothing else. The GitH
 [`RESULTS.md`](RESULTS.md) quote it.
 
 Each measured value is copied from a frozen summary in
-`vxperiments/results/` (that repository is not public yet). Those summaries
+[`vxperiments/results/`](https://github.com/vxedge/vxperiments/tree/main/results). Those summaries
 record the input manifest's sha256. This file does not replace them; it is the one place they are
 quoted from. [`RESULTS.md`](RESULTS.md) explains the numbers: what each hypothesis tests and the
 caveat that matters most.
@@ -113,7 +113,7 @@ configuration, not measurements.
 
 Supplementary repeats on a newer host kernel. The frozen campaign above is unchanged; these two
 repeats confirm the verdict on kernel 7.0.0-38-generic (the frozen run used 7.0.0-28-generic).
-Source: `vxperiments/results/exp-001-repro-check.md`.
+Source: [`vxperiments/results/exp-001-repro-2026-10-13-run2/exp-001-repro-check.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-001-repro-2026-10-13-run2/exp-001-repro-check.md).
 
 | Key | Value | Source |
 |---|---|---|
@@ -125,7 +125,7 @@ Source: `vxperiments/results/exp-001-repro-check.md`.
 | `h1r.archives` | 25 archives | per repeat |
 
 Per load level. Latency in µs with the IQR across repetitions in brackets.
-Source: `vxperiments/results/exp-001/exp-001-summary.md`.
+Source: [`vxperiments/results/exp-001/exp-001-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-001/exp-001-summary.md).
 
 | Key | load (mbit) | p50 µs (IQR) | p95 µs (IQR) | p99 µs (IQR) | loss % |
 |---|---:|---:|---:|---:|---:|
@@ -144,7 +144,7 @@ Source: `vxperiments/results/exp-001/exp-001-summary.md`.
 | `h2.floor` | 317–337 µs | S-NSSAI p99 across all loads: software UPF and GTP-U |
 
 Per load level, S-NSSAI path.
-Source: `vxperiments/results/exp-010/exp-010-summary.md`.
+Source: [`vxperiments/results/exp-010/exp-010-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-010/exp-010-summary.md).
 
 | Key | load (mbit) | p50 µs (IQR) | p95 µs (IQR) | p99 µs (IQR) | loss % |
 |---|---:|---:|---:|---:|---:|
@@ -167,7 +167,7 @@ Source: `vxperiments/results/exp-010/exp-010-summary.md`.
 | `h3.machine` | −0.3 µs | Δp50, q35 vs microvm (`q35-pci` vs `microvm-pci`): no measurable effect |
 
 Per packaging arm. CPU and RSS are means across repetitions.
-Source: `vxperiments/results/exp-002b/exp-002b-summary.md`.
+Source: [`vxperiments/results/exp-002b/exp-002b-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-002b/exp-002b-summary.md).
 
 | Key | arm | p50 µs (IQR) | p99 µs (IQR) | CPU % | RSS MB |
 |---|---|---:|---:|---:|---:|
@@ -192,7 +192,7 @@ Source: `vxperiments/results/exp-002b/exp-002b-summary.md`.
 | `h4.repro_inside` | 0 of 6 | metric/arm pairs of the same-day second campaign inside the first campaign's IQR; the verdict held |
 
 Per arm.
-Source: `vxperiments/results/exp-003/exp-003-summary.md`.
+Source: [`vxperiments/results/exp-003/exp-003-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-003/exp-003-summary.md).
 
 | Key | arm | p50 µs (IQR) | p95 µs (IQR) | p99 µs (IQR) | OTA deliveries ok/fail |
 |---|---|---:|---:|---:|---:|

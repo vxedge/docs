@@ -3,7 +3,7 @@
 What vxedge has measured so far, one row per hypothesis, with the caveat that matters most for
 each. Hypotheses are defined in [`ARCHITECTURE.md`](ARCHITECTURE.md) §2; methodology in §12. Acronyms are defined in [`ACRONYMS.md`](ACRONYMS.md).
 Every number below comes from a frozen summary in
-`vxperiments/results/` (that repository is not public yet), which records
+[`vxperiments/results/`](https://github.com/vxedge/vxperiments/tree/main/results), which records
 the input manifest's sha256 alongside it. Each one is registered in [`FACTS.md`](FACTS.md), which
 also holds the full per-load and per-arm tables. This page explains the numbers; that file is where
 they are quoted from.
@@ -31,7 +31,7 @@ in userspace (SO_TIMESTAMPING is a tracked follow-up). An earlier version of thi
 measured loopback delivery instead of the gateway path, because probe and reflector sat in the
 same network namespace. That defect was fixed with real netns isolation and is now covered by a
 CI regression test. The numbers above are the corrected re-run.
-Summary: `vxperiments/results/exp-001/exp-001-summary.md`
+Summary: [`vxperiments/results/exp-001/exp-001-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-001/exp-001-summary.md)
 
 **Repeats on a newer kernel.** Two further runs on kernel 7.0.0-38-generic (input sha
 `ac2496e3f58e…`, 25 archives each) keep the verdict: p99 at the highest load is 0.94× and 1.00× of idle,
@@ -42,7 +42,7 @@ suspect and has not been tested. The frozen numbers stay the published ones; the
 
 **Workspace hashes.** A workspace's input hash covers every file in it, comments included, so it changes with any
 edit. The hash of a current checkout of `exp-001-ws` therefore matches neither the frozen campaign's nor the
-repeats': a header comment in `run.sh` was edited after the repeats (vxperiments#3). Compare against the commit
+repeats': a header comment in `run.sh` was edited after the repeats ([vxperiments#3](https://github.com/vxedge/vxperiments/pull/3)). Compare against the commit
 the archive names, not against the hash of whatever is checked out.
 
 ## H2: real slicing vs static mapping (`exp-010`)
@@ -57,7 +57,7 @@ per-slice QoS. The fix was real HTB enforcement on the slice path. Configuring
 5QI/AMBR alone was checked first and changed nothing. The campaign was
 then re-run with host-noise mitigations (CPU governor, core pinning, randomized load order).
 All intermediate campaigns are kept in the results directory.
-Summary: `vxperiments/results/exp-010/exp-010-summary.md`
+Summary: [`vxperiments/results/exp-010/exp-010-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-010/exp-010-summary.md)
 
 ## H3: virtualization choice (`exp-002b`)
 
@@ -71,7 +71,7 @@ vhost-net alone −9.5 µs. Machine type
 
 **Caveat:** `exp-002`'s original conclusion ("microVMs are slowest") was right about the
 ranking but wrong about the cause. `exp-002b` was designed specifically to separate the factors.
-Summary: `vxperiments/results/exp-002b/exp-002b-summary.md`
+Summary: [`vxperiments/results/exp-002b/exp-002b-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-002b/exp-002b-summary.md)
 
 ## H4: OTA co-location (`exp-003`)
 
@@ -82,7 +82,7 @@ Both arms, with p50/p95/p99 and OTA deliveries (361 ok, 0 failed per repetition)
 scheduling contention between OTA and the ADAS probe, not gateway-QoS-enforced network
 contention. A second campaign moved the absolute numbers outside the first campaign's IQR, which is
 session-to-session host drift, but it did not change the comparative verdict.
-Summary: `vxperiments/results/exp-003/exp-003-summary.md`
+Summary: [`vxperiments/results/exp-003/exp-003-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-003/exp-003-summary.md)
 
 ## Other completed experiments
 

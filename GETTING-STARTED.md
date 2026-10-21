@@ -38,8 +38,8 @@ folder is *not* a git repo):
 
 ```bash
 mkdir vxedge && cd vxedge
-for r in docs vxedge; do   # public today; add each repository below as it is published:
-  gh repo clone vxedge/$r  # vxparts vxota vxagents vxtelemetry vxperiments vxmodels vxmcp
+for r in docs vxedge vxperiments; do   # public today; add each repository below as it is published:
+  gh repo clone vxedge/$r              # vxparts vxota vxagents vxtelemetry vxmodels vxmcp
 done
 ```
 
