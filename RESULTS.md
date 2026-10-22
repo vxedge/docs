@@ -24,7 +24,7 @@ second campaign (`--repro`) that reached the same verdict.
 ## H1: isolation (`exp-001`)
 
 The ADAS tail does not grow with load: p99 is 89.6 µs idle and 81.9 µs at 600 mbit, and loss is
-0.0 % at every level. Full table: [`FACTS.md` § H1](FACTS.md#h1--isolation-exp-001).
+0.0 % at every level. Full table: [`FACTS.md` § H1](FACTS.md#h1-isolation-exp-001).
 
 **Caveat:** the gateway shares its host with the zones it serves, and timestamps are taken
 in userspace (SO_TIMESTAMPING is a tracked follow-up). An earlier version of this campaign
@@ -36,7 +36,7 @@ Summary: [`vxperiments/results/exp-001/exp-001-summary.md`](https://github.com/v
 **Repeats on a newer kernel.** Two further runs on kernel 7.0.0-38-generic (input sha
 `ac2496e3f58e…`, 25 archives each) keep the verdict: p99 at the highest load is 0.94× and 1.00× of idle,
 against 0.91× in the frozen run, and the second repeat sits inside the first's IQR on 12 of 15 metric ×
-load pairs (values in [`FACTS.md` § H1](FACTS.md#h1--isolation-exp-001)). Both read a few microseconds
+load pairs (values in [`FACTS.md` § H1](FACTS.md#h1-isolation-exp-001)). Both read a few microseconds
 below the frozen run at the two highest loads. The cause is not isolated; the kernel change is the leading
 suspect and has not been tested. The frozen numbers stay the published ones; these are supplementary checks.
 
@@ -62,7 +62,7 @@ Summary: [`vxperiments/results/exp-010/exp-010-summary.md`](https://github.com/v
 ## H3: virtualization choice (`exp-002b`)
 
 Six packaging arms, from `container` to `microvm-mmio`, with p50/p99, CPU and RSS per arm:
-[`FACTS.md` § H3](FACTS.md#h3--virtualization-choice-exp-002b).
+[`FACTS.md` § H3](FACTS.md#h3-virtualization-choice-exp-002b).
 
 Decomposition: virtio transport (MMIO vs PCI) −26.0 µs; libvirt vs raw QEMU −17.3 µs, likely
 because libvirt enables vhost/optimized virtio settings that a bare QEMU invocation does not;
@@ -76,7 +76,7 @@ Summary: [`vxperiments/results/exp-002b/exp-002b-summary.md`](https://github.com
 ## H4: OTA co-location (`exp-003`)
 
 Both arms, with p50/p95/p99 and OTA deliveries (361 ok, 0 failed per repetition):
-[`FACTS.md` § H4](FACTS.md#h4--ota-co-location-exp-003).
+[`FACTS.md` § H4](FACTS.md#h4-ota-co-location-exp-003).
 
 **Caveat:** the v1 OTA transport binds a plain host address. That means this measures host-level CPU and
 scheduling contention between OTA and the ADAS probe, not gateway-QoS-enforced network

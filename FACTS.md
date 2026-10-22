@@ -59,9 +59,9 @@ on modelled hardware), **planned**, **caveat** (works, with a stated limit on wh
 
 | Key | Track | Status |
 |---|---|---|
-| `track.m` | M — SysML v2 model governance | M0–M3 closed; M4 waits on a GPU host |
-| `track.c` | C — containerization | complete through C3.2 |
-| `track.p` | P — `vxparts` unification | complete |
+| `track.m` | M: SysML v2 model governance | M0–M3 closed; M4 waits on a GPU host |
+| `track.c` | C: containerization | complete through C3.2 |
+| `track.p` | P: `vxparts` unification | complete |
 
 ## 2 · Results
 
@@ -102,7 +102,7 @@ configuration, not measurements.
 | `h.3` | Virtual-ECU packaging affects zone-to-compute latency | `exp-002b` | holds | `625840eeeb0c…` | 30 archives |
 | `h.4` | Co-located OTA does not compromise the ADAS slice | `exp-003` | holds | `1efebdef615f…` | 10 archives |
 
-### H1 — isolation (`exp-001`)
+### H1: isolation (`exp-001`)
 
 | Key | Value | Source |
 |---|---|---|
@@ -135,7 +135,7 @@ Source: [`vxperiments/results/exp-001/exp-001-summary.md`](https://github.com/vx
 | `h1.load.400` | 400 | 50.6 (1.3) | 72.3 (3.1) | 85.2 (4.2) | 0.0 |
 | `h1.load.600` | 600 | 51.4 (1.8) | 69.2 (2.8) | 81.9 (5.0) | 0.0 |
 
-### H2 — real slicing vs static mapping (`exp-010`)
+### H2: real slicing vs static mapping (`exp-010`)
 
 | Key | Value | Source |
 |---|---|---|
@@ -154,7 +154,7 @@ Source: [`vxperiments/results/exp-010/exp-010-summary.md`](https://github.com/vx
 | `h2.load.400` | 400 | 260.9 (1.9) | 294.7 (7.4) | 318.7 (23.0) | 0.0 |
 | `h2.load.600` | 600 | 260.7 (4.7) | 293.4 (5.9) | 317.2 (10.8) | 0.0 |
 
-### H3 — virtualization choice (`exp-002b`)
+### H3: virtualization choice (`exp-002b`)
 
 | Key | Value | Source |
 |---|---|---|
@@ -178,7 +178,7 @@ Source: [`vxperiments/results/exp-002b/exp-002b-summary.md`](https://github.com/
 | `h3.arm.microvm-pci` | microvm-pci | 87.9 (2.2) | 138.2 (3.2) | 11.4 | 150.2 |
 | `h3.arm.microvm-mmio` | microvm-mmio | 113.9 (2.0) | 165.0 (6.3) | 15.0 | 146.4 |
 
-### H4 — OTA co-location (`exp-003`)
+### H4: OTA co-location (`exp-003`)
 
 | Key | Value | Source |
 |---|---|---|
