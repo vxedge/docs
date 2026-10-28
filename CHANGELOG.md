@@ -9,7 +9,7 @@ All notable changes to this repo are documented here. Format follows
 ### Changed
 
 - `GETTING-STARTED.md`: prebuilt `vxedge` binaries (checksums and provenance) as the first way to get the CLI and daemon; `VERSIONING.md` and `ROADMAP.md` record the `vxedge` release workflow and `v0.2.0`.
-- `vxperiments` is public: linked from `README.md`, `GETTING-STARTED.md` (clone loop and repository status), `RESULTS.md` and `FACTS.md` (evidence paths now link to the frozen summaries; the `exp-001` repeat source pointed at a path that does not exist and now points at the run-2 check file).
+- `vxagents`, `vxtelemetry`, `vxota` and `vxperiments` are public: linked from `README.md`, `GETTING-STARTED.md` (clone loop and repository status), the org profile, `RESULTS.md` and `FACTS.md` (evidence paths now link to the frozen summaries; the `exp-001` repeat source pointed at a path that does not exist and now points at the run-2 check file).
 
 ## [0.2.1] - 2026-10-19
 
