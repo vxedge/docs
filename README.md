@@ -10,8 +10,6 @@ vxedge is an open, all-software testbed for mapping 5G network slices onto zonal
 
 **Pre-release (0.x):** the manifest schema and vxAPI may change between minor versions; published results are frozen.
 
-The vxedge specification and user documentation.
-
 | Document | What |
 |---|---|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | The architecture specification: research goals and hypotheses, topology, vxAPI, manifest schemas, network/service/virtualization models, methodology, phased roadmap |
@@ -44,7 +42,5 @@ when its repository is published; the unlinked ones are not public yet.
 ## Links
 
 - Site: <https://vxedge.dev>
-- Architecture: [`docs/ARCHITECTURE.md`](https://github.com/vxedge/docs/blob/main/ARCHITECTURE.md)
-- Results: [`docs/RESULTS.md`](https://github.com/vxedge/docs/blob/main/RESULTS.md) · Roadmap: [`docs/ROADMAP.md`](https://github.com/vxedge/docs/blob/main/ROADMAP.md)
 - Contributing: [CONTRIBUTING](https://github.com/vxedge/.github/blob/main/CONTRIBUTING.md) · Security: [SECURITY](https://github.com/vxedge/.github/blob/main/SECURITY.md)
 - License: Apache-2.0 ([`LICENSE`](LICENSE)) for code; CC BY 4.0 ([`LICENSE-DOCS`](LICENSE-DOCS)) for docs, results, figures and models

@@ -5,7 +5,8 @@ central SDV (software-defined vehicle) E/E architectures: a virtual edge gateway
 (`vxgateway`), QEMU/KVM virtual ECUs, containerized AD compute, and a Rust control plane
 (`vxedged`) driven entirely by YAML manifests. Read
 [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full picture; this page gets you from
-zero to a measured experiment; day-to-day usage lives in [USER-GUIDE.md](USER-GUIDE.md).
+zero to a measured experiment; day-to-day usage lives in [USER-GUIDE.md](USER-GUIDE.md), and
+every acronym is defined in [`ACRONYMS.md`](ACRONYMS.md).
 
 **Pre-release (0.x).** The manifest schema and vxAPI may change between minor versions
 ([`VERSIONING.md`](VERSIONING.md)); published results are frozen and do not change.
@@ -17,17 +18,17 @@ until then read it as a walkthrough rather than steps you can run end to end.
 
 ## 1. Prerequisites
 
-Verified versions as of 2026-07:
+Verified versions as of 2026-10:
 
 | Tool | Version | Install |
 |---|---|---|
-| Rust | 1.96+ (pinned by `rust-toolchain.toml` — with rustup installed, the first `cargo` command in the repo fetches the right toolchain automatically) | `curl https://sh.rustup.rs -sSf \| sh` |
+| Rust | 1.96+ (pinned by `rust-toolchain.toml`; with rustup installed, the first `cargo` command in the repo fetches the right toolchain automatically) | `curl https://sh.rustup.rs -sSf \| sh` |
 | protoc | any recent (36.x current upstream, as of 2026-10) | distro package, or the [release zip](https://github.com/protocolbuffers/protobuf/releases) → `~/.local/bin` |
 | buf | 1.71+ (optional: proto lint/SDK gen) | [release binary](https://github.com/bufbuild/buf/releases) → `~/.local/bin` |
 | git + gh | any recent | distro package |
 
 Later phases additionally need QEMU/KVM + libvirt, Open vSwitch, and an NVIDIA GPU
-(CARLA/Autoware/Alpamayo workloads) — none of that is required to build and run the
+(CARLA/Autoware/Alpamayo workloads); none of that is required to build and run the
 control plane today.
 
 ## 2. Workspace layout
@@ -44,13 +45,14 @@ done
 
 | Repo | What |
 |---|---|
-| `docs` | Architecture specification (`ARCHITECTURE.md`), program task board, publication plan |
-| `vxedge` | **Start here** — control plane (`vxedged`), vxAPI (gRPC/Protobuf), CLI |
-| `vxparts` | Unified loadable registry — zone (virtual-ECU) and central-compute images, published via OCI/ORAS (supersedes the former `vxzones`/`vxcompute` split) |
+| `docs` | Architecture specification (`ARCHITECTURE.md`), user documentation, results, roadmap and the facts registry (`FACTS.md`) |
+| `vxedge` | **Start here**: control plane (`vxedged`), vxAPI (gRPC/Protobuf), CLI |
+| `vxparts` | Unified loadable registry of zone (virtual-ECU) and central-compute images, published via OCI/ORAS (supersedes the former `vxzones`/`vxcompute` split) |
 | `vxota` / `vxtelemetry` | OTA and telemetry service code |
 | `vxagents` | Rust measurement agents (latency probes, traffic gen, pcap) |
 | `vxperiments` | Experiment + vehicle manifests, notebooks, results |
-| `vxmodels` | SysML v2 system models + `vxmodel` manifest renderer — track M (`ARCHITECTURE.md` §6.3) |
+| `vxmodels` | SysML v2 system models + `vxmodel` manifest renderer, track M (`ARCHITECTURE.md` §6.3) |
+| `vxmcp` | MCP (Model Context Protocol) server over vxAPI, for agent tooling |
 
 Every repo has an `AGENTS.md` (scope + rules) and `TASKS.md` (phased work items);
 `docs/ROADMAP.md` is the program-level board with the cross-repo critical path.
@@ -86,7 +88,7 @@ cd vxedge
 ./target/debug/vxedge --help          # full command tree
 ```
 
-Real provisioning (`up`, `zone up`) needs CAP_NET_ADMIN — run `vxedged` under sudo, or
+Real provisioning (`up`, `zone up`) needs CAP_NET_ADMIN: run `vxedged` under sudo, or
 `sudo setcap cap_net_admin+ep target/debug/vxedged`. Without it, `up` validates the
 manifest and then fails with an actionable message (by design).
 
@@ -118,12 +120,12 @@ so `build.sh` fails until the kernel image is readable (copy it somewhere readab
 The `exp-001` runner needs neither the bundle nor a login.
 
 Results land in `vxperiments/results/`. Quick runs write to `results/exp-001-quick/` (disposable);
-the frozen campaign owns `results/exp-001/`, and reruns use `--repro` (date-suffixed dir) — a dir holding a
+the frozen campaign owns `results/exp-001/`, and reruns use `--repro` (date-suffixed dir); a dir holding a
 frozen campaign's archives is never overwritten in place.
 
 The `--quick` numbers are pipeline validation only (marked NOT reportable). The full
 campaign is `./scripts/run.sh --repro` (it never overwrites the frozen `results/exp-001/`): ~35 minutes, 5 repetitions x 5 load
-levels, 60k samples per point — keep the machine otherwise idle and prefer the
+levels, 60k samples per point; keep the machine otherwise idle and prefer the
 `performance` CPU governor. Reference result and methodology: RESULTS.md and the
 `experiment-methodology` skill.
 
@@ -152,46 +154,44 @@ grpcurl -unix -plaintext -import-path vxedge/proto \
 
 Proto hygiene: `buf lint` in the `vxedge` repo (CI enforces it).
 
-## 7. Manifests — the only input
+## 7. Manifests: the only input
 
 Everything the platform does is declared in YAML manifests (schema:
-`ARCHITECTURE.md` §6; worked example: §16). The parser is strict — unknown fields are
-errors — and semantic validation covers slice references, vxid uniqueness, and slice-mode
+`ARCHITECTURE.md` §6; worked example: §16). The parser is strict (unknown fields are
+errors) and semantic validation covers slice references, vxid uniqueness, and slice-mode
 consistency. Experiment manifests live in `vxperiments/experiments/`, vehicle manifests in
 `vxperiments/vehicles/`.
 
 ## 8. Troubleshooting
 
-- **`protoc` not found during `cargo build`** — install protoc (table above); the proto
+- **`protoc` not found during `cargo build`**: install protoc (table above); the proto
   codegen runs inside the build via `crates/vxedge-api/build.rs`.
-- **`cannot reach vxedged at unix:///run/vxedge.sock`** — the default socket path needs
+- **`cannot reach vxedged at unix:///run/vxedge.sock`**: the default socket path needs
   root-writable `/run`; for development pass a user-writable path to *both* sides
   (`--listen`/`--endpoint unix:///tmp/vxedge.sock`) or set `VXEDGE_ENDPOINT`.
-- **A verb prints "not wired to the daemon yet (scaffold)"** — intentionally unimplemented;
+- **A verb prints "not wired to the daemon yet (scaffold)"**: intentionally unimplemented;
   USER-GUIDE.md §2 lists each verb's state. Check it before assuming a bug.
-- **An experiment runner refuses with "older than source file …"** — the staleness gate:
+- **An experiment runner refuses with "older than source file …"** (the staleness gate):
   rebuild as your user (`cargo build --workspace && touch <binary>`; cargo doesn't relink
   unchanged binaries, so mtime alone can look stale).
-- **`insufficient privileges … CAP_NET_ADMIN`** — run the daemon under sudo or setcap it
+- **`insufficient privileges … CAP_NET_ADMIN`**: run the daemon under sudo or setcap it
   (see §3); provisioning refuses to half-apply without privileges.
-- **Bundle build: "vmlinuz not readable"** — Ubuntu ships kernels 0600;
+- **Bundle build: "vmlinuz not readable"**: Ubuntu ships kernels 0600;
   `sudo chmod 644 /boot/vmlinuz-$(uname -r)`.
 
 ## 9. Where to contribute next
 
-Check `docs/ROADMAP.md` (program board) and `RESULTS.md` (what's done vs open). **The phase-1
-gate has passed** (2026-07-13): H1, H3, and H4 all hold with second-campaign
-reproducibility checks, and `v0.1.0` is tagged across the delivering repos. Current open
-fronts, in order:
+Check `docs/ROADMAP.md` (program board) and `RESULTS.md` (what's done vs open). Phases 1 and 2 are
+complete and phase 3 is in progress ([`FACTS.md`](FACTS.md)); `v0.1.0` was tagged across the delivering
+repos when the phase-1 gate passed (2026-07-13). Current open fronts, from the roadmap's open work:
 
-1. `vxedge` — Open5GS/UERANSIM driver (`mode: s-nssai`) + URSP-style `slice_policy` → the
-   H2 numbers (phase-2 gate)
-2. `vxparts` (`parts/hpc/`) — Autoware/ROS2 + CARLA + carla-ros-bridge, closed loop
-3. `vxparts` (`parts/zone/`) — QNX SDP 8 / AAOS images + real-RTOS guest bundles
+1. `vxedge`: `vxedge vehicle up` end to end (the phase-3 gate)
+2. `vxparts` (`parts/hpc/`): Autoware/ROS 2 + CARLA + carla-ros-bridge, closed loop (needs a Tier 2 GPU host)
+3. `vxparts` (`parts/zone/`): QNX SDP 8 / AAOS images + real-RTOS guest bundles
    (Zephyr/FreeRTOS) beyond the linux-probe bundle
-4. Track M — M0/M1: `vxmodels` repo + the retroactive H1–H4 SysML v2 traceability model
-   over the frozen archives (`docs/ROADMAP.md` track M; zero new experiments)
-5. Release/artifact pipeline — GHCR images with digests, cargo-dist binaries
+4. Track M: M4 (scenario models, fidelity ledger), which waits on a GPU host
+5. Release pipeline: GHCR images with digests, and a tag-triggered release for the repositories
+   other than `vxedge`
 
 Conventions to know before your first PR: manifests are the sole source of truth; no
 orchestration logic in any frontend; every image is digest-tagged. Details per repo in its `AGENTS.md`.

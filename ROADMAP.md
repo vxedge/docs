@@ -2,7 +2,8 @@
 
 Where vxedge stands, phase by phase. The full phase definitions are in
 [`ARCHITECTURE.md`](ARCHITECTURE.md) §15, and the measured results are in [`RESULTS.md`](RESULTS.md).
-Per-repo work items live in each repository's own `TASKS.md`.
+Per-repo work items live in each repository's own `TASKS.md`. Acronyms are defined in
+[`ACRONYMS.md`](ACRONYMS.md).
 
 References elsewhere in this repository to numbered program-board items (`#14`, `#28`, …) and
 dated state snapshots point to the maintainers' internal working board. This page is the public summary of
@@ -15,19 +16,19 @@ there first.
 
 | Phase | Gate | Status |
 |---|---|---|
-| **1** — slicing core, API-first | Reproducible H1/H3/H4 numbers | **Gate passed.** All three hold and were independently reproduced. See [`RESULTS.md`](RESULTS.md) |
-| **2** — real slices & workloads | H2: S-NSSAI vs static VLAN | **Gate passed.** H2 holds and was reproduced. OVS data plane, per-link harness impairments, SONiC-VS NOS twin, and the full Open5GS/UERANSIM lifecycle are delivered |
-| **3** — production SDV alignment | `vxedge vehicle up` boots a full vehicle end to end | **In progress.** Content is landing ahead of the gate: 5G core/RAN, Kuksa signal-plane and OTA parts in `vxparts`, plus the `vxmcp` MCP server |
-| **4** — hardware in the loop (optional) | Jetson / DRIVE / BlueField / V2X radio | Specified, not started |
-| **5** — remote / multi-user deployment | none yet | Backlog: mTLS + OIDC for vxAPI's TCP transport, role model, actor-aware audit |
+| **1**: slicing core, API-first | Reproducible H1/H3/H4 numbers | **Gate passed.** All three hold and were independently reproduced. See [`RESULTS.md`](RESULTS.md) |
+| **2**: real slices & workloads | H2: S-NSSAI vs static VLAN | **Gate passed.** H2 holds and was reproduced. OVS data plane, per-link harness impairments, SONiC-VS NOS twin, and the full Open5GS/UERANSIM lifecycle are delivered |
+| **3**: production SDV alignment | `vxedge vehicle up` boots a full vehicle end to end | **In progress.** Content is landing ahead of the gate: 5G core/RAN, Kuksa signal-plane and OTA parts in `vxparts`, plus the `vxmcp` MCP server |
+| **4**: hardware in the loop (optional) | Jetson / DRIVE / BlueField / V2X radio | Specified, not started |
+| **5**: remote / multi-user deployment | none yet | Backlog: mTLS + OIDC for vxAPI's TCP transport, role model, actor-aware audit |
 
 Cross-cutting tracks:
 
-- **M — SysML v2 model governance** (`vxmodels`): M0–M3 are closed. M4 (scenario models, fidelity ledger) is
+- **M (SysML v2 model governance, `vxmodels`):** M0–M3 are closed. M4 (scenario models, fidelity ledger) is
   waiting on a GPU host for CARLA.
-- **C — containerization:** complete through C3.2. The 5G stack and platform services run in containers,
+- **C (containerization):** complete through C3.2. The 5G stack and platform services run in containers,
   and the measured path stays on the host.
-- **P — `vxparts` unification:** complete. The earlier zone and compute repositories are merged into
+- **P (`vxparts` unification):** complete. The earlier zone and compute repositories are merged into
   the unified OCI/ORAS loadable registry.
 
 ## Open work

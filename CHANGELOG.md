@@ -2,13 +2,14 @@
 
 All notable changes to this repo are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows
-[Semantic Versioning](https://semver.org/) — see `VERSIONING.md`.
+[Semantic Versioning](https://semver.org/), see `VERSIONING.md`.
 
 ## [Unreleased]
 
 ### Changed
 
 - `GETTING-STARTED.md`: prebuilt `vxedge` binaries (checksums and provenance) as the first way to get the CLI and daemon; `VERSIONING.md` and `ROADMAP.md` record the `vxedge` release workflow and `v0.2.0`.
+- `vxagents`, `vxtelemetry`, `vxota` and `vxperiments` are public: linked from `README.md`, `GETTING-STARTED.md` (clone loop and repository status), the org profile, `RESULTS.md` and `FACTS.md` (evidence paths now link to the frozen summaries; the `exp-001` repeat source pointed at a path that does not exist and now points at the run-2 check file).
 
 ## [0.2.1] - 2026-10-19
 
@@ -44,28 +45,28 @@ reproducible numbers (`vxperiments`' exp-001/exp-002/exp-002b/exp-003). First ta
 release across the phase-1-participating repos.
 
 ### Added
-- `ARCHITECTURE.md` (16 sections) — the architecture specification: hypotheses H1-H4 (§2), vxAPI
+- `ARCHITECTURE.md` (16 sections): the architecture specification: hypotheses H1-H4 (§2), vxAPI
   control-plane design (§5), manifest schemas for experiments and vehicles (§6), vxgateway
   network model (§7), service model incl. OTA/Uptane design (§8), virtualization/hypervisor
   fidelity ladder (§9), compute model (§10), metrics/methodology (§12), reproducibility
   rules (§13), language policy + phase roadmap (§15), worked examples (§16).
-- `ROADMAP.md` — program-level task board: critical path, phase gates 1-4, the devops/
+- `ROADMAP.md`: program-level task board: critical path, phase gates 1-4, the devops/
   release-engineering board.
-- `RESULTS.md` — living progress report, updated every push that moves progress.
-- `ROADMAP.md` — arXiv/venue plan, paper skeletons, partner-selection procedure, the
+- `RESULTS.md`: living progress report, updated every push that moves progress.
+- `ROADMAP.md`: arXiv/venue plan, paper skeletons, partner-selection procedure, the
   publication gate.
 - `GETTING-STARTED.md`, `TESTBED-SETUP.md` (host requirements tiered by phase),
   `USER-GUIDE.md` (public-facing usage doc, CLI verb state table).
-- `VERSIONING.md` — the SemVer + Keep-a-Changelog convention this release itself follows.
+- `VERSIONING.md`: the SemVer + Keep-a-Changelog convention this release itself follows.
 
 ### Notable decisions folded in along the way
 - Cumulus VX deprecated in favor of a from-scratch software-defined vxgateway
-  (bridge/VLAN/tc HTB, OVS variant planned) — no physical/vendor router anywhere.
+  (bridge/VLAN/tc HTB, OVS variant planned), no physical/vendor router anywhere.
 - Jailhouse hypervisor evaluated and rejected (stale upstream, no OEM adoption); the
   hypervisor fidelity ladder targets Xen dom0less and QNX Hypervisor instead (phase 4).
 - OTA design (§8) adopts Uptane's trust-model vocabulary (signed root/targets metadata,
   image-repo vs. director-repo split) without taking aktualizr as a dependency; **Rugix
   Ctrl** recommended over RAUC for phase-3 atomic slot updates, evaluated against
   https://rugix.org's OTA engine comparison.
-- "Digital twin" avoided as project terminology in publications — reserved for phase-4
+- "Digital twin" avoided as project terminology in publications, reserved for phase-4
   hardware-in-the-loop; this is an "executable virtual prototype."
