@@ -6,7 +6,7 @@ builds every number and state it shows from this file and nothing else. The GitH
 [`RESULTS.md`](RESULTS.md) quote it.
 
 Each measured value is copied from a frozen summary in
-`vxperiments/results/` (that repository is not public yet). Those summaries
+[`vxperiments/results/`](https://github.com/vxedge/vxperiments/tree/main/results). Those summaries
 record the input manifest's sha256. This file does not replace them; it is the one place they are
 quoted from. [`RESULTS.md`](RESULTS.md) explains the numbers: what each hypothesis tests and the
 caveat that matters most.
