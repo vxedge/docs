@@ -11,10 +11,10 @@ every acronym is defined in [`ACRONYMS.md`](ACRONYMS.md).
 **Pre-release (0.x).** The manifest schema and vxAPI may change between minor versions
 ([`VERSIONING.md`](VERSIONING.md)); published results are frozen and do not change.
 
-**Repository status.** Only `docs` and `vxedge` are public today; the other repositories open in order (the
-README's repository table lists them, and a name becomes a link when its repository is
-published). From section 2 on, this page describes the workspace as it will be once they are, so
-until then read it as a walkthrough rather than steps you can run end to end.
+**Repository status.** `docs`, `vxedge`, `vxagents`, `vxtelemetry`, `vxota` and `vxperiments` are public today; `vxparts`,
+`vxmodels` and `vxmcp` open in order (the README's repository table lists them, and a name becomes a link when
+its repository is published). Until `vxparts` is public, the zone bundle step in section 4 cannot be run from
+a clone, so read that part as a walkthrough.
 
 ## 1. Prerequisites
 
