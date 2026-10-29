@@ -32,8 +32,8 @@ on modelled hardware), **planned**, **caveat** (works, with a stated limit on wh
 | Key | Value | Source |
 |---|---|---|
 | `project.name` | vxedge | — |
-| `project.version` | 0.2.1 | [`CITATION.cff`](CITATION.cff) |
-| `project.released` | 2026-10-19 | [`CITATION.cff`](CITATION.cff) |
+| `project.version` | 0.2.2 | [`CITATION.cff`](CITATION.cff) |
+| `project.released` | 2026-10-29 | [`CITATION.cff`](CITATION.cff) |
 | `project.stage` | pre-release | pre-1.0: the manifest schema and vxAPI may change between minor versions; published results are frozen ([`VERSIONING.md`](VERSIONING.md)) |
 | `project.status` | Phases 1–2 complete, phase 3 in progress | [`ROADMAP.md`](ROADMAP.md) |
 | `project.phase` | 3 | [`ROADMAP.md`](ROADMAP.md) |
