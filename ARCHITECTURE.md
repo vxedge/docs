@@ -105,9 +105,9 @@ today (real, emulated or building), dashed is specified and not built yet. Sourc
 - **vxedge CLI (Rust)**: thin vxAPI client; the primary frontend.
 - **vxgateway**: the software-defined edge gateway: Linux-native data plane (OVS or Linux
   bridge, tc, VXLAN, WireGuard, FRR), provisioned declaratively by the CLI. See §7.
-- **vxzones**: authoritative zone manifests, VM images (QNX SDP 8, Zephyr, FreeRTOS, AAOS),
-  RTOS builds.
-- **vxcompute**: central compute manifests, Autoware/ROS2 images, Alpamayo/AlpaSim, inference.
+- **Zone and compute loadables** (zone manifests, VM images for QNX SDP 8, Zephyr, FreeRTOS and AAOS,
+  RTOS builds, central compute manifests, Autoware/ROS2 images, Alpamayo/AlpaSim, inference): see
+  `vxparts` below.
 - **vxota**: OTA server & signing tooling (artifact store).
 - **vxagents**: performant Rust agents for measurements and metrics.
 - **vxtelemetry**: telemetry ingestion & Prometheus export (VSS-aligned; see §11).
@@ -127,11 +127,11 @@ Canonical repos (under vxedge org):
   container images, gateway/TCU images, agent binaries, and platform-service images, every
   loadable the platform boots, published to `ghcr.io/vxedge/parts/...` via OCI/ORAS, classified
   by `class`/`subtype`/`layer` (see §13's own artifact-publication rules). **Supersedes
-  `vxzones` and `vxcompute`** (Track P, decided 2026-07-26): those two repos split loadables by
+  the earlier zone-image and compute-container repos** (Track P, decided 2026-07-26): those two repos split loadables by
   deployment mechanism (VM vs. container) rather than by domain, which is exactly the kind of
   implementation detail this workspace's own single-source-of-truth discipline exists to keep
   out of repo topology. Both were **archived 2026-08-04** (GitHub archive, not deleted, their
-  history stays reachable, read-only) once their content was confirmed fully present in
+  history stays reachable to the owner, read-only) once their content was confirmed fully present in
   `vxparts`, see `vxparts/TASKS.md` Track P for the migration account.
 - `vxedge/vxota`: OTA server, signing, manifests.
 - `vxedge/vxagents`: Rust agents, metrics exporters.
@@ -294,14 +294,14 @@ vxedge up|down|status
 vxedge zone up --vxid <vxid>
 vxedge zone down --vxid <vxid>
 vxedge zone list
-vxedge zone add --manifest vxzones/...yaml
+vxedge zone add --manifest <zone-manifest>.yaml
 vxedge zone rm --vxid <vxid>
 vxedge zone image push --vxid <vxid> --from <path> --registry <url?>
 
 # Compute
 vxedge compute up --vxid <vxid>
 vxedge compute down --vxid <vxid>
-vxedge compute add --manifest vxcompute/...yaml
+vxedge compute add --manifest <compute-manifest>.yaml
 vxedge compute rm --vxid <vxid>
 vxedge compute image push --vxid <vxid> --from <path> --registry <url?>
 
@@ -829,18 +829,18 @@ deliberately separate:
   established **RAUC** specifically for the Rust-policy fit; RAUC remains the fallback
   if Rugix's narrower deployment history or its gaps, no NAND/UBI, no encrypted
   updates, both irrelevant to our QEMU/libvirt block-storage bundles, become a
-  blocker). Maps naturally onto vxzones guest bundles, which are already
+  blocker). Maps naturally onto zone guest bundles, which are already
   kernel+initramfs "slots" in Rugix/RAUC's sense.
 - **v1 service backend (fidelity caveat):** `SvcService.Up` (§5) spawns
   the service binary (`vxota serve`) as a host-local child process co-located with
   `vxedged`, tracked by a pidfile the same way the microVM zone backend tracks QEMU, not
-  yet scheduled onto a `vxcompute` node, since that backend doesn't exist. `config.listen`
+  yet scheduled onto a compute node, since that backend doesn't exist. `config.listen`
   (new manifest field, alongside `config.artifacts`) is the address the process binds; today
   that is still the gateway's own bridge address on the slice under test, an address zone
   nodes can already reach without a tunnel. `network.tunnels` (§7) now exists as a mechanism
  , a manifest can declare a WireGuard link the gateway terminates, but `vxota` is not yet
   wired to bind `config.listen` onto one; that integration, and scheduling onto a real
-  `vxcompute` node, remain open (`vxedge/TASKS.md` §4).
+  compute node, remain open (`vxedge/TASKS.md` §4).
 
 ---
 
@@ -917,7 +917,7 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
 
 ---
 
-## 10: Compute model (vxcompute, Autoware/ROS2, Alpamayo, inference, OTA hosting)
+## 10: Compute model (compute nodes, Autoware/ROS2, Alpamayo, inference, OTA hosting)
 
 - Compute nodes run containerized workloads. Two AD stacks are supported as ADAS-slice workloads,
   which usefully stress the network differently:
@@ -1130,7 +1130,7 @@ on a Linux kernel).
 3. **Phase 3, production SDV alignment:** vehicle manifest end-to-end (`vxedge vehicle up`);
    Kuksa/VSS signal plane; rmw_zenoh/uProtocol comms; Ankaios workload orchestration; Sionna
    channel realism (NVIDIA 6G Developer Program); Alpamayo/AlpaSim workload; optional
-   Rugix-Ctrl-based atomic slot updates on vxzones guest bundles (§8 OTA design); embedded
+   Rugix-Ctrl-based atomic slot updates on zone guest bundles (§8 OTA design); embedded
    Qt/QML IVI/cluster loadable (an alternate in-vehicle-HMI baseline to AAOS, §9); cloud-hosted
    `vxedged --controller` federating multiple GPU hosts;
    Electron
@@ -1278,7 +1278,7 @@ tc class add dev vxup0 parent 1:1 classid 1:50 htb rate 1mbit   ceil 500mbit pri
 1. `vxedge up`                                            # vxgateway: bridges, VLANs, queue trees
 2. `vxedge zone up --vxid vxzone-front-left`
 3. `vxedge zone up --vxid vxzone-front-right`
-4. `vxedge compute up --vxid vxcompute-central`
+4. `vxedge compute up --vxid vxzone-central-hpc-01`
 5. `vxedge ota up --experiment vxperiments/exp-001.yaml`
 6. `vxedge telemetry up --experiment vxperiments/exp-001.yaml` (not yet wired to the daemon)
 7. `vxedge experiment up --manifest vxperiments/exp-001.yaml`
