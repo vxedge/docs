@@ -275,7 +275,7 @@ How a generated experiment reaches the bench.
 | `gate.propose` | Propose a SysML v2 model | live |
 | `gate.typecheck` | Gate 1: model type check | live |
 | `gate.validate` | Gate 2: `vxedge manifest validate --json` | live |
-| `gate.confirm` | Multi-round-trip confirmation before a state change | planned |
+| `gate.confirm` | Multi-round-trip confirmation before a state change | building |
 | `gate.run` | Idempotent `up`, streamed as a job, audited | live |
 | `gate.archive` | Evidence archived with digests | live |
 
@@ -284,10 +284,10 @@ How a generated experiment reaches the bench.
 | Key | Tool | Service | State |
 |---|---|---|---|
 | `mcp.status` | `experiment_status` | ExperimentService | live |
-| `mcp.list` | zone / compute list | ZoneService · ComputeService | planned |
-| `mcp.watch` | job watch · events | JobService · EventService | planned |
+| `mcp.list` | zone / compute list | ZoneService · ComputeService | live |
+| `mcp.watch` | job watch · events | JobService · EventService | live |
 | `mcp.results` | results summary | results archive | planned |
-| `mcp.mutate` | up · down · traffic up | behind confirmation | planned |
+| `mcp.mutate` | up · down · traffic up | behind confirmation | building |
 
 ### Other deliveries
 
