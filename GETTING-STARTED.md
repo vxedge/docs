@@ -11,10 +11,9 @@ every acronym is defined in [`ACRONYMS.md`](ACRONYMS.md).
 **Pre-release (0.x).** The manifest schema and vxAPI may change between minor versions
 ([`VERSIONING.md`](VERSIONING.md)); published results are frozen and do not change.
 
-**Repository status.** `docs`, `vxedge`, `vxagents`, `vxtelemetry`, `vxota` and `vxperiments` are public today; `vxparts`,
+**Repository status.** `docs`, `vxedge`, `vxagents`, `vxtelemetry`, `vxota`, `vxperiments` and `vxparts` are public today;
 `vxmodels` and `vxmcp` open in order (the README's repository table lists them, and a name becomes a link when
-its repository is published). Until `vxparts` is public, the zone bundle step in section 4 cannot be run from
-a clone, so read that part as a walkthrough.
+its repository is published). The zone bundle step in section 4 builds from the `vxparts` clone, so it runs as written.
 
 ## 1. Prerequisites
 
@@ -38,7 +37,7 @@ folder is *not* a git repo):
 
 ```bash
 mkdir vxedge && cd vxedge
-for r in docs vxedge vxagents vxtelemetry vxota vxperiments; do   # public today; add vxparts vxmodels vxmcp as they are published:
+for r in docs vxedge vxagents vxtelemetry vxota vxperiments vxparts; do   # public today; add vxmodels vxmcp as they are published:
   gh repo clone vxedge/$r
 done
 ```
@@ -47,7 +46,7 @@ done
 |---|---|
 | `docs` | Architecture specification (`ARCHITECTURE.md`), user documentation, results, roadmap and the facts registry (`FACTS.md`) |
 | `vxedge` | **Start here**: control plane (`vxedged`), vxAPI (gRPC/Protobuf), CLI |
-| `vxparts` | Unified loadable registry of zone (virtual-ECU) and central-compute images, published via OCI/ORAS (supersedes the former `vxzones`/`vxcompute` split) |
+| `vxparts` | Unified loadable registry of zone (virtual-ECU) and central-compute images, published via OCI/ORAS |
 | `vxota` / `vxtelemetry` | OTA and telemetry service code |
 | `vxagents` | Rust measurement agents (latency probes, traffic gen, pcap) |
 | `vxperiments` | Experiment + vehicle manifests, notebooks, results |
