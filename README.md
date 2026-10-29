@@ -36,7 +36,7 @@ when its repository is published; the unlinked ones are not public yet.
 | [vxota](https://github.com/vxedge/vxota) | OTA server and signing (the H4 workload) |
 | [vxperiments](https://github.com/vxedge/vxperiments) | Experiments, analysis, frozen results |
 | [vxparts](https://github.com/vxedge/vxparts) | OCI/ORAS registry of every loadable the platform boots |
-| vxmodels | SysML v2 models and the manifest renderer |
+| [vxmodels](https://github.com/vxedge/vxmodels) | SysML v2 models and the manifest renderer |
 | vxmcp | MCP server over vxAPI |
 
 ## Links

@@ -11,9 +11,9 @@ every acronym is defined in [`ACRONYMS.md`](ACRONYMS.md).
 **Pre-release (0.x).** The manifest schema and vxAPI may change between minor versions
 ([`VERSIONING.md`](VERSIONING.md)); published results are frozen and do not change.
 
-**Repository status.** `docs`, `vxedge`, `vxagents`, `vxtelemetry`, `vxota`, `vxperiments` and `vxparts` are public today;
-`vxmodels` and `vxmcp` open in order (the README's repository table lists them, and a name becomes a link when
-its repository is published). The zone bundle step in section 4 builds from the `vxparts` clone, so it runs as written.
+**Repository status.** `docs`, `vxedge`, `vxagents`, `vxtelemetry`, `vxota`, `vxperiments`, `vxparts` and `vxmodels` are
+public today; `vxmcp` opens next (the README's repository table lists it, and its name becomes a link when the
+repository is published). The zone bundle step in section 4 builds from the `vxparts` clone, so it runs as written.
 
 ## 1. Prerequisites
 
@@ -37,7 +37,7 @@ folder is *not* a git repo):
 
 ```bash
 mkdir vxedge && cd vxedge
-for r in docs vxedge vxagents vxtelemetry vxota vxperiments vxparts; do   # public today; add vxmodels vxmcp as they are published:
+for r in docs vxedge vxagents vxtelemetry vxota vxperiments vxparts vxmodels; do   # public today; add vxmcp when it is published:
   gh repo clone vxedge/$r
 done
 ```
