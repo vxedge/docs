@@ -25,8 +25,7 @@ vxedge is an open, all-software testbed for mapping 5G network slices onto zonal
 
 ## Repositories
 
-The repositories are being opened in order, starting with this one. A name below becomes a link
-when its repository is published; the unlinked ones are not public yet.
+All repositories below are public.
 
 | Repo | What |
 |---|---|
@@ -37,7 +36,7 @@ when its repository is published; the unlinked ones are not public yet.
 | [vxperiments](https://github.com/vxedge/vxperiments) | Experiments, analysis, frozen results |
 | [vxparts](https://github.com/vxedge/vxparts) | OCI/ORAS registry of every loadable the platform boots |
 | [vxmodels](https://github.com/vxedge/vxmodels) | SysML v2 models and the manifest renderer |
-| vxmcp | MCP server over vxAPI |
+| [vxmcp](https://github.com/vxedge/vxmcp) | MCP server over vxAPI |
 
 ## Links
 
