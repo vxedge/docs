@@ -19,9 +19,9 @@ know exactly what they're getting.
 3. **No tag before the entry exists.** A version is cut by moving `[Unreleased]` content
    under a new heading in the same commit as the tag; never tag first and backfill later.
 4. **`v0.1.0` cut 2026-07-13**: the phase-1 gate closed that day (H1+H3+H4 numbers in
-   hand). Tagged: `docs`, `vxedge`, `vxagents`, `vxtelemetry`, `vxota`, `vxperiments`,
-   `vxzones`: the seven repos that actually delivered phase-1 content. Not tagged:
-   `vxcompute`, `vxgo`, `vxslice`: empty, and a tag on nothing is meaningless.
+   hand). Tagged: `docs`, `vxedge`, `vxagents`, `vxtelemetry`, `vxota`, `vxperiments` and the zone-image
+   repo (since archived): the seven repos that actually delivered phase-1 content. Three other
+   repos (since archived) were empty, and a tag on nothing is meaningless.
    **Tagging and visibility are decoupled**: a tag is cut the moment a milestone is real,
    independent of whether the repository is public yet.
 5. **Compatibility across repos.** The only thing that couples repos is **vxAPI**
