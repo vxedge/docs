@@ -35,7 +35,7 @@ on modelled hardware), **planned**, **caveat** (works, with a stated limit on wh
 | `project.version` | 0.2.3 | [`CITATION.cff`](CITATION.cff) |
 | `project.released` | 2026-10-30 | [`CITATION.cff`](CITATION.cff) |
 | `project.doi` | 10.5281/zenodo.23802762 | [`CITATION.cff`](CITATION.cff): Zenodo concept DOI, resolves to the latest version (0.2.3 is 10.5281/zenodo.23802763) |
-| `archives.doi` | 10.5281/zenodo.23804197 | [`https://doi.org/10.5281/zenodo.23804197`](https://doi.org/10.5281/zenodo.23804197): Zenodo concept DOI of the raw result archives, resolves to the latest version (2026-10 is 10.5281/zenodo.23804198) |
+| `archives.doi` | 10.5281/zenodo.23804197 | [`https://doi.org/10.5281/zenodo.23804197`](https://doi.org/10.5281/zenodo.23804197): Zenodo concept DOI of the raw result archives, resolves to the latest version (2026-11 is 10.5281/zenodo.23810053) |
 | `project.stage` | pre-release | pre-1.0: the manifest schema and vxAPI may change between minor versions; published results are frozen ([`VERSIONING.md`](VERSIONING.md)) |
 | `project.status` | Phases 1–2 complete, phase 3 in progress | [`ROADMAP.md`](ROADMAP.md) |
 | `project.phase` | 3 | [`ROADMAP.md`](ROADMAP.md) |
@@ -144,6 +144,9 @@ Source: [`vxperiments/results/exp-001/exp-001-summary.md`](https://github.com/vx
 | `h2.ratio_snssai` | 0.95× | S-NSSAI p99 growth, idle → max load |
 | `h2.ratio_vlan` | 0.91× | VLAN p99 growth over the same sweep (`exp-001`) |
 | `h2.floor` | 317–337 µs | S-NSSAI p99 across all loads: software UPF and GTP-U |
+| `h2.repro_ratio` | 1.00× | S-NSSAI p99 growth in the 2026-10-30 second campaign |
+| `h2.repro_floor` | 339–356 µs | S-NSSAI p99 across all loads in the 2026-10-30 second campaign |
+| `h2.repro_inside` | 3 of 15 | metric × load pairs of the 2026-10-30 second campaign inside the first campaign's IQR; the verdict held |
 
 Per load level, S-NSSAI path.
 Source: [`vxperiments/results/exp-010/exp-010-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-010/exp-010-summary.md).
@@ -191,7 +194,7 @@ Source: [`vxperiments/results/exp-002b/exp-002b-summary.md`](https://github.com/
 | `h4.deliveries` | 361 deliveries | signed deliveries per repetition (median) |
 | `h4.failed` | 0 | failed deliveries |
 | `h4.loss` | 0.0 % | packet loss in both arms |
-| `h4.repro_inside` | 0 of 6 | metric/arm pairs of the same-day second campaign inside the first campaign's IQR; the verdict held |
+| `h4.repro_inside` | 3 of 6 | metric/arm pairs of the 2026-10-30 second campaign inside the first campaign's IQR; the verdict held |
 
 Per arm.
 Source: [`vxperiments/results/exp-003/exp-003-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-003/exp-003-summary.md).
