@@ -57,7 +57,9 @@ hypothesis tests.
 per-slice QoS. The fix was real HTB enforcement on the slice path. Configuring
 5QI/AMBR alone was checked first and changed nothing. The campaign was
 then re-run with host-noise mitigations (CPU governor, core pinning, randomized load order).
-All intermediate campaigns are kept in the results directory.
+All intermediate campaigns are kept in the results directory. A second campaign on 2026-10-30, on a
+newer kernel with other VMs on the host, reached the same verdict by a small margin: S-NSSAI p99 grew
+1.00× against VLAN's 0.91×, inside the 1.1× tolerance, with p99 at 339–356 µs.
 Summary: [`vxperiments/results/exp-010/exp-010-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-010/exp-010-summary.md)
 
 ## H3: virtualization choice (`exp-002b`)
@@ -81,8 +83,9 @@ Both arms, with p50/p95/p99 and OTA deliveries (361 ok, 0 failed per repetition)
 
 **Caveat:** the v1 OTA transport binds a plain host address. That means this measures host-level CPU and
 scheduling contention between OTA and the ADAS probe, not gateway-QoS-enforced network
-contention. A second campaign moved the absolute numbers outside the first campaign's IQR, which is
-session-to-session host drift, but it did not change the comparative verdict.
+contention. A second campaign on 2026-10-30, on a newer kernel with other VMs on the host, kept 3 of 6
+absolute medians inside the first campaign's IQR and moved the rest outside it, but it did not change
+the comparative verdict.
 Summary: [`vxperiments/results/exp-003/exp-003-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-003/exp-003-summary.md)
 
 ## Other completed experiments
