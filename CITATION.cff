@@ -8,11 +8,9 @@ authors:
     affiliation: "Independent Researcher"
 repository-code: "https://github.com/vxedge/docs"
 url: "https://vxedge.dev"
-version: "0.2.2"
-date-released: "2026-10-29"
-license:
-  - Apache-2.0
-  - CC-BY-4.0
+version: "0.2.3"
+date-released: "2026-10-30"
+license: CC-BY-4.0
 keywords:
   - sdv
   - software-defined-vehicle
