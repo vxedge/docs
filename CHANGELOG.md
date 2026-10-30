@@ -6,6 +6,12 @@ All notable changes to this repo are documented here. Format follows
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-10-30
+
+### Fixed
+
+- `CITATION.cff`: a single `license` (`CC-BY-4.0`, for the docs, results and figures; the code licence stays `Apache-2.0` in `LICENSE`). Zenodo rejected the two-licence list ("Citation metadata load failed"), so `v0.2.2` was never archived; `v0.2.3` is the first archived release.
+
 ## [0.2.2] - 2026-10-29
 
 ### Changed
