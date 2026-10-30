@@ -35,6 +35,7 @@ on modelled hardware), **planned**, **caveat** (works, with a stated limit on wh
 | `project.version` | 0.2.3 | [`CITATION.cff`](CITATION.cff) |
 | `project.released` | 2026-10-30 | [`CITATION.cff`](CITATION.cff) |
 | `project.doi` | 10.5281/zenodo.23802762 | [`CITATION.cff`](CITATION.cff): Zenodo concept DOI, resolves to the latest version (0.2.3 is 10.5281/zenodo.23802763) |
+| `archives.doi` | 10.5281/zenodo.23804197 | [`https://doi.org/10.5281/zenodo.23804197`](https://doi.org/10.5281/zenodo.23804197): Zenodo concept DOI of the raw result archives, resolves to the latest version (2026-10 is 10.5281/zenodo.23804198) |
 | `project.stage` | pre-release | pre-1.0: the manifest schema and vxAPI may change between minor versions; published results are frozen ([`VERSIONING.md`](VERSIONING.md)) |
 | `project.status` | Phases 1–2 complete, phase 3 in progress | [`ROADMAP.md`](ROADMAP.md) |
 | `project.phase` | 3 | [`ROADMAP.md`](ROADMAP.md) |

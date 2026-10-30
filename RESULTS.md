@@ -6,7 +6,8 @@ Every number below comes from a frozen summary in
 [`vxperiments/results/`](https://github.com/vxedge/vxperiments/tree/main/results), which records
 the input manifest's sha256 alongside it. Each one is registered in [`FACTS.md`](FACTS.md), which
 also holds the full per-load and per-arm tables. This page explains the numbers; that file is where
-they are quoted from.
+they are quoted from. The raw per-run archives behind the summaries are a dataset on Zenodo:
+[10.5281/zenodo.23804197](https://doi.org/10.5281/zenodo.23804197).
 
 ## Summary
 

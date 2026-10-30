@@ -120,7 +120,8 @@ The `exp-001` runner needs neither the bundle nor a login.
 
 Results land in `vxperiments/results/`. Quick runs write to `results/exp-001-quick/` (disposable);
 the frozen campaign owns `results/exp-001/`, and reruns use `--repro` (date-suffixed dir); a dir holding a
-frozen campaign's archives is never overwritten in place.
+frozen campaign's archives is never overwritten in place. The raw archives of the published campaigns
+are on Zenodo: [10.5281/zenodo.23804197](https://doi.org/10.5281/zenodo.23804197).
 
 The `--quick` numbers are pipeline validation only (marked NOT reportable). The full
 campaign is `./scripts/run.sh --repro` (it never overwrites the frozen `results/exp-001/`): ~35 minutes, 5 repetitions x 5 load
