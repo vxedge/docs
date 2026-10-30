@@ -9,6 +9,14 @@ authors:
 repository-code: "https://github.com/vxedge/docs"
 url: "https://vxedge.dev"
 version: "0.2.3"
+doi: "10.5281/zenodo.23802762"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.23802763"
+    description: "Version 0.2.3 (Zenodo)"
+  - type: doi
+    value: "10.5281/zenodo.23802762"
+    description: "All versions, always the latest (Zenodo concept DOI)"
 date-released: "2026-10-30"
 license: CC-BY-4.0
 keywords:

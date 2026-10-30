@@ -6,6 +6,10 @@ All notable changes to this repo are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- Zenodo DOI `10.5281/zenodo.23802762` (all versions; `0.2.3` is `10.5281/zenodo.23802763`) in `CITATION.cff`, `FACTS.md` (`project.doi`) and the README badge.
+
 ## [0.2.3] - 2026-10-30
 
 ### Fixed
