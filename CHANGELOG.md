@@ -11,6 +11,7 @@ All notable changes to this repo are documented here. Format follows
 - Zenodo DOI `10.5281/zenodo.23802762` (all versions; `0.2.3` is `10.5281/zenodo.23802763`) in `CITATION.cff`, `FACTS.md` (`project.doi`) and the README badge.
 - Dataset DOI `10.5281/zenodo.23804197` (all versions; `2026-11` is `10.5281/zenodo.23810053`) for the raw result archives: `FACTS.md` (`archives.doi`), `RESULTS.md` and `GETTING-STARTED.md`.
 - Second campaigns for H2 and H4 run on 2026-10-30 and published in the dataset: `FACTS.md` (`h2.repro_ratio`, `h2.repro_floor`, `h2.repro_inside`, `h4.repro_inside`) and `RESULTS.md`.
+- `FACTS.md`: `repro.kernel`, the host kernel of the 2026-10-30 second campaigns.
 
 ## [0.2.3] - 2026-10-30
 

@@ -94,6 +94,7 @@ configuration, not measurements.
 | `h3.probes` | 1.8M probes | H3: probes across all archives |
 | `h4.artifact` | 5 MB | H4: artifact size, delivered back to back |
 | `h4.arms` | 2 arms | H4: baseline and OTA burst |
+| `repro.kernel` | 7.0.0-42-generic | H2, H4: host kernel of both 2026-10-30 second campaigns, [`exp-010-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-010-repro-2026-10-30/exp-010-summary.md), [`exp-003-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-003-repro-2026-10-30/exp-003-summary.md) |
 
 ### Verdicts
 
