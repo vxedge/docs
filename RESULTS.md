@@ -95,6 +95,10 @@ Summary: [`vxperiments/results/exp-003/exp-003-summary.md`](https://github.com/v
 - **`exp-014`**: wiring-harness topology as a variable: star vs daisy-chained zones. The expected
   hop-count effect holds.
 
+## Phase-3 gate
+
+`vxedge vehicle up` brought up a full vehicle from one workspace: [`vx-vehicle-02`](https://github.com/vxedge/vxperiments/tree/main/results/phase-3-gate-2026-11-01), with zones on two backends, central compute and a service placed on a slice. This is a provisioning result, not a measurement: nothing was timed, and the guests are probes.
+
 ## Methodology caveats that apply to everything above
 
 These are properties of the host *class* used for phase 1–2, not of one machine:
