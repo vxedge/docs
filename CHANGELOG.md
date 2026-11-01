@@ -13,6 +13,10 @@ All notable changes to this repo are documented here. Format follows
 - Second campaigns for H2 and H4 run on 2026-10-30 and published in the dataset: `FACTS.md` (`h2.repro_ratio`, `h2.repro_floor`, `h2.repro_inside`, `h4.repro_inside`) and `RESULTS.md`.
 - `FACTS.md`: `repro.kernel`, the host kernel of the 2026-10-30 second campaigns.
 
+### Fixed
+
+- `GETTING-STARTED.md`, `TESTBED-SETUP.md`, `USER-GUIDE.md`: `vxedged` needs `CAP_SYS_ADMIN` as well as `CAP_NET_ADMIN` under `setcap`, because entering a named network namespace is `setns(2)`.
+
 ## [0.2.3] - 2026-10-30
 
 ### Fixed
