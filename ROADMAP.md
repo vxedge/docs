@@ -18,7 +18,7 @@ there first.
 |---|---|---|
 | **1**: slicing core, API-first | Reproducible H1/H3/H4 numbers | **Gate passed.** All three hold and were independently reproduced. See [`RESULTS.md`](RESULTS.md) |
 | **2**: real slices & workloads | H2: S-NSSAI vs static VLAN | **Gate passed.** H2 holds and was reproduced. OVS data plane, per-link harness impairments, SONiC-VS NOS twin, and the full Open5GS/UERANSIM lifecycle are delivered |
-| **3**: production SDV alignment | `vxedge vehicle up` boots a full vehicle end to end | **In progress.** Content is landing ahead of the gate: 5G core/RAN, Kuksa signal-plane and OTA parts in `vxparts`, plus the `vxmcp` MCP server |
+| **3**: production SDV alignment | `vxedge vehicle up` boots a full vehicle end to end | **Gate passed** on [`vx-vehicle-02`](https://github.com/vxedge/vxperiments/tree/main/results/phase-3-gate-2026-11-01): three zones on two backends, central compute and a service placed on a slice, with probe guests. The phase's content is still landing: see the list below |
 | **4**: hardware in the loop (optional) | Jetson / DRIVE / BlueField / V2X radio | Specified, not started |
 | **5**: remote / multi-user deployment | none yet | Backlog: mTLS + OIDC for vxAPI's TCP transport, role model, actor-aware audit |
 
@@ -42,7 +42,6 @@ Cross-cutting tracks:
 
 **Phase 3**
 
-- `vxedge vehicle up` end to end (the gate).
 - `exp-011`: real ADAS traffic, CARLA → ROS 2 → Autoware closed loop. It needs a Tier 2 GPU host
   ([`TESTBED-SETUP.md`](TESTBED-SETUP.md)).
 - QNX SDP 8 and Android Automotive zones, and an embedded Qt/QML IVI loadable.
@@ -51,7 +50,7 @@ Cross-cutting tracks:
 
 **Release engineering**
 
-- A tag-triggered GitHub Release per repository: done for `vxedge` (first release `v0.2.0`, with `SHA256SUMS` and build provenance); the other repositories are still to do.
+- A tag-triggered GitHub Release per repository: done for `vxedge`, `vxagents`, `vxota`, `vxtelemetry`, `vxmodels` and `vxmcp`. `vxparts` publishes by manual dispatch. `vxperiments` and `docs` are tagged but have no release workflow.
 - Release binaries for `vxedge` and `vxedged` on x86-64 and ARM64 Linux: done as of `v0.2.0`.
 - GHCR images with recorded digests.
 - A cross-repository compatibility matrix.

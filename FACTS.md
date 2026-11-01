@@ -37,7 +37,7 @@ on modelled hardware), **planned**, **caveat** (works, with a stated limit on wh
 | `project.doi` | 10.5281/zenodo.23802762 | [`CITATION.cff`](CITATION.cff): Zenodo concept DOI, resolves to the latest version (0.2.3 is 10.5281/zenodo.23802763) |
 | `archives.doi` | 10.5281/zenodo.23804197 | [`https://doi.org/10.5281/zenodo.23804197`](https://doi.org/10.5281/zenodo.23804197): Zenodo concept DOI of the raw result archives, resolves to the latest version (2026-11 is 10.5281/zenodo.23810053) |
 | `project.stage` | pre-release | pre-1.0: the manifest schema and vxAPI may change between minor versions; published results are frozen ([`VERSIONING.md`](VERSIONING.md)) |
-| `project.status` | Phases 1–2 complete, phase 3 in progress | [`ROADMAP.md`](ROADMAP.md) |
+| `project.status` | Gates of phases 1–3 passed, phase 3 content in progress | [`ROADMAP.md`](ROADMAP.md) |
 | `project.phase` | 3 | [`ROADMAP.md`](ROADMAP.md) |
 | `project.licence_code` | Apache-2.0 | [`LICENSE`](LICENSE) |
 | `project.licence_docs` | CC BY 4.0 | [`LICENSE-DOCS`](LICENSE-DOCS) |
@@ -53,7 +53,7 @@ on modelled hardware), **planned**, **caveat** (works, with a stated limit on wh
 |---|---|---|---|
 | `phase.1` | Slicing core, API-first | Reproducible H1/H3/H4 numbers | done |
 | `phase.2` | Real slices and workloads | H2: S-NSSAI vs static VLAN | done |
-| `phase.3` | Production SDV alignment | `vxedge vehicle up` boots a full vehicle end to end | in progress |
+| `phase.3` | Production SDV alignment | `vxedge vehicle up` boots a full vehicle end to end | done |
 | `phase.4` | Hardware in the loop | Jetson / DRIVE / BlueField / V2X radio | specified |
 | `phase.5` | Remote and multi-user | none yet | backlog |
 
@@ -300,6 +300,6 @@ How a generated experiment reaches the bench.
 | Key | Value | Source |
 |---|---|---|
 | `retarget.validate` | live | an experiment retargets to another vehicle by id and validates |
-| `vehicle.up` | live | the `vehicle` verbs (up, down, status) on a bare vehicle: gateway and zones (verified 2026-10-13, one-zone vehicle, idempotent second `up`, clean `down`). The example vehicle boots a zone bundle you build locally, per host, so no registry login is needed; the guest answering on its probe port is not yet verified. The phase-3 gate, a full vehicle end to end, is not claimed |
+| `vehicle.up` | live | the `vehicle` verbs (up, down, status) on a full vehicle: gateway, zones on container and qemu-microvm, central compute and a service placed on a slice (verified 2026-11-01, [`vx-vehicle-02`](https://github.com/vxedge/vxperiments/tree/main/results/phase-3-gate-2026-11-01), idempotent second `up`, clean `down`, other vehicles refused). Guests are probes: no QNX, Android Automotive or Autoware workload ran |
 | `retarget.fleet` | planned | two vehicles at once (fleet layer) |
 | `paper.1` | in preparation | phase-1 dataset (H1/H3/H4) for arXiv, [`ROADMAP.md`](ROADMAP.md) |

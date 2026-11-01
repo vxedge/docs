@@ -8,6 +8,7 @@ All notable changes to this repo are documented here. Format follows
 
 ### Added
 
+- Phase-3 gate passed on `vx-vehicle-02`: `FACTS.md` (`phase.3`, `project.status`, `vehicle.up`), `ROADMAP.md`, `RESULTS.md` and the CLI table in `USER-GUIDE.md`.
 - Zenodo DOI `10.5281/zenodo.23802762` (all versions; `0.2.3` is `10.5281/zenodo.23802763`) in `CITATION.cff`, `FACTS.md` (`project.doi`) and the README badge.
 - Dataset DOI `10.5281/zenodo.23804197` (all versions; `2026-11` is `10.5281/zenodo.23810053`) for the raw result archives: `FACTS.md` (`archives.doi`), `RESULTS.md` and `GETTING-STARTED.md`.
 - Second campaigns for H2 and H4 run on 2026-10-30 and published in the dataset: `FACTS.md` (`h2.repro_ratio`, `h2.repro_floor`, `h2.repro_inside`, `h4.repro_inside`) and `RESULTS.md`.
@@ -17,6 +18,7 @@ All notable changes to this repo are documented here. Format follows
 
 ### Fixed
 
+- `ROADMAP.md`: tag-triggered releases exist in six repositories, not only `vxedge`.
 - `GETTING-STARTED.md`, `TESTBED-SETUP.md`, `USER-GUIDE.md`: `vxedged` needs `CAP_SYS_ADMIN` as well as `CAP_NET_ADMIN` under `setcap`, because entering a named network namespace is `setns(2)`.
 
 ## [0.2.3] - 2026-10-30
