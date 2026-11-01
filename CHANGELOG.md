@@ -12,6 +12,8 @@ All notable changes to this repo are documented here. Format follows
 - Dataset DOI `10.5281/zenodo.23804197` (all versions; `2026-11` is `10.5281/zenodo.23810053`) for the raw result archives: `FACTS.md` (`archives.doi`), `RESULTS.md` and `GETTING-STARTED.md`.
 - Second campaigns for H2 and H4 run on 2026-10-30 and published in the dataset: `FACTS.md` (`h2.repro_ratio`, `h2.repro_floor`, `h2.repro_inside`, `h4.repro_inside`) and `RESULTS.md`.
 - `FACTS.md`: `repro.kernel`, the host kernel of the 2026-10-30 second campaigns.
+- `ARCHITECTURE.md` §6.0.1, §6.0.2, §6.0.3, §8: a vehicle may host services, each placed on a container device with `on:`; `localhost/…` refs name images in the host's Podman store; the one-attachment-per-device limit is stated.
+- `ARCHITECTURE.md` §5.4: `vehicle status` observes the host instead of reporting daemon memory, and a stage that does not exist yet is not reported as done.
 
 ### Fixed
 

@@ -325,7 +325,10 @@ vxedge traffic up --manifest ...
 ```
 
 `vxedge vehicle up` is sugar for the ordered composition: gateway up → zones up → compute up →
-signal plane up (Kuksa, phase 3) → services up. `vehicle down` tears down in reverse.
+signal plane up (Kuksa, phase 3) → services up. `vehicle down` tears down in reverse. Until the
+signal plane lands, that stage is absent rather than reported as done. `vehicle status` reads the
+workspace it is pointed at and observes each declared component on the host (netlink, nftables,
+QEMU, Podman), so its answer survives a daemon restart and never comes from `vxedged`'s memory.
 
 Every CLI verb is a 1:1 wrapper over a vxAPI RPC, anything the CLI can do, every other frontend
 (web, Electron, scripts against the TS SDK) can do identically.
@@ -442,6 +445,14 @@ channels:                            # interaction: what is exchanged, between F
     protocol: dds | zenoh | someip | udp
     qos: { reliability: reliable, deadline_ms: 50 }
     carried_by: [trunk-hpc, trunk-fl]
+
+services:                            # what the vehicle hosts, each placed on one of its devices
+  ota:
+    id: ota-01
+    type: ota
+    image: { url: localhost/vxedge/ota:1, kind: container }
+    on: hpc1                         # required here: joins that device's container group
+    config: { listen: "0.0.0.0:9900", artifacts: ./ota-store }
 ```
 
 **Zone, device, function are three different things.** A zone is a *place*, a named region
@@ -469,6 +480,13 @@ address belongs to the attachment rather than the device, a device on two slices
 it lives in the vehicle rather than the experiment because it states a structural fact ("this
 ECU answers here"), which is what keeps one vehicle usable by many baselines.
 
+**One attachment per device, for now.** The schema can express a device on two slices; the
+planner cannot provision one yet, so it refuses the workspace and names the device. A silently
+missing second NIC would pass every check and then measure the wrong topology. `role: gateway`
+is the same kind of limit in the other direction: vxgateway is implicit in every slice, and a
+device with that role runs as an ordinary node, not as a gateway. `resources` is recorded but no
+backend enforces it yet.
+
 `carried_by` binds a channel to the links carrying it, and validation requires the channel's
 endpoints to be **reachable** over those links. This is what makes latency and loss
 attributable **per topic per slice** rather than only per link, the measurement §12 exists to
@@ -488,6 +506,15 @@ Behaviour splits in two: *interaction* (`channels`) belongs to the vehicle; *sti
 (`traffic_profiles`, scenario) belongs to the experiment and the road. The vehicle is the same
 vehicle whether it is driven hard or gently.
 
+**A service a vehicle hosts is placed on a device.** Each entry under `services` has the §8 shape
+plus `on: <device>`, which is required here. The device must use the `container` backend and run
+a container payload; the service becomes one more member of that device's container group, in
+its network namespace. It therefore answers at the device's address, on the device's slice, and
+is unreachable from any other slice by the same VLAN rule that isolates the device itself. The
+alternative, giving the host an address on the slice, would put a shared host inside every
+slice's isolation claim. Declaring one service type in both a vehicle and the experiment that
+wraps it is refused: two owners for one service would leave `svc status` answering for neither.
+
 #### 6.0.2 `kind: baseline`
 
 ```yaml
@@ -501,6 +528,8 @@ parts:
     target_ids: [zonefl, zonefr]     # scalar or list — declared once, however many nodes
   - ref: ./images/my-autoware        # local; no digest required
     target_ids: hpc1
+  - ref: localhost/vxedge/probe:1    # this host's Podman image store; no digest required
+    target_ids: zonefr
 ```
 
 Each entry carries `ref`, `digest`, `target_ids`, and, only where the reference is silent
@@ -513,8 +542,11 @@ have to agree: a container backend boots a container image, libvirt and qemu-mic
 guest bundle. The `local/…` namespace is conclusive on its own (a host process, never a
 bundle), and a published vxparts ref is deliberately **not** read for this, its class says
 what kind of node the part loads onto, not how it is packaged, and a zone guest is legitimately
-a container under the netns backend. Only a bare path is ambiguous, and there `kind`
-is how the author says so. A stated kind is validated against the device's backend, so a
+a container under the netns backend. A `localhost/…` ref is conclusive the other way: a
+container image already in this host's Podman store, run as the device's payload like a
+published one. It is built per host, so a run records its image ID, and `up` refuses a missing
+image and names it rather than letting Podman reach for a registry. Only a bare path is
+ambiguous, and there `kind` is how the author says so. A stated kind is validated against the device's backend, so a
 baseline pointing an H3 libvirt arm at a container image is rejected with both halves named
 rather than silently accepted and failed at boot. `vxedge manifest bom` derives them for display,
 SBOM export and the RxSWIN roll-up.
@@ -529,6 +561,9 @@ not.
 `telemetry`, `services` and `results`, plus `vehicles: [<id>…]`, `baseline: <id>`, `world: <id>`,
 and a `method` block (`duration_s`, `repetitions`, `warmup_s`). It carries no `zones`/`compute`
 inline: structure is the vehicle's, and software is the baseline's.
+
+`services` declared here run as host processes (§8). A service placed inside a slice belongs to
+the vehicle (§6.0.1).
 
 Every one of those blocks is **typed and validated when the model is built**, a malformed
 `services:` entry is one error against the file the author wrote, not a surprise at `svc up`.
@@ -795,7 +830,8 @@ templating):
 
 ## 8: Service model (OTA, telemetry, extensibility)
 
-- All services defined under top-level `services` in the manifest.
+- Services are defined under top-level `services`: on the experiment, as host processes, or on
+  the vehicle, placed on a device with `on:` (§6.0.1).
 - `ota` and `telemetry` are the core supported types.
 - Services can be referenced in `zones` or `compute` nodes.
 - CLI deploys services via `vxedge ota up|down [--experiment <path>]` (cwd-resolved by
@@ -804,7 +840,7 @@ templating):
 - Extensible: future `vxsvc-*` repos can be added and referenced in manifests. The phase-3
   **Kuksa databroker** (vehicle signal plane, COVESA VSS) is deployed via the vehicle manifest's
   `signal_plane` block rather than as an experiment service.
-- Each service definition includes `id`, `type`, `image`, `config`.
+- Each service definition includes `id`, `type`, `image`, `config`, and, on a vehicle, `on`.
 
 **OTA design (H4, `vxota`):** the service exists to be a *realistic, measurable* OTA
 workload for H4, not a fleet-management platform, two industry concerns are kept
