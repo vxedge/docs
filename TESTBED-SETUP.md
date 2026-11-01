@@ -38,6 +38,7 @@ Everything above, plus:
 |---|---|---|
 | CPU / RAM / disk | 12+ cores, 64 GB, 250 GB free (NVMe) | CARLA + Autoware + zones concurrently |
 | KVM + QEMU | qemu-system-x86 ≥ 8.x | `kvm-ok`; user in `kvm`/`libvirt` groups. `qemu-microvm` zone/vehicle nodes need **no sudo entry**, confirmed live 2026-08-06: `vxedged` launches `qemu-system-x86_64` unescalated (kvm-group access to `/dev/kvm` plus `TUNSETOWNER` on the tap it attaches to, set at tap-creation time, is everything it needs). Do not add a NOPASSWD sudoers entry for `qemu-system-x86_64`, it buys nothing this backend needs and grants root code execution the daemon doesn't require |
+| Cloud Hypervisor | v54.0 | Only for `backend: cloud-hypervisor`. Static release binary on `PATH` as `cloud-hypervisor`; `/dev/kvm` access through the `kvm` group; no sudo entry. |
 | libvirt | ≥ 10.x | `virsh version`; daemon enabled |
 | Open vSwitch (optional variant) | `apt install openvswitch-switch` | alternative gateway data plane; **do not** hand-create bridges, vxedge owns its bridge lifecycle |
 | WireGuard tools | `apt install wireguard-tools` | telemetry/OTA transport links |

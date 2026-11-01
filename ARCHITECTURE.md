@@ -464,7 +464,7 @@ functions, a topic flows between behaviours, and which devices they sit on is a 
 decision a study should be able to vary without rewriting the interaction topology.
 
 `role` is `zone-controller | hpc | gateway | ecu | sensor | actuator | switch`. `backend` is
-`container | qemu-microvm | libvirt` and is **required for any device attached to a slice**:
+`container | qemu-microvm | libvirt | cloud-hypervisor` and is **required for any device attached to a slice**:
 the planner has to know whether to build a veth or a tap, and guessing produced a workspace
 that validated and then could not boot.
 
@@ -538,8 +538,8 @@ all derivable from the ref path; restating them is the drift the computed-part-n
 exists to prevent.
 
 `kind` exists because a part knows what it *is* and a device knows how it is *run*, and the two
-have to agree: a container backend boots a container image, libvirt and qemu-microvm boot a
-guest bundle. The `local/…` namespace is conclusive on its own (a host process, never a
+have to agree: a container backend boots a container image, libvirt, qemu-microvm and
+cloud-hypervisor boot a guest bundle. The `local/…` namespace is conclusive on its own (a host process, never a
 bundle), and a published vxparts ref is deliberately **not** read for this, its class says
 what kind of node the part loads onto, not how it is packaged, and a zone guest is legitimately
 a container under the netns backend. A `localhost/…` ref is conclusive the other way: a
@@ -890,9 +890,11 @@ deliberately separate:
   `up|down` and queryable `status`; vNICs attach to the vxgateway OVS/bridge trunk with per-vNIC
   VLAN tags; `<cputune>` (vcpupin/emulatorpin), hugepages, and virtio multiqueue express the
   manifest's `realtime:` block; storage pools hold the SHA256-digest-tagged images.
-- **microVM escape hatch:** `backend: qemu-microvm` drives raw QEMU (QMP, `microvm` machine type)
- , or cloud-hypervisor/Firecracker, bypassing libvirt's device model for the minimal-latency
-  arm of hypothesis H3. Both backends hide behind the same `vxedge zone up` interface.
+- **microVM escape hatch:** `backend: qemu-microvm` drives raw QEMU (QMP, `microvm` machine type),
+  bypassing libvirt's device model for the minimal-latency arm of hypothesis H3.
+  `backend: cloud-hypervisor` does the same through Cloud Hypervisor's REST API on a per-node Unix
+  socket, booting the same guest bundle. It is validated on `linux-probe` only, and it is headless,
+  so AAOS stays on libvirt/QEMU. All of these hide behind the same `vxedge zone up` interface.
 - **Guest palette:**
   - **QNX SDP 8** (free non-commercial license): QEMU x86-64/ARM guest; the
     production-representative ADAS/safety guest for `front-left`/`front-right` zones. QNX is what

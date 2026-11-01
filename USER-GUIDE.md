@@ -44,7 +44,8 @@ listed per-verb below; everything else fails loudly rather than pretending.
   `rear-left`, `rear-right`, `central-hpc`, `gateway`); a node is a device with a `role`
   (`zone-controller`, `hpc`, `gateway`, `ecu`, `sensor`, `actuator`, `switch`) sitting in one.
   Each node runs under a packaging **backend**: `container` (network namespace),
-  `qemu-microvm` (raw QEMU, direct kernel boot) or `libvirt` (full VM), with identical
+  `qemu-microvm` (raw QEMU, direct kernel boot), `libvirt` (full VM) or
+  `cloud-hypervisor` (microVM over a REST API, validated on `linux-probe` only), with identical
   network attachment; the packaging choice is itself an experimental variable (H3).
   `ComputeService` is `role: hpc` filtered over that same backend split, not a separate
   provisioning path.
@@ -124,7 +125,7 @@ cd vxparts && ./parts/zone/linux/stack/probe-bundle/build.sh # -> ./bundle (dige
 ```
 
 Point a node's `image.url` at the bundle dir with `kind: rtimage` and
-`backend: qemu-microvm` or `backend: libvirt`. Guest network comes from the manifest's
+`backend: qemu-microvm`, `backend: libvirt` or `backend: cloud-hypervisor`. Guest network comes from the manifest's
 `ip:` via the kernel cmdline; the payload (a vxprobe reflector) starts automatically.
 
 ## 4. Measurement agents & telemetry (standalone today)
