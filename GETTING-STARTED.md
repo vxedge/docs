@@ -87,8 +87,9 @@ cd vxedge
 ./target/debug/vxedge --help          # full command tree
 ```
 
-Real provisioning (`up`, `zone up`) needs CAP_NET_ADMIN: run `vxedged` under sudo, or
-`sudo setcap cap_net_admin+ep target/debug/vxedged`. Without it, `up` validates the
+Real provisioning (`up`, `zone up`) needs CAP_NET_ADMIN, plus CAP_SYS_ADMIN to enter a
+node's network namespace: run `vxedged` under sudo, or
+`sudo setcap cap_net_admin,cap_sys_admin+ep target/debug/vxedged`. Without it, `up` validates the
 manifest and then fails with an actionable message (by design).
 
 ## 4. Run your first experiment (exp-001)
