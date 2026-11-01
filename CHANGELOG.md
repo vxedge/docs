@@ -15,6 +15,8 @@ All notable changes to this repo are documented here. Format follows
 - `ARCHITECTURE.md` §6.0.1, §6.0.2, §6.0.3, §8: a vehicle may host services, each placed on a container device with `on:`; `localhost/…` refs name images in the host's Podman store; the one-attachment-per-device limit is stated.
 - `ARCHITECTURE.md` §5.4: `vehicle status` observes the host instead of reporting daemon memory, and a stage that does not exist yet is not reported as done.
 
+- `backend: cloud-hypervisor` in `ARCHITECTURE.md`, `USER-GUIDE.md` and `TESTBED-SETUP.md`, validated on `linux-probe` only.
+
 ### Fixed
 
 - `GETTING-STARTED.md`, `TESTBED-SETUP.md`, `USER-GUIDE.md`: `vxedged` needs `CAP_SYS_ADMIN` as well as `CAP_NET_ADMIN` under `setcap`, because entering a named network namespace is `setns(2)`.
