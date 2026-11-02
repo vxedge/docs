@@ -182,11 +182,11 @@ consistency. Experiment manifests live in `vxperiments/experiments/`, vehicle ma
 
 ## 9. Where to contribute next
 
-Check `docs/ROADMAP.md` (program board) and `RESULTS.md` (what's done vs open). Phases 1 and 2 are
-complete and phase 3 is in progress ([`FACTS.md`](FACTS.md)); `v0.1.0` was tagged across the delivering
+Check `docs/ROADMAP.md` (program board) and `RESULTS.md` (what's done vs open). The gates of
+phases 1 to 3 have passed and phase 3 content is in progress ([`FACTS.md`](FACTS.md)); `v0.1.0` was tagged across the delivering
 repos when the phase-1 gate passed (2026-07-13). Current open fronts, from the roadmap's open work:
 
-1. `vxedge`: `vxedge vehicle up` end to end (the phase-3 gate)
+1. `vxedge`: the vxAPI agent surface (`ARCHITECTURE.md` §5.2, planned for 0.5.0)
 2. `vxparts` (`parts/hpc/`): Autoware/ROS 2 + CARLA + carla-ros-bridge, closed loop (needs a Tier 2 GPU host)
 3. `vxparts` (`parts/zone/`): QNX SDP 8 / AAOS images + real-RTOS guest bundles
    (Zephyr/FreeRTOS) beyond the linux-probe bundle

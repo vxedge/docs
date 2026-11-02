@@ -32,7 +32,7 @@ on modelled hardware), **planned**, **caveat** (works, with a stated limit on wh
 | Key | Value | Source |
 |---|---|---|
 | `project.name` | vxedge | — |
-| `project.version` | 0.2.3 | [`CITATION.cff`](CITATION.cff) |
+| `project.version` | 0.2.3 | [`CITATION.cff`](CITATION.cff): the citable release that Zenodo archives, not a software version (see Releases) |
 | `project.released` | 2026-10-30 | [`CITATION.cff`](CITATION.cff) |
 | `project.doi` | 10.5281/zenodo.23802762 | [`CITATION.cff`](CITATION.cff): Zenodo concept DOI, resolves to the latest version (0.2.3 is 10.5281/zenodo.23802763) |
 | `archives.doi` | 10.5281/zenodo.23804197 | [`https://doi.org/10.5281/zenodo.23804197`](https://doi.org/10.5281/zenodo.23804197): Zenodo concept DOI of the raw result archives, resolves to the latest version (2026-11 is 10.5281/zenodo.23810053) |
@@ -56,6 +56,21 @@ on modelled hardware), **planned**, **caveat** (works, with a stated limit on wh
 | `phase.3` | Production SDV alignment | `vxedge vehicle up` boots a full vehicle end to end | done |
 | `phase.4` | Hardware in the loop | Jetson / DRIVE / BlueField / V2X radio | specified |
 | `phase.5` | Remote and multi-user | none yet | backlog |
+
+### Releases
+
+The latest tagged release of each code repository.
+
+| Key | Repository | Version | Released |
+|---|---|---|---|
+| `vxedge` | `vxedge` | 0.4.0 | 2026-11-02 |
+| `vxagents` | `vxagents` | 0.1.1 | 2026-10-28 |
+| `vxmcp` | `vxmcp` | 0.1.0 | 2026-10-29 |
+| `vxmodels` | `vxmodels` | 0.1.0 | 2026-10-29 |
+| `vxota` | `vxota` | 0.1.1 | 2026-10-28 |
+| `vxparts` | `vxparts` | 0.1.0 | 2026-10-29 |
+| `vxperiments` | `vxperiments` | 0.1.0 | 2026-07-13 |
+| `vxtelemetry` | `vxtelemetry` | 0.2.0 | 2026-10-28 |
 
 ### Tracks
 
@@ -246,6 +261,18 @@ The front zones run the ADAS slice and are planned until their QNX / RTOS guests
 | `zone.central` | central | maps to central compute | emulated |
 | `zone.gateway` | gateway | uplink into `vxgateway` | emulated |
 
+### Zone backends
+
+How a zone node runs. Every backend attaches to the gateway the same way.
+
+| Key | Backend | Runs | State | Validated on |
+|---|---|---|---|---|
+| `backend.container` | `container` | a network namespace, or an OCI image in a container group | live | `vxprobe`, OCI payloads |
+| `backend.qemu_microvm` | `qemu-microvm` | a guest bundle under raw QEMU | live | `linux-probe` |
+| `backend.libvirt` | `libvirt` | a guest bundle as a libvirt domain | live | `linux-probe` |
+| `backend.cloud_hypervisor` | `cloud-hypervisor` | a guest bundle under Cloud Hypervisor | live | `linux-probe` only |
+| `backend.wasm_capsule` | `wasm-capsule` | a WASI 0.2 component in a `vxcapsule` process | live | `reflector-capsule` only |
+
 ### Frontends
 
 The clients of the vxAPI ([`ARCHITECTURE.md`](ARCHITECTURE.md) §5.1 layers figure). Every one is a thin client:
@@ -255,7 +282,7 @@ no orchestration logic lives in a frontend.
 |---|---|---|---|
 | `frontend.cli` | vxedge CLI | primary frontend, Rust | real |
 | `frontend.mcp` | vxmcp | MCP server for AI agent tooling | building |
-| `frontend.sdk` | Generated SDKs | Rust built; TypeScript and C++ planned | building |
+| `frontend.sdk` | Generated SDKs | Rust built; TypeScript planned | building |
 | `frontend.web` | Web dashboard | TypeScript | planned |
 | `frontend.studio` | vxedge Studio | Electron, future | planned |
 
@@ -301,5 +328,6 @@ How a generated experiment reaches the bench.
 |---|---|---|
 | `retarget.validate` | live | an experiment retargets to another vehicle by id and validates |
 | `vehicle.up` | live | the `vehicle` verbs (up, down, status) on a full vehicle: gateway, zones on container and qemu-microvm, central compute and a service placed on a slice (verified 2026-11-01, [`vx-vehicle-02`](https://github.com/vxedge/vxperiments/tree/main/results/phase-3-gate-2026-11-01), idempotent second `up`, clean `down`, other vehicles refused). Also verified 2026-11-02 on [`vx-vehicle-03`](https://github.com/vxedge/vxperiments/tree/main/results/all-backends-2026-11-02), with zones on all four backends it uses. Guests are probes: no QNX, Android Automotive or Autoware workload ran |
+| `service.placed` | live | a service runs on a container device with `on:`, answering on that device's slice only; `ota` only |
 | `retarget.fleet` | planned | two vehicles at once (fleet layer) |
 | `paper.1` | in preparation | phase-1 dataset (H1/H3/H4) for arXiv, [`ROADMAP.md`](ROADMAP.md) |
