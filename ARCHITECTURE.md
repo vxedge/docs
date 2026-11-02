@@ -325,8 +325,9 @@ vxedge traffic up --manifest ...
 ```
 
 `vxedge vehicle up` is sugar for the ordered composition: gateway up → zones up → compute up →
-signal plane up (Kuksa, phase 3) → services up. `vehicle down` tears down in reverse. Until the
-signal plane lands, that stage is absent rather than reported as done. `vehicle status` reads the
+signal plane up (Kuksa, phase 3) → services up. `vehicle down` tears down in reverse. A vehicle
+with no `signal_plane` block (§6.0.1) has no such stage, and it is not reported as done.
+`vehicle status` reads the
 workspace it is pointed at and observes each declared component on the host (netlink, nftables,
 QEMU, Podman), so its answer survives a daemon restart and never comes from `vxedged`'s memory.
 
@@ -453,6 +454,14 @@ services:                            # what the vehicle hosts, each placed on on
     image: { url: localhost/vxedge/ota:1, kind: container }
     on: hpc1                         # required here: joins that device's container group
     config: { listen: "0.0.0.0:9900", artifacts: ./ota-store }
+
+signal_plane:                        # the vehicle's signals, placed the way a service is
+  kuksa:
+    image:
+      url: ghcr.io/eclipse-kuksa/kuksa-databroker@sha256:9ace2824719ba7c05929f0af4827d9b25fa5ca7b2e0d58d0acff95885c649d6d
+      kind: container
+    on: hpc1
+    config: { listen: "0.0.0.0:55555" }
 ```
 
 **Zone, device, function are three different things.** A zone is a *place*, a named region
@@ -514,6 +523,14 @@ is unreachable from any other slice by the same VLAN rule that isolates the devi
 alternative, giving the host an address on the slice, would put a shared host inside every
 slice's isolation claim. Declaring one service type in both a vehicle and the experiment that
 wraps it is refused: two owners for one service would leave `svc status` answering for neither.
+
+**The signal plane is placed the same way.** `signal_plane.kuksa` runs the Kuksa databroker as a
+member of the `on:` device's container group, under the rules a placed service follows: a
+`container` device with a payload, and a `localhost/` or digest-pinned image. Its signals are
+therefore reachable on that device's slice and nowhere else. It is a block of its own, not a
+`services` entry, because it has its own stage: it comes up after compute and before services, so
+a service can depend on it. `vehicle status` reports it as a component. A vehicle with no
+`signal_plane` block has no such stage.
 
 #### 6.0.2 `kind: baseline`
 
@@ -838,8 +855,8 @@ templating):
   default), or as part of `experiment up --stage services`, the path an actual campaign
   takes, since it sequences services after the gateway/zones they depend on.
 - Extensible: future `vxsvc-*` repos can be added and referenced in manifests. The phase-3
-  **Kuksa databroker** (vehicle signal plane, COVESA VSS) is deployed via the vehicle manifest's
-  `signal_plane` block rather than as an experiment service.
+  **Kuksa databroker** (vehicle signal plane, COVESA VSS) is deployed via the vehicle's
+  `signal_plane` block (§6.0.1) rather than as an experiment service.
 - Each service definition includes `id`, `type`, `image`, `config`, and, on a vehicle, `on`.
 
 **OTA design (H4, `vxota`):** the service exists to be a *realistic, measurable* OTA
