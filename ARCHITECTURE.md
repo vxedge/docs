@@ -276,7 +276,8 @@ which stay for people. All of this is additive to `vxedge.v1`:
 - **Events.** `Event` gains `run_id`, and `Subscribe` takes `after_id` to resume from a bounded
   history. Event ids carry the same per-boot prefix. A subscriber that falls behind gets a typed error
   instead of a silent gap. `run.up` and `run.down` report vehicles and experiments.
-- **Stages.** `ExperimentStage` gains `COMPUTE`, and vehicle `up` and `down` accept `stages`.
+- **Stages.** `ExperimentStage` gains `COMPUTE` and `SIGNAL_PLANE`, vehicle `up` and `down` accept
+  `stages`, and `ResourceKind` gains `SIGNAL_PLANE`, so status reports the databroker as itself.
 - **Traffic and evidence.** `TrafficService.Status` reports each profile as running, finished or
   failed. `TelemetryService.Collect` runs as a job and returns the archive with its digest.
   `StreamMetrics` stays unbuilt.
