@@ -300,6 +300,6 @@ How a generated experiment reaches the bench.
 | Key | Value | Source |
 |---|---|---|
 | `retarget.validate` | live | an experiment retargets to another vehicle by id and validates |
-| `vehicle.up` | live | the `vehicle` verbs (up, down, status) on a full vehicle: gateway, zones on container and qemu-microvm, central compute and a service placed on a slice (verified 2026-11-01, [`vx-vehicle-02`](https://github.com/vxedge/vxperiments/tree/main/results/phase-3-gate-2026-11-01), idempotent second `up`, clean `down`, other vehicles refused). Guests are probes: no QNX, Android Automotive or Autoware workload ran |
+| `vehicle.up` | live | the `vehicle` verbs (up, down, status) on a full vehicle: gateway, zones on container and qemu-microvm, central compute and a service placed on a slice (verified 2026-11-01, [`vx-vehicle-02`](https://github.com/vxedge/vxperiments/tree/main/results/phase-3-gate-2026-11-01), idempotent second `up`, clean `down`, other vehicles refused). Also verified 2026-11-02 on [`vx-vehicle-03`](https://github.com/vxedge/vxperiments/tree/main/results/all-backends-2026-11-02), with zones on all four backends it uses. Guests are probes: no QNX, Android Automotive or Autoware workload ran |
 | `retarget.fleet` | planned | two vehicles at once (fleet layer) |
 | `paper.1` | in preparation | phase-1 dataset (H1/H3/H4) for arXiv, [`ROADMAP.md`](ROADMAP.md) |

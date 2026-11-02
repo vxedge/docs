@@ -8,6 +8,7 @@ All notable changes to this repo are documented here. Format follows
 
 ### Added
 
+- `FACTS.md` (`vehicle.up`): every-backend run on `vx-vehicle-03`.
 - Phase-3 gate passed on `vx-vehicle-02`: `FACTS.md` (`phase.3`, `project.status`, `vehicle.up`), `ROADMAP.md`, `RESULTS.md` and the CLI table in `USER-GUIDE.md`.
 - Zenodo DOI `10.5281/zenodo.23802762` (all versions; `0.2.3` is `10.5281/zenodo.23802763`) in `CITATION.cff`, `FACTS.md` (`project.doi`) and the README badge.
 - Dataset DOI `10.5281/zenodo.23804197` (all versions; `2026-11` is `10.5281/zenodo.23810053`) for the raw result archives: `FACTS.md` (`archives.doi`), `RESULTS.md` and `GETTING-STARTED.md`.
