@@ -532,6 +532,10 @@ therefore reachable on that device's slice and nowhere else. It is a block of it
 a service can depend on it. `vehicle status` reports it as a component. A vehicle with no
 `signal_plane` block has no such stage.
 
+**The databroker runs with `--insecure`, so signals are unauthenticated.** It has no TLS and no
+tokens here, and any client that reaches it can read and write every signal. Slice isolation is
+the only protection: a study that needs more than that cannot rely on this signal plane.
+
 #### 6.0.2 `kind: baseline`
 
 ```yaml

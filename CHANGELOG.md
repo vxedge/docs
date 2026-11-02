@@ -8,7 +8,7 @@ All notable changes to this repo are documented here. Format follows
 
 ### Added
 
-- `ARCHITECTURE.md` §6.0.1, §5.4, §8: `signal_plane.kuksa` on a vehicle, placed on a container device, with its own stage between compute and services.
+- `ARCHITECTURE.md` §6.0.1, §5.4, §8: `signal_plane.kuksa` on a vehicle, placed on a container device, with its own stage between compute and services. It runs with `--insecure`, so slice isolation is its only protection.
 - `FACTS.md` (`vehicle.up`): every-backend run on `vx-vehicle-03`.
 - Phase-3 gate passed on `vx-vehicle-02`: `FACTS.md` (`phase.3`, `project.status`, `vehicle.up`), `ROADMAP.md`, `RESULTS.md` and the CLI table in `USER-GUIDE.md`.
 - Zenodo DOI `10.5281/zenodo.23802762` (all versions; `0.2.3` is `10.5281/zenodo.23802763`) in `CITATION.cff`, `FACTS.md` (`project.doi`) and the README badge.
