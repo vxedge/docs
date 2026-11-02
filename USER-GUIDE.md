@@ -45,7 +45,8 @@ listed per-verb below; everything else fails loudly rather than pretending.
   (`zone-controller`, `hpc`, `gateway`, `ecu`, `sensor`, `actuator`, `switch`) sitting in one.
   Each node runs under a packaging **backend**: `container` (network namespace),
   `qemu-microvm` (raw QEMU, direct kernel boot), `libvirt` (full VM) or
-  `cloud-hypervisor` (microVM over a REST API, validated on `linux-probe` only), with identical
+  `cloud-hypervisor` (microVM over a REST API, validated on `linux-probe` only) or
+  `wasm-capsule` (a WebAssembly module in a network namespace, a prototype), with identical
   network attachment; the packaging choice is itself an experimental variable (H3).
   `ComputeService` is `role: hpc` filtered over that same backend split, not a separate
   provisioning path.
