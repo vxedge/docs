@@ -895,13 +895,13 @@ deliberately separate:
   `backend: cloud-hypervisor` does the same through Cloud Hypervisor's REST API on a per-node Unix
   socket, booting the same guest bundle. It is validated on `linux-probe` only, and it is headless,
   so AAOS stays on libvirt/QEMU. All of these hide behind the same `vxedge zone up` interface.
-- **Capsule prototype:** `backend: wasm-capsule` runs a local WASI 0.2 command component as a zone
+- **WebAssembly capsules:** `backend: wasm-capsule` runs a WASI 0.2 command component, a local file
+  or a part published by digest, as a zone
   node, for a sensor or ECU simulable as a sandboxed control loop rather than a full guest kernel.
   The node's network is a container node's: a named namespace with the gateway port as `eth0`. The
   payload is a `vxcapsule` process inside it, unprivileged and with no filesystem access, so the
   WebAssembly engine stays out of `vxedged`, a capsule stops by signal even while blocked on a
-  socket, and it outlives a daemon restart. It is a prototype under evaluation, validated on a UDP
-  reflector capsule only.
+  socket, and it outlives a daemon restart. It is validated on the `reflector-capsule` part only.
 - **Guest palette:**
   - **QNX SDP 8** (free non-commercial license): QEMU x86-64/ARM guest; the
     production-representative ADAS/safety guest for `front-left`/`front-right` zones. QNX is what
