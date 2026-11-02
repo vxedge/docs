@@ -205,11 +205,11 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
     agent tooling (any MCP client), for the same reason every frontend above exists: a
     thin, 1:1 client over the same RPCs, this time addressed by an LLM agent's tool-call surface
     instead of a terminal or a GUI. Every MCP tool is a direct wrapper over one vxAPI RPC
-    (`GatewayService`/`ZoneService`/`ComputeService`/`ExperimentService`/`TrafficService`/
-    `SvcService`/`JobService`/`EventService`), never a multi-step workflow baked into the
+    (`GatewayService`/`ZoneService`/`ComputeService`/`VehicleService`/`ExperimentService`/
+    `TrafficService`/`SvcService`/`NosCheckService`/`JobService`/`EventService`), never a multi-step workflow baked into the
     server, the hard rule stated explicitly for this frontend too. Sits directly on
     `vxedge-api`'s generated tonic bindings (a Rust-to-Rust dependency, not a second codegen
-    pipeline the way the TS/C++ SDKs are). Targets **MCP spec 2026-07-28**: stateless
+    pipeline the way the TS SDK is). Targets **MCP spec 2026-07-28**: stateless
     request-response (no `initialize` handshake), with **Multi Round-Trip Requests**
     (`InputRequiredResult`/`InputRequest::Elicitation`) as the mechanism for the one thing a
     thin wrapper still needs, a mutating tool (`up`/`down`/`traffic up`) asking its caller to
@@ -231,14 +231,56 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
 | `VehicleService` | `Up`, `Down`, `Status` |
 | `ExperimentService` | `Up`, `Down`, `Status` |
 | `TrafficService` | `Up`, `Down` |
+| `NosCheckService` | `Up`, `Down`, `Status`, `Verify` |
 | `JobService` | `Get`, `Watch` (server-streamed progress; every mutating RPC returns a `Job`) |
 | `EventService` | `Subscribe` (state transitions, audit events) |
 | `TelemetryService` | `StreamMetrics` (live), `Collect` (archive job) |
 
 Rules: mutating RPCs carry manifest documents (or references to them), the API introduces **no
 second source of truth** beside manifests; daemon state stays in ephemeral runtime dirs + logs.
-The proto package is versioned (`vxedge.v1`): additive changes stay in v1, breaking changes mean
-`vxedge.v2`.
+
+**Not built.** `Apply`, `Remove` and `PushImage` on `ZoneService` and `ComputeService` answer
+`UNIMPLEMENTED`, and are to be deprecated: manifests define the topology, and parts come from the
+registry. `vxedged` does not serve `TelemetryService` yet.
+
+**Versioning.** vxAPI stays in the `vxedge.v1` package, and wire changes are additive: new RPCs,
+fields and values, with old ones kept and marked deprecated. Behaviour may change between releases
+when the changelog says so. A version roadmap is defined once vxedge can simulate real software use
+cases for SDV OEM engineers.
+
+**Agent surface (planned for `vxedge` 0.5.0, not built).** An agent must be able to plan, run,
+observe and recover a run on its own, branching on typed fields and never on `detail` or `message`,
+which stay for people. All of this is additive to `vxedge.v1`:
+
+- **Runs.** A run is one provisioned workspace on the host, identified by a run id and its workspace
+  identity (§13). It starts when the gateway comes up, survives a repeated `up` and a daemon restart,
+  and ends when the gateway goes down. A read-only `RunService` (`Get`, `List`) reports runs. Resource
+  verbs take an optional `RunRef`; empty means the only run, and a mismatch is refused. The host still
+  runs one at a time, so `List` returns zero or one.
+- **Typed status.** `NodeStatus` carries the zone, role, backend, port, peer, VLAN and payload
+  (kind, reference, digest) that `detail` holds as text today. `RESOURCE_STATE_UNPROVISIONED` marks a
+  declared device nothing provisions. `observed_unix_ms` says when a status was read, and
+  `since_unix_ms` is 0 when the transition time is unknown.
+- **Planning.** A read-only `WorkspaceService.Plan` returns typed problems, nodes, services, images
+  and host checks without touching the host. It runs the same checks as `up`, so the two cannot
+  disagree. `HostService.Capabilities` reports what this host supports.
+- **Errors.** Refusals carry `google.rpc.ErrorInfo`. The `ErrorReason` enum in `common.proto` defines
+  the reasons, its value names are the wire `reason` strings, and `domain` is `vxedge.v1`.
+  `Job.error_reason` does the same for a job that fails after it starts.
+- **Jobs.** `Job` gains `parent_job_id`, `run_id` and a typed `artifact`. `JobService` gains `List`
+  and a cooperative `Cancel`, which takes effect between steps and leaves partial state for `down` to
+  clear. One lifecycle operation runs at a time: a duplicate returns the running job, and any other
+  is refused as busy. Verbs that do not converge (`TrafficService.Up`, `NosCheckService.Verify`) accept
+  a `request_id`, so a retry returns the original job. Job history is bounded, and job ids carry a
+  per-boot prefix, so an id from before a restart is reported as unknown, never as another job.
+- **Events.** `Event` gains `run_id`, and `Subscribe` takes `after_id` to resume from a bounded
+  history. Event ids carry the same per-boot prefix. A subscriber that falls behind gets a typed error
+  instead of a silent gap. `run.up` and `run.down` report vehicles and experiments.
+- **Stages.** `ExperimentStage` gains `COMPUTE` and `SIGNAL_PLANE`, vehicle `up` and `down` accept
+  `stages`, and `ResourceKind` gains `SIGNAL_PLANE`, so status reports the databroker as itself.
+- **Traffic and evidence.** `TrafficService.Status` reports each profile as running, finished or
+  failed. `TelemetryService.Collect` runs as a job and returns the archive with its digest.
+  `StreamMetrics` stays unbuilt.
 
 **Why gRPC/Protobuf** (not SOME/IP, not bare REST): SOME/IP–`ara::com` is the *in-vehicle service
 plane*, the wrong tool for an orchestration/tooling plane; bare REST lacks first-class streaming
@@ -294,16 +336,16 @@ vxedge up|down|status
 vxedge zone up --vxid <vxid>
 vxedge zone down --vxid <vxid>
 vxedge zone list
-vxedge zone add --manifest <zone-manifest>.yaml
-vxedge zone rm --vxid <vxid>
-vxedge zone image push --vxid <vxid> --from <path> --registry <url?>
+vxedge zone add --manifest <zone-manifest>.yaml                      # not built, see §5.2
+vxedge zone rm --vxid <vxid>                                         # not built, see §5.2
+vxedge zone image push --vxid <vxid> --from <path> --registry <url?> # not built, see §5.2
 
 # Compute
 vxedge compute up --vxid <vxid>
 vxedge compute down --vxid <vxid>
-vxedge compute add --manifest <compute-manifest>.yaml
-vxedge compute rm --vxid <vxid>
-vxedge compute image push --vxid <vxid> --from <path> --registry <url?>
+vxedge compute add --manifest <compute-manifest>.yaml                      # not built, see §5.2
+vxedge compute rm --vxid <vxid>                                            # not built, see §5.2
+vxedge compute image push --vxid <vxid> --from <path> --registry <url?>    # not built, see §5.2
 
 # Services (OTA, telemetry)
 vxedge ota up [--experiment <path>]      # cwd-resolved by default, like `experiment up`;
@@ -322,6 +364,9 @@ vxedge experiment down --manifest vxperiments/exp-001.yaml
 
 # Traffic generation
 vxedge traffic up --manifest ...
+
+# Production-NOS config-parity check (never part of `experiment up`, §7)
+vxedge nos-check up|down|status|verify [--experiment <path>]
 ```
 
 `vxedge vehicle up` is sugar for the ordered composition: gateway up → zones up → compute up →
@@ -904,7 +949,8 @@ deliberately separate:
 ## 9: Virtualization & zone provisioning (libvirt, QEMU/KVM, QNX, RTOS, containers)
 
 **Stack, bottom to top:** host Linux (PREEMPT_RT, isolcpus, hugepages) → KVM → QEMU, managed by
-**libvirt**, driven by `vxedge` through the Rust `virt` crate.
+**libvirt**, driven by `vxedged` through `virsh`, run as the daemon's own user and authorized by
+`libvirt` group membership.
 
 - **libvirt is the default zone backend** for `kind: vm | rtimage`. The CLI compiles zone
   manifests into libvirt domain XML: lifecycle (`define/start/destroy/undefine`) gives idempotent

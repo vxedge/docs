@@ -20,6 +20,8 @@ All notable changes to this repo are documented here. Format follows
 
 - `backend: cloud-hypervisor` in `ARCHITECTURE.md`, `USER-GUIDE.md` and `TESTBED-SETUP.md`, validated on `linux-probe` only.
 - `backend: wasm-capsule` and `kind: wasm` in `ARCHITECTURE.md`, `USER-GUIDE.md` and `TESTBED-SETUP.md`, validated on `reflector-capsule` only.
+- `ARCHITECTURE.md` §5.2: `NosCheckService`, what is not built, the versioning policy, and the agent surface planned for `vxedge` 0.5.0. §5.4: the `nos-check` commands.
+- `FACTS.md`: a Releases table with each code repository's version, and a Zone backends table.
 
 ### Fixed
 
