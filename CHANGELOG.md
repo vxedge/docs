@@ -17,7 +17,7 @@ All notable changes to this repo are documented here. Format follows
 - `ARCHITECTURE.md` §5.4: `vehicle status` observes the host instead of reporting daemon memory, and a stage that does not exist yet is not reported as done.
 
 - `backend: cloud-hypervisor` in `ARCHITECTURE.md`, `USER-GUIDE.md` and `TESTBED-SETUP.md`, validated on `linux-probe` only.
-- `backend: wasm-capsule` and `kind: wasm` in `ARCHITECTURE.md`, `USER-GUIDE.md` and `TESTBED-SETUP.md`, as a prototype.
+- `backend: wasm-capsule` and `kind: wasm` in `ARCHITECTURE.md`, `USER-GUIDE.md` and `TESTBED-SETUP.md`, validated on `reflector-capsule` only.
 
 ### Fixed
 
