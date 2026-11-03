@@ -230,25 +230,28 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
 | `SvcService` (ota, telemetry) | `Up`, `Down`, `Status` |
 | `VehicleService` | `Up`, `Down`, `Status` |
 | `ExperimentService` | `Up`, `Down`, `Status` |
-| `TrafficService` | `Up`, `Down` |
+| `TrafficService` | `Up`, `Down`, `Status` |
 | `NosCheckService` | `Up`, `Down`, `Status`, `Verify` |
-| `JobService` | `Get`, `Watch` (server-streamed progress; every mutating RPC returns a `Job`) |
-| `EventService` | `Subscribe` (state transitions, audit events) |
-| `TelemetryService` | `StreamMetrics` (live), `Collect` (archive job) |
+| `JobService` | `Get`, `Watch` (server-streamed progress; every mutating RPC returns a `Job`), `List`, `Cancel` |
+| `EventService` | `Subscribe` (state transitions, audit events; resumable with `after_id`) |
+| `TelemetryService` | `Collect` (archive job), `StreamMetrics` (live, not built) |
+| `RunService` | `Get`, `List` |
+| `WorkspaceService` | `Plan` |
+| `HostService` | `Capabilities` |
 
 Rules: mutating RPCs carry manifest documents (or references to them), the API introduces **no
 second source of truth** beside manifests; daemon state stays in ephemeral runtime dirs + logs.
 
 **Not built.** `Apply`, `Remove` and `PushImage` on `ZoneService` and `ComputeService` answer
 `UNIMPLEMENTED`, and are to be deprecated: manifests define the topology, and parts come from the
-registry. `vxedged` does not serve `TelemetryService` yet.
+registry. `TelemetryService.StreamMetrics` is not built either.
 
 **Versioning.** vxAPI stays in the `vxedge.v1` package, and wire changes are additive: new RPCs,
 fields and values, with old ones kept and marked deprecated. Behaviour may change between releases
 when the changelog says so. A version roadmap is defined once vxedge can simulate real software use
 cases for SDV OEM engineers.
 
-**Agent surface (planned for `vxedge` 0.5.0, not built).** An agent must be able to plan, run,
+**Agent surface (built in `vxedge` 0.5.0).** An agent must be able to plan, run,
 observe and recover a run on its own, branching on typed fields and never on `detail` or `message`,
 which stay for people. All of this is additive to `vxedge.v1`:
 
