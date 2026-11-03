@@ -8,6 +8,7 @@ All notable changes to this repo are documented here. Format follows
 
 ### Added
 
+- `scripts/check-links.py` and `scripts/check-release.py` in CI: relative links must resolve, and `CITATION.cff` must match `project.version`. `VERSIONING.md`: a release checklist.
 - `ACRONYMS.md`: VMM, Cloud Hypervisor, Wasm and WASI. `GETTING-STARTED.md`: every zone backend. `USER-GUIDE.md`: `vxedge ota status`. `ROADMAP.md`: the vxAPI agent surface for 0.5.0.
 - `FACTS.md`: `signal.plane`, the Kuksa databroker as a stage of `vehicle up`, and `vehicle.up` now names the backends each run covered and that `libvirt` has not run in a full vehicle. `ROADMAP.md` lists the signal plane's open work.
 - `ARCHITECTURE.md` §5.4 and the CLI table in `USER-GUIDE.md`: `experiment up --stage signal-plane`.

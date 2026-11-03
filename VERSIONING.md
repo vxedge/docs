@@ -25,10 +25,11 @@ know exactly what they're getting.
    **Tagging and visibility are decoupled**: a tag is cut the moment a milestone is real,
    independent of whether the repository is public yet.
 5. **Compatibility across repos.** The only thing that couples repos is **vxAPI**
-   (`vxedge/proto/vxedge/v1/*.proto`): a breaking proto change is a MINOR bump (pre-1.0)
-   in `vxedge` and must be called out in every dependent repo's next `CHANGELOG.md` entry
-   (`vxagents`, `vxtelemetry`, `vxota` all speak vxAPI-adjacent conventions even before they
-   use the client SDK directly). Manifest schema changes (`ARCHITECTURE.md` §6) are the
+   (`vxedge/proto/vxedge/v1/*.proto`). Its wire changes are additive and stay in `vxedge.v1`
+   (`ARCHITECTURE.md` §5.2). A behaviour change, such as a new refusal, is called out in the
+   `vxedge` changelog and in every dependent repo's next `CHANGELOG.md` entry (`vxagents`,
+   `vxtelemetry`, `vxota` all speak vxAPI-adjacent conventions even before they use the client
+   SDK directly). Manifest schema changes (`ARCHITECTURE.md` §6) are the
    second coupling point, same rule.
 6. **Reproducibility tags stay separate from release tags.** Experiment results already
    pin an exact state via `metadata.json` (manifest SHA-256, and now `tool_versions`; see
@@ -40,10 +41,24 @@ know exactly what they're getting.
 
 ## What OEM-adoption needs beyond this doc
 
-Cutting tags and writing changelogs by hand doesn't scale past the first release. One piece
-of the automation now exists: `vxedge` has a tag-triggered release workflow
-(`.github/workflows/release.yml`) that builds the CLI and daemon for x86-64 and ARM64 Linux, writes
-`SHA256SUMS` and attaches build provenance; `v0.2.0` (2026-10-21) is its first release. The other
-repos have none yet, and there is still no `git-cliff`/Conventional-Commits enforcement and no
-cross-repo compatibility-matrix generation. That work is tracked as its own devops board section (see `docs/ROADMAP.md`
+Cutting tags and writing changelogs by hand doesn't scale past the first release. Part of the
+automation exists: a tag-triggered release workflow in `vxedge`, `vxagents`, `vxota`,
+`vxtelemetry`, `vxmodels` and `vxmcp` publishes each version's changelog section as its release
+notes, and `vxedge`'s also builds the CLI and daemon for x86-64 and ARM64 Linux, writes
+`SHA256SUMS` and attaches build provenance. There is still no `git-cliff`/Conventional-Commits
+enforcement and no cross-repo compatibility-matrix generation. That work is tracked as its own devops board section (see `docs/ROADMAP.md`
 "Release engineering") rather than implemented ad hoc here.
+
+## Release checklist
+
+For each release of any repository:
+
+1. **Changelog:** a curated section for the version, dated the tag day, with a short summary first.
+2. **Version:** the version in `Cargo.toml` or its equivalent, and in `CITATION.cff` with its
+   `date-released`.
+3. **Tag:** an annotated `vX.Y.Z` on the release commit, and the release workflow passing.
+4. **Facts:** the repository's row in the Releases table in `FACTS.md`, in the same week. A docs
+   release also updates `project.version` and `project.released`, which `scripts/check-release.py`
+   checks against `CITATION.cff`.
+5. **Roadmap and site:** `ROADMAP.md` if open work changed, then a website update review.
+
