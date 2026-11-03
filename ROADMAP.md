@@ -42,6 +42,7 @@ Cross-cutting tracks:
 
 **Phase 3**
 
+- Signal plane: the Kuksa databroker stage is on `main`. Its feeders, CAN mapping and plant model are open.
 - `exp-011`: real ADAS traffic, CARLA → ROS 2 → Autoware closed loop. It needs a Tier 2 GPU host
   ([`TESTBED-SETUP.md`](TESTBED-SETUP.md)).
 - QNX SDP 8 and Android Automotive zones, and an embedded Qt/QML IVI loadable.
