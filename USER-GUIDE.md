@@ -66,7 +66,7 @@ All lifecycle verbs follow `up|down[|status]`; operations are idempotent.
 | `vxedged --listen unix://… --runtime-dir …` | live | needs CAP_NET_ADMIN and CAP_SYS_ADMIN for real `up` (sudo or setcap) |
 | `vxedge up\|down --manifest <workspace-dir>` | live | provisions/removes the gateway; sets the daemon's active experiment. `--manifest` names a §6.0 workspace directory (or one file of `---`-separated documents) |
 | `vxedge status` | live | observed gateway + per-slice state |
-| `vxedge zone up\|down --vxid <zone-id\|device-id>` | live | runs the nodes of a zone (a region), or a single device by its own id; needs an active experiment |
+| `vxedge zone up\|down --vxid <zone-id\|device-id>` | live | runs the nodes of a zone (a region), or a single device by its own id, except hpc devices, which answer to `vxedge compute`; needs an active experiment |
 | `vxedge zone list` | live | per-node observed state, with each device's host interfaces (`port=`, `peer=`) |
 | `vxedge zone add/rm/image push` | planned | image store / registry work |
 | `vxedge manifest validate --manifest <path> [--json]` | live | local-only. Takes a §6.0 workspace (a directory, or one file of `---`-separated documents) and runs every cross-file check *and* every model invariant, the same checks `up` runs. It is the only schema there is (§6.1/§6.2 were retired 2026-07-31) |
