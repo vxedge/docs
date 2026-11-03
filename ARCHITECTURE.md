@@ -373,8 +373,8 @@ vxedge nos-check up|down|status|verify [--experiment <path>]
 signal plane up (Kuksa, phase 3) → services up. `vehicle down` tears down in reverse. A vehicle
 with no `signal_plane` block (§6.0.1) has no such stage, and it is not reported as done. A
 declared signal plane that does not stay running fails the job.
-`vxedge experiment up` runs the same order, and `--stage gateway|zones|signal-plane|services`
-restricts it to the stages named, so `--stage services` alone does not start the databroker.
+`vxedge vehicle up|down` and `vxedge experiment up|down` run the same order, and
+`--stage gateway|zones|compute|signal-plane|services` restricts them to the stages named, so `--stage services` alone does not start the databroker.
 `vehicle status` reads the
 workspace it is pointed at and observes each declared component on the host (netlink, nftables,
 QEMU, Podman), so its answer survives a daemon restart and never comes from `vxedged`'s memory.
