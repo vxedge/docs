@@ -63,9 +63,9 @@ The latest tagged release of each code repository.
 
 | Key | Repository | Version | Released |
 |---|---|---|---|
-| `vxedge` | `vxedge` | 0.4.1 | 2026-11-02 |
+| `vxedge` | `vxedge` | 0.5.0 | 2026-11-04 |
 | `vxagents` | `vxagents` | 0.1.1 | 2026-10-28 |
-| `vxmcp` | `vxmcp` | 0.1.0 | 2026-10-29 |
+| `vxmcp` | `vxmcp` | 0.2.0 | 2026-11-04 |
 | `vxmodels` | `vxmodels` | 0.1.0 | 2026-10-29 |
 | `vxota` | `vxota` | 0.1.1 | 2026-10-28 |
 | `vxparts` | `vxparts` | 0.1.0 | 2026-10-29 |
@@ -281,7 +281,7 @@ no orchestration logic lives in a frontend.
 | Key | Frontend | Role | State |
 |---|---|---|---|
 | `frontend.cli` | vxedge CLI | primary frontend, Rust | real |
-| `frontend.mcp` | vxmcp | MCP server for AI agent tooling | building |
+| `frontend.mcp` | vxmcp | MCP server for AI agent tooling | live |
 | `frontend.sdk` | Generated SDKs | Rust built; TypeScript planned | building |
 | `frontend.web` | Web dashboard | TypeScript | planned |
 | `frontend.studio` | vxedge Studio | Electron, future | planned |
@@ -308,7 +308,7 @@ How a generated experiment reaches the bench.
 | `gate.propose` | Propose a SysML v2 model | live |
 | `gate.typecheck` | Gate 1: model type check | live |
 | `gate.validate` | Gate 2: `vxedge manifest validate --json` | live |
-| `gate.confirm` | Multi-round-trip confirmation before a state change | building |
+| `gate.confirm` | Multi-round-trip confirmation before a state change | live |
 | `gate.run` | Idempotent `up`, streamed as a job, audited | live |
 | `gate.archive` | Evidence archived with digests | live |
 
@@ -320,7 +320,7 @@ How a generated experiment reaches the bench.
 | `mcp.list` | zone / compute list | ZoneService · ComputeService | live |
 | `mcp.watch` | job watch · events | JobService · EventService | live |
 | `mcp.results` | results summary | results archive | planned |
-| `mcp.mutate` | up · down · traffic up | behind confirmation | building |
+| `mcp.mutate` | up · down · traffic · collect · cancel | behind confirmation | live |
 
 ### Other deliveries
 
@@ -329,6 +329,7 @@ How a generated experiment reaches the bench.
 | `retarget.validate` | live | an experiment retargets to another vehicle by id and validates |
 | `vehicle.up` | live | the `vehicle` verbs (up, down, status) on a full vehicle: gateway, zones, central compute, and a service and signal plane placed on a slice, with an idempotent second `up`, a clean `down` and other vehicles refused. Verified 2026-11-03 on [`vx-vehicle-03`](https://github.com/vxedge/vxperiments/tree/main/results/signal-plane-2026-11-03), with zones on container, qemu-microvm, cloud-hypervisor and wasm-capsule, and 2026-11-01 on [`vx-vehicle-02`](https://github.com/vxedge/vxperiments/tree/main/results/phase-3-gate-2026-11-01), the phase-3 gate, with zones on container and qemu-microvm. `libvirt` has not run in a full vehicle. Guests are probes: no QNX, Android Automotive or Autoware workload ran |
 | `service.placed` | live | a service runs on a container device with `on:`, answering on that device's slice only; `ota` only |
-| `signal.plane` | live | the Kuksa databroker as a stage of `vehicle up` and `experiment up`, in its device's container group: one VSS signal written and read through a real client on its slice, and refused from another slice (verified 2026-11-03, [`vx-vehicle-03`](https://github.com/vxedge/vxperiments/tree/main/results/signal-plane-2026-11-03)). On `main`, not in a release yet. No feeder or consumer ran. Signals are unauthenticated, so slice isolation is their only protection |
+| `signal.plane` | live | the Kuksa databroker as a stage of `vehicle up` and `experiment up`, in its device's container group: one VSS signal written and read through a real client on its slice, and refused from another slice (verified 2026-11-03, [`vx-vehicle-03`](https://github.com/vxedge/vxperiments/tree/main/results/signal-plane-2026-11-03)). Released in `vxedge` 0.5.0. No feeder or consumer ran. Signals are unauthenticated, so slice isolation is their only protection |
+| `api.agents` | live | an agent runs a trial through `vxmcp` alone on typed fields: plan, up, typed status, events with resume, traffic, collection, daemon restart, cancel and down, 10 of 10 consecutive runs on `vx-vehicle-03` and libvirt on `exp-002-ws` (verified 2026-11-04, [release gate](https://github.com/vxedge/vxperiments/tree/main/results/vxapi-0.5.0-gate-2026-11-04)). One run per host; guests are probes |
 | `retarget.fleet` | planned | two vehicles at once (fleet layer) |
 | `paper.1` | in preparation | phase-1 dataset (H1/H3/H4) for arXiv, [`ROADMAP.md`](ROADMAP.md) |

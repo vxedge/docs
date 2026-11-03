@@ -8,6 +8,9 @@ All notable changes to this repo are documented here. Format follows
 
 ### Added
 
+- `vxedge` 0.5.0 and `vxmcp` 0.2.0: `FACTS.md` releases, `api.agents` (the agent sequence through
+  `vxmcp`, verified live), `frontend.mcp`, `mcp.mutate` and `gate.confirm` live, and the signal plane
+  released. `ARCHITECTURE.md` §5.2: the agent surface is built, and its services are in the table.
 - `scripts/check-links.py` and `scripts/check-release.py` in CI: relative links must resolve, and `CITATION.cff` must match `project.version`. `VERSIONING.md`: a release checklist.
 - `ACRONYMS.md`: VMM, Cloud Hypervisor, Wasm and WASI. `GETTING-STARTED.md`: every zone backend. `USER-GUIDE.md`: `vxedge ota status`. `ROADMAP.md`: the vxAPI agent surface for 0.5.0.
 - `FACTS.md`: `signal.plane`, the Kuksa databroker as a stage of `vehicle up`, and `vehicle.up` now names the backends each run covered and that `libvirt` has not run in a full vehicle. `ROADMAP.md` lists the signal plane's open work.
