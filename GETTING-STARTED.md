@@ -133,7 +133,9 @@ levels, 60k samples per point; keep the machine otherwise idle and prefer the
 ## 5. Zones and VM guest bundles
 
 Container-backed zones work out of the box (`vxedge zone up --vxid …` after `up`). The VM
-backends (`qemu-microvm`, `libvirt`) boot a guest *bundle* built once per host:
+backends (`qemu-microvm`, `libvirt`, `cloud-hypervisor`) boot a guest *bundle* built once per
+host, and `wasm-capsule` runs a WebAssembly module through the `vxcapsule` runner that ships beside
+`vxedged` ([`TESTBED-SETUP.md`](TESTBED-SETUP.md) lists what each needs):
 
 ```bash
 sudo chmod 644 /boot/vmlinuz-$(uname -r)        # Ubuntu ships the kernel root-only

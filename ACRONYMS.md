@@ -159,6 +159,13 @@ The `vxgateway` data plane, relevant to `network-provisioning-patterns`.
 - **QMP**: QEMU Machine Protocol: how the microVM backend controls QEMU directly.
 - **microVM**: A minimal-device-model QEMU machine type, for lower overhead than a
   full VM.
+- **VMM**: Virtual Machine Monitor: the process that runs one guest on top of KVM.
+- **Cloud Hypervisor**: A VMM built for minimal guests and controlled over a REST API on a
+  Unix socket: the `cloud-hypervisor` zone backend.
+- **Wasm**: WebAssembly: a portable, sandboxed instruction format. The `wasm-capsule` zone
+  backend runs a sensor or ECU simulable as a control loop as a WebAssembly module.
+- **WASI**: WebAssembly System Interface: the standard way a WebAssembly module reaches files,
+  clocks and sockets. A capsule is a WASI 0.2 command component.
 - **QNX / SDP**: QNX Software Development Platform 8: the real-time OS used for
   ADAS/safety zone guests.
 - **RTOS**: Real-Time Operating System (Zephyr, FreeRTOS, QNX).

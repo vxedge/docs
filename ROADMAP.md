@@ -46,6 +46,8 @@ Cross-cutting tracks:
 - `exp-011`: real ADAS traffic, CARLA → ROS 2 → Autoware closed loop. It needs a Tier 2 GPU host
   ([`TESTBED-SETUP.md`](TESTBED-SETUP.md)).
 - QNX SDP 8 and Android Automotive zones, and an embedded Qt/QML IVI loadable.
+- vxAPI agent surface, for `vxedge` 0.5.0: run identity, typed node status, structured errors,
+  planning, event resume, traffic status and result collection. In progress.
 - `vxmcp`: the remaining read tools, and mutating tools gated by confirmation.
 - On-demand reproduction pipeline for published experiments.
 
