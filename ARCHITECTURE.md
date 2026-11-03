@@ -359,8 +359,8 @@ vxedge vehicle down --manifest vxperiments/vehicles/<vehicle>.yaml
 vxedge vehicle status --manifest vxperiments/vehicles/<vehicle>.yaml
 
 # Experiments (manifest-driven; may reference a vehicle manifest)
-vxedge experiment up --manifest vxperiments/exp-001.yaml
-vxedge experiment down --manifest vxperiments/exp-001.yaml
+vxedge experiment up      # from the workspace directory; --chdir <dir> from elsewhere
+vxedge experiment down
 
 # Traffic generation
 vxedge traffic up --manifest ...
@@ -371,7 +371,10 @@ vxedge nos-check up|down|status|verify [--experiment <path>]
 
 `vxedge vehicle up` is sugar for the ordered composition: gateway up → zones up → compute up →
 signal plane up (Kuksa, phase 3) → services up. `vehicle down` tears down in reverse. A vehicle
-with no `signal_plane` block (§6.0.1) has no such stage, and it is not reported as done.
+with no `signal_plane` block (§6.0.1) has no such stage, and it is not reported as done. A
+declared signal plane that does not stay running fails the job.
+`vxedge experiment up` runs the same order, and `--stage gateway|zones|signal-plane|services`
+restricts it to the stages named, so `--stage services` alone does not start the databroker.
 `vehicle status` reads the
 workspace it is pointed at and observes each declared component on the host (netlink, nftables,
 QEMU, Podman), so its answer survives a daemon restart and never comes from `vxedged`'s memory.
@@ -1393,13 +1396,13 @@ tc class add dev vxup0 parent 1:1 classid 1:50 htb rate 1mbit   ceil 500mbit pri
 4. `vxedge compute up --vxid vxzone-central-hpc-01`
 5. `vxedge ota up --experiment vxperiments/exp-001.yaml`
 6. `vxedge telemetry up --experiment vxperiments/exp-001.yaml` (not yet wired to the daemon)
-7. `vxedge experiment up --manifest vxperiments/exp-001.yaml`
+7. `vxedge experiment up` from the `exp-001` workspace
 8. Collect results: `vxedge telemetry collect --manifest vxperiments/exp-001.yaml --out results/exp-001.zip`
-9. Tear down: `vxedge experiment down --manifest vxperiments/exp-001.yaml` then services, compute, zones, gateway
+9. Tear down: `vxedge experiment down` then services, compute, zones, gateway
 
 Or, end to end with a vehicle manifest:
 `vxedge vehicle up --manifest vxperiments/vehicles/vx-vehicle-01.yaml` →
-`vxedge experiment up --manifest vxperiments/exp-001.yaml` → collect → `experiment down` →
+`vxedge experiment up` from the `exp-001` workspace → collect → `experiment down` →
 `vehicle down`.
 
 ---
