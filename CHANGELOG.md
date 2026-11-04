@@ -8,6 +8,7 @@ All notable changes to this repo are documented here. Format follows
 
 ### Added
 
+- `vxedge` 0.5.2, `vxmcp` 0.2.1 and `vxtelemetry` 0.2.1 in the `FACTS.md` releases table.
 - `USER-GUIDE.md`: `telemetry` verbs live, `--stage compute`, the traffic endpoint refusal, and a row
   for the agent-surface RPCs reached through `vxmcp`. `ROADMAP.md`: the agent surface and signal
   plane released; CLI verbs for the agent surface are the open vxAPI work. `ARCHITECTURE.md` §5.1:
