@@ -206,7 +206,8 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
     thin, 1:1 client over the same RPCs, this time addressed by an LLM agent's tool-call surface
     instead of a terminal or a GUI. Every MCP tool is a direct wrapper over one vxAPI RPC
     (`GatewayService`/`ZoneService`/`ComputeService`/`VehicleService`/`ExperimentService`/
-    `TrafficService`/`SvcService`/`NosCheckService`/`JobService`/`EventService`), never a multi-step workflow baked into the
+    `TrafficService`/`SvcService`/`NosCheckService`/`TelemetryService`/`RunService`/
+    `WorkspaceService`/`HostService`/`JobService`/`EventService`), never a multi-step workflow baked into the
     server, the hard rule stated explicitly for this frontend too. Sits directly on
     `vxedge-api`'s generated tonic bindings (a Rust-to-Rust dependency, not a second codegen
     pipeline the way the TS SDK is). Targets **MCP spec 2026-07-28**: stateless
