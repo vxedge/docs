@@ -16,6 +16,8 @@ All notable changes to this repo are documented here. Format follows
 ### Changed
 
 - `ARCHITECTURE.md` §6.0.3: the `.vxp` `id` and `entry` checks are in place, no longer planned.
+- `ARCHITECTURE.md` §13: the results archive carries the full workspace and verifies itself
+  (`vxtelemetry verify`).
 - `vxedge` 0.5.2, `vxmcp` 0.2.1 and `vxtelemetry` 0.2.1 in the `FACTS.md` releases table.
 - `USER-GUIDE.md`: `telemetry` verbs live, `--stage compute`, the traffic endpoint refusal, and a row
   for the agent-surface RPCs reached through `vxmcp`. `ROADMAP.md`: the agent surface and signal
