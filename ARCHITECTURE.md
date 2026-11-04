@@ -354,8 +354,9 @@ vxedge compute image push --vxid <vxid> --from <path> --registry <url?>    # not
 # Services (OTA, telemetry)
 vxedge ota up [--experiment <path>]      # cwd-resolved by default, like `experiment up`;
 vxedge ota down [--experiment <path>]    # --experiment overrides with an explicit workspace
-vxedge telemetry up|down|collect         # not yet wired to the daemon (planned);
-                                          # vxtelemetry runs standalone via its own binary today
+vxedge telemetry up|down --experiment <path>   # SvcService, like `ota up|down`
+vxedge telemetry collect --manifest <path> [--out <zip>]   # TelemetryService.Collect: the
+                                          # results archive, returned with its sha256
 
 # Vehicle (software-bootstrapped SDV: gateway + zones + compute + signal plane + services)
 vxedge vehicle up --manifest vxperiments/vehicles/<vehicle>.yaml
@@ -621,8 +622,8 @@ published one. It is built per host, so a run records its image ID, and `up` ref
 image and names it rather than letting Podman reach for a registry. Only a bare path is
 ambiguous, and there `kind` is how the author says so. A stated kind is validated against the device's backend, so a
 baseline pointing an H3 libvirt arm at a container image is rejected with both halves named
-rather than silently accepted and failed at boot. `vxedge manifest bom` derives them for display,
-SBOM export and the RxSWIN roll-up.
+rather than silently accepted and failed at boot. A planned `vxedge manifest bom` (not built) will
+derive them for display, SBOM export and the RxSWIN roll-up.
 
 `target_ids` declared once for many components is deliberate: repeating a shared part
 per-component is how fleet baselines silently drift when one copy is bumped and the others are
@@ -720,8 +721,20 @@ experiment file:
 id: h1-slice-isolation
 version: 0.1.0
 entry: main.yaml
-requires: { gpu: none }              # surfaced at scaffold time, checked by validate
+requires: { gpu: none }              # surfaced at scaffold time, checked by preflight
 ```
+
+`requires` is checked by the daemon's preflight, which `up` and `WorkspaceService.Plan` run.
+`experiment validate` is local and does not probe the host. The `.vxp` `id` names the package, and
+it must equal the `kind: experiment` id. `entry` names the file holding that experiment. Checking
+both is planned.
+
+**Descriptor evolution (planned).** Today's parser refuses any field it does not know, so a new
+field would break every shipped binary. The next descriptor revision therefore adds a `schema`
+discriminator first (`schema: vxp/1`). A descriptor without `schema` is read exactly as today. One
+with a known `schema` refuses unknown keys, except keys prefixed `x-`, which are carried and
+ignored, so an organisation can annotate its packages. One with a newer `schema` is refused with
+a typed reason, never a parse error.
 
 #### 6.0.4 Requirements vs. allocation
 
@@ -1136,6 +1149,15 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
   the **same test vector** over the same fixture. Two implementations of one rule stay honest
   by agreeing on an answer, not by sharing code; if the rule is revised, both move together.
 
+  **Revision planned: ignore rules.** The rule above has no exclusions beyond `results/`, so
+  version-control metadata (`.git/`), editor swap files and local build output change a
+  workspace's identity without changing the experiment. The revised rule (`vxws/2`) excludes
+  those by default and honours an optional `.vxpignore` at the workspace root, in `.gitignore`
+  syntax. Every recorded identity then names its algorithm:
+  `workspace_identity: { algorithm: vxws/2, value: <hex> }`. Today's rule becomes `vxws/1` and
+  stays verifiable, so archives already published keep their identity. Identities computed
+  under different algorithms are never compared for equality.
+
 - **Reproducibility:**
   - All manifests under `vxperiments` are versioned and authoritative.
   - Images and RTOS builds tagged with SHA256 digest.
@@ -1150,11 +1172,18 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
   - Experimental runs can be triggered and reproduced on demand.
 
 - **Artifact publication:**
-  - Results archived per `results_prefix` in experiment manifest.
-  - Metadata includes experiment ID, workspace identity (above), `.vxp` id/version, CLI
-    version, and, when the campaign opts in, the content-addressed digests of the container
-    images it ran against. The archive bundles the workspace itself under `workspace/`, so a
-    result is re-runnable from what is inside it rather than merely described by it.
+  - Results are archived under the experiment's `results.artifact_dir`, or the `--out` path
+    given to `telemetry collect`.
+  - Metadata includes the experiment ID, the workspace identity (above), the `.vxp` id and
+    version, the `vxtelemetry` version, the ingest statistics, and, when the campaign opts in,
+    the content-addressed digests of the container images it ran against (`host-process` for a
+    local host-process part).
+  - The archive bundles the workspace's **documents** (top-level `*.yaml` and the `.vxp`) under
+    `workspace/`. It does not yet carry `parts/`, `assets/`, `scripts/` or `tools/`, so it
+    cannot be re-hashed to its own `workspace_sha256`, and a result is described by the
+    archive rather than re-runnable from it alone. Carrying the full workspace (minus
+    `results/`) is planned, after which re-hashing `workspace/` must reproduce the recorded
+    identity.
   - Registry uploads optional; ensures compliance with reproducible research principles.
 
 ---
@@ -1333,17 +1362,20 @@ Paper #3 (`ROADMAP.md`) draws on M1–M4; the twin claim attaches only if phase 
 
 ## 16: Appendix: example manifests, gateway snippets, run sequence
 
-### Example experiment manifest snippet
+### Example experiment document
+
+`main.yaml` from the exp-001 workspace (§6.0): the vehicle and the software are referenced by id,
+and live in their own documents in the same folder.
 
 ```yaml
-experiment:
-  id: exp-001
-  name: ADAS slice isolation test
-  duration_s: 1800
-  results_prefix: results/exp-001
-  vehicle: vxperiments/vehicles/vx-vehicle-01.yaml
+kind: experiment
+id: exp-001
+vehicles: [vx-h1-vehicle]
+baseline: bl-exp-001
 
 network:
+  defaults:
+    bandwidth: 500000000          # 500 Mbit/s root rate at the shared uplink
   slices:
     - id: adas
       mode: vlan
@@ -1352,26 +1384,24 @@ network:
     - id: infotainment
       mode: vlan
       vlan: 103
-      qos: { min_rate_mbps: 0, max_rate_mbps: 500, priority: 5 }
+      qos: { min_rate_mbps: 0, max_rate_mbps: 400, priority: 5 }
 
-services:
-  ota:
-    id: ota-01
-    type: ota
-    image:
-      url: registry/vxota:latest
-      kind: container
-    config:
-      artifacts: /opt/ota/artifacts
-      listen: 10.101.0.1:9900   # reachable from zone nodes on the same slice
-  telemetry:
-    id: telemetry-01
-    type: telemetry
-    image:
-      url: registry/vxtelemetry:latest
-      kind: container
-    config:
-      scrape_interval_s: 5
+traffic_profiles:
+  infotainment-load:
+    source: node-infot-load-01    # component id
+    target: internet              # uplink-side sink
+    bandwidth_mbps: 400
+    payload_bytes: 1200
+
+method: { duration_s: 60, repetitions: 5, warmup_s: 10 }
+
+telemetry:
+  prometheus:
+    scrape_targets: ["10.101.0.2:9801"]
+
+results:
+  artifact_dir: results/exp-001
+  upload: false
 ```
 
 ### vxgateway provisioning (rendered by the CLI; shown as equivalent shell for illustration)
@@ -1398,10 +1428,10 @@ tc class add dev vxup0 parent 1:1 classid 1:50 htb rate 1mbit   ceil 500mbit pri
 2. `vxedge zone up --vxid vxzone-front-left`
 3. `vxedge zone up --vxid vxzone-front-right`
 4. `vxedge compute up --vxid vxzone-central-hpc-01`
-5. `vxedge ota up --experiment vxperiments/exp-001.yaml`
-6. `vxedge telemetry up --experiment vxperiments/exp-001.yaml` (not yet wired to the daemon)
+5. `vxedge ota up --experiment <workspace>`
+6. `vxedge telemetry up --experiment <workspace>`
 7. `vxedge experiment up` from the `exp-001` workspace
-8. Collect results: `vxedge telemetry collect --manifest vxperiments/exp-001.yaml --out results/exp-001.zip`
+8. Collect results: `vxedge telemetry collect --manifest <workspace> --out results/exp-001.zip`
 9. Tear down: `vxedge experiment down` then services, compute, zones, gateway
 
 Or, end to end with a vehicle manifest:
