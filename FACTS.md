@@ -296,7 +296,7 @@ no orchestration logic lives in a frontend.
 | `case.ota` | OTA beside safety workloads | measured | H4 |
 | `case.agents` | Agent-operated experiments | building | `vxmcp`, `vxmodels` |
 | `case.autonomy` | Autonomy closed loop | planned | `exp-011` |
-| `case.signals` | Signals and diagnostics | building | phase 3 |
+| `case.signals` | Signals and diagnostics | building | [`kuksa-cases-2026-11-04`](https://github.com/vxedge/vxperiments/tree/main/results/kuksa-cases-2026-11-04) |
 | `case.reproduce` | Reproduce anything | live | every archive |
 
 ### Agent path
