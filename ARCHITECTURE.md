@@ -772,8 +772,9 @@ x-oem-acme: { cost_centre: 4711 }   # x- keys are carried and ignored
 Both are checked by `pkg validate`, `experiment validate`, `manifest validate`,
 `WorkspaceService.Plan` and `up`, and a malformed descriptor fails validation.
 
-**Legacy descriptor.** A descriptor without `schema` is a legacy `<name>.vxp` and is read exactly
-as vxedge 0.5.x reads it: `id`, `version`, `entry` (optional) and `requires: { gpu }`, unknown
+**Legacy descriptor.** A `vxp.yaml` without `schema` is refused: the file name already declares
+the new format. A legacy `<name>.vxp` has no `schema` and is read exactly as vxedge 0.5.x reads
+it: `id`, `version`, `entry` (optional) and `requires: { gpu }`, unknown
 keys refused. Its whole `id` must equal the `kind: experiment` id. It has no lock and no package
 digest, and `pkg lock` and `pkg pack` refuse it with the reason, so a legacy workspace still runs
 but cannot be published until it is migrated.
@@ -862,8 +863,9 @@ list its own digest. `vxp.yaml` and `vxp.lock` are inputs to the workspace ident
 excludes them: a version bump or a re-lock is a different input, and §13's question *did every
 repetition run from the same input?* answers it. `up` on a `vxp/1` package recomputes `files`
 and the referenced digests and refuses with `ERROR_REASON_LOCK_MISMATCH` when a file was added,
-removed or changed, or a reference disagrees, naming each. `up --unlocked` skips the check while
-authoring; the run record and the archive record `locked: false`, so an unlocked result is never
+removed or changed, or a reference disagrees, naming each. A missing `vxp.lock` is a mismatch
+too; `pkg new` writes the first one. `up --unlocked` skips the check while authoring; the run
+record and the archive record `package_locked: false` (§13), so an unlocked result is never
 mistaken for a locked one. `vendored` records where a copied document came from, so CI can flag
 drift from its source.
 
@@ -873,12 +875,18 @@ source always gives the same bytes on any host and with any vxedge version:
 - Its entries are exactly the workspace identity's inputs (§13), in the same sorted path order,
   as regular files only. Directories are implied by paths. `results/`, `.git` and everything else
   the identity excludes are therefore never packed.
-- Paths are relative, `/`-separated UTF-8, with no `.` or `..` component. Each header has mode
-  `0644`, or `0755` when the source file is executable by its owner, uid and gid 0, empty user
-  and group names, and mtime 0. The ustar format is used, with a PAX extended header holding only
-  `path` for a path ustar cannot hold. The archive ends with two zero blocks and no further padding.
+- Paths are relative, `/`-separated UTF-8, with no `.` or `..` component. Each entry is a plain
+  ustar header: mode `0644`, uid and gid 0, empty user and group names, mtime 0. No PAX or GNU
+  extension headers are written, so a path ustar cannot hold (over 100 bytes after splitting at
+  a `/` into its 155-byte prefix) is refused. The archive ends with two zero blocks and no further
+  padding.
+- Every entry is `0644`, executable or not. The workspace identity ignores modes, and so does
+  the package digest: a checkout that drops the executable bit, as some filesystems and
+  `core.fileMode=false` do, packs to the same bytes. Scripts in a package run through their
+  interpreter.
 - A symbolic link, hard link, device, socket or non-UTF-8 path among the inputs is refused by
-  `pkg validate` and `pkg pack`, not silently skipped or followed.
+  `pkg validate`, `pkg pack` and `up`, not silently skipped or followed, so every run of a `vxp/1`
+  package has a package digest.
 
 `pkg unpack` writes the entries into a new directory and refuses an archive that breaks any of
 these rules. The unpacked folder has the source's workspace identity, since its inputs are exactly
@@ -891,9 +899,12 @@ it with `sha256sum`. The packed file is uncompressed so that this holds: compres
 fixed across compressor versions, and a digest over it would reproduce only on the same build.
 Transfer may compress; the digest is always over the tar. Because the packed bytes are a pure
 function of the source, the digest is computed for every run of a `vxp/1` package, from a source
-folder as well as from a packed file, without writing one. Published parts are referenced by
-digest, never embedded. Air-gapped transfer of published parts travels beside the package, never
-inside it, so the package digest does not depend on how the package was moved.
+folder as well as from a packed file, without writing one. As with the workspace identity,
+`vxedge-core` and `vxtelemetry` compute it independently and pin the same packed-bytes test vector;
+`vxtelemetry` computes it from the archive's `workspace/`, which holds exactly the packed entries,
+so `vxtelemetry verify` checks the package digest as well as the identity. Published parts are
+referenced by digest, never embedded. Air-gapped transfer of published parts travels beside the
+package, never inside it, so the package digest does not depend on how the package was moved.
 
 **Verbs** (local, offline, built on `vxedge-core`): `pkg new` scaffolds a `vxp/1` package,
 `pkg validate` runs every check above and §6.0's, `pkg lock` writes `vxp.lock`, `pkg pack` writes
