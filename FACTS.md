@@ -65,7 +65,7 @@ The latest tagged release of each code repository.
 |---|---|---|---|
 | `vxedge` | `vxedge` | 0.5.3 | 2026-11-04 |
 | `vxagents` | `vxagents` | 0.1.1 | 2026-10-28 |
-| `vxmcp` | `vxmcp` | 0.2.1 | 2026-11-04 |
+| `vxmcp` | `vxmcp` | 0.2.2 | 2026-11-04 |
 | `vxmodels` | `vxmodels` | 0.1.0 | 2026-10-29 |
 | `vxota` | `vxota` | 0.1.1 | 2026-10-28 |
 | `vxparts` | `vxparts` | 0.1.0 | 2026-10-29 |
