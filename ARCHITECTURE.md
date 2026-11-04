@@ -1164,8 +1164,8 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
   rule is revised, both move together.
 
   **Every recorded identity names its algorithm**, beside the value: `identity_algorithm` in
-  run and audit records, `Run.workspace_identity_algorithm`, and `workspace_identity_algorithm`
-  in the archive's `metadata.json`. The previous rule is `vxws/1`: the same walk with only
+  the daemon's run record, and `workspace_identity_algorithm` in audit records, in
+  `Run.workspace_identity_algorithm` and in the archive's `metadata.json`. The previous rule is `vxws/1`: the same walk with only
   `results/` excluded and no prefix. A record or archive that names no algorithm was written
   under `vxws/1`, and `vxws/1` stays computable, so archives already published keep a verifiable
   identity and a daemon upgraded under a running vehicle verifies the old record under the old
