@@ -1192,12 +1192,14 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
     version, the `vxtelemetry` version, the ingest statistics, and, when the campaign opts in,
     the content-addressed digests of the container images it ran against (`host-process` for a
     local host-process part).
-  - The archive bundles the workspace's **documents** (top-level `*.yaml` and the `.vxp`) under
-    `workspace/`. It does not yet carry `parts/`, `assets/`, `scripts/` or `tools/`, so it
-    cannot be re-hashed to its own `workspace_sha256`, and a result is described by the
-    archive rather than re-runnable from it alone. Carrying the full workspace (minus
-    `results/`) is planned, after which re-hashing `workspace/` must reproduce the recorded
-    identity.
+  - The archive carries **every file the workspace identity covers** under `workspace/`: the
+    documents, `parts/`, `assets/`, `scripts/` and `tools/`, and nothing the identity excludes.
+    It is enough to re-run from, and it verifies itself: re-hashing `workspace/` under the
+    recorded `workspace_identity_algorithm` reproduces `workspace_sha256`
+    (`vxtelemetry verify <archive>`, which exits non-zero on a mismatch). Every entry under
+    `workspace/` counts, so a file added to an archive is a mismatch. An archive that names no
+    algorithm was written when archives carried only the documents; it cannot be re-hashed, and
+    `verify` refuses it with that reason.
   - Registry uploads optional; ensures compliance with reproducible research principles.
 
 ---
