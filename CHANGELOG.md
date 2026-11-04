@@ -8,6 +8,9 @@ All notable changes to this repo are documented here. Format follows
 
 ### Added
 
+- `ARCHITECTURE.md` §6.0.3 (planned): a `schema` discriminator for the `.vxp` descriptor, with
+  `x-` extension keys. §13 (planned): workspace identity ignore rules (`vxws/2`, `.vxpignore`),
+  with every recorded identity naming its algorithm.
 - `vxedge` 0.5.2, `vxmcp` 0.2.1 and `vxtelemetry` 0.2.1 in the `FACTS.md` releases table.
 - `USER-GUIDE.md`: `telemetry` verbs live, `--stage compute`, the traffic endpoint refusal, and a row
   for the agent-surface RPCs reached through `vxmcp`. `ROADMAP.md`: the agent surface and signal
@@ -39,6 +42,15 @@ All notable changes to this repo are documented here. Format follows
 
 ### Fixed
 
+- `ARCHITECTURE.md` §5.4 and §16: `vxedge telemetry` verbs are wired (`up`/`down` through
+  `SvcService`, `collect` through `TelemetryService.Collect`). §16's example is now a workspace
+  `main.yaml`, replacing the §6.1 shape and its `:latest` image tags.
+- `ARCHITECTURE.md` §13: results go to `results.artifact_dir`, not `results_prefix`. Archive
+  metadata records the `vxtelemetry` version, not a CLI version. The archive carries the
+  workspace's documents only, so it is not yet re-runnable on its own; the full workspace is
+  planned.
+- `ARCHITECTURE.md` §6.0.2 and §6.0.3: `vxedge manifest bom` is planned, not built. The daemon's
+  preflight, not `experiment validate`, checks `.vxp` `requires`.
 - `ROADMAP.md`: tag-triggered releases exist in six repositories, not only `vxedge`.
 - `GETTING-STARTED.md`, `TESTBED-SETUP.md`, `USER-GUIDE.md`: `vxedged` needs `CAP_SYS_ADMIN` as well as `CAP_NET_ADMIN` under `setcap`, because entering a named network namespace is `setns(2)`.
 
