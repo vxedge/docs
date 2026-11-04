@@ -8,6 +8,7 @@ All notable changes to this repo are documented here. Format follows
 
 ### Added
 
+- `vxedge` 0.5.1 in the `FACTS.md` releases table.
 - `vxedge` 0.5.0 and `vxmcp` 0.2.0: `FACTS.md` releases, `api.agents` (the agent sequence through
   `vxmcp`, verified live), `frontend.mcp`, `mcp.mutate` and `gate.confirm` live, and the signal plane
   released. `ARCHITECTURE.md` §5.2: the agent surface is built, and its services are in the table.
