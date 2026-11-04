@@ -9,8 +9,13 @@ All notable changes to this repo are documented here. Format follows
 ### Added
 
 - `ARCHITECTURE.md` §6.0.3 (planned): a `schema` discriminator for the `.vxp` descriptor, with
-  `x-` extension keys. §13 (planned): workspace identity ignore rules (`vxws/2`, `.vxpignore`),
-  with every recorded identity naming its algorithm.
+  `x-` extension keys.
+- `ARCHITECTURE.md` §13: the workspace identity rule `vxws/2`, with its default excludes and
+  `.vxpignore`, and every recorded identity naming its algorithm. `vxws/1` stays verifiable.
+
+### Changed
+
+- `ARCHITECTURE.md` §6.0.3: the `.vxp` `id` and `entry` checks are in place, no longer planned.
 - `vxedge` 0.5.2, `vxmcp` 0.2.1 and `vxtelemetry` 0.2.1 in the `FACTS.md` releases table.
 - `USER-GUIDE.md`: `telemetry` verbs live, `--stage compute`, the traffic endpoint refusal, and a row
   for the agent-surface RPCs reached through `vxmcp`. `ROADMAP.md`: the agent surface and signal

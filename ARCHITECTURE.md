@@ -726,8 +726,9 @@ requires: { gpu: none }              # surfaced at scaffold time, checked by pre
 
 `requires` is checked by the daemon's preflight, which `up` and `WorkspaceService.Plan` run.
 `experiment validate` is local and does not probe the host. The `.vxp` `id` names the package, and
-it must equal the `kind: experiment` id. `entry` names the file holding that experiment. Checking
-both is planned.
+it must equal the `kind: experiment` id. `entry`, when given, must name the file holding that
+experiment. Both are checked by `experiment validate`, `manifest validate`,
+`WorkspaceService.Plan` and `up`, and a malformed or second `.vxp` fails validation.
 
 **Descriptor evolution (planned).** Today's parser refuses any field it does not know, so a new
 field would break every shipped binary. The next descriptor revision therefore adds a `schema`
@@ -1132,31 +1133,44 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
 
 - **Workspace identity, one rule.** A run's provenance is a SHA-256 over **every file the
   experiment is made of**: the relative path, a NUL, the bytes, a NUL, in sorted path order,
-  recursing into subdirectories and **excluding `results/`**.
+  recursing into subdirectories. The current rule, `vxws/2`, starts the preimage with `vxws/2`
+  and a NUL, and excludes:
+
+  - `results/` at the workspace root;
+  - `.git`, file or directory, at any depth;
+  - editor and desktop droppings: `*.swp`, `*.swo`, `*~`, `.#*`, `#*#`, `.DS_Store`;
+  - whatever an optional `.vxpignore` at the workspace root names, in `.gitignore` syntax.
 
   Each part of that is load-bearing. The path is hashed with the bytes, so renaming a file is a
   change. Order is sorted rather than as-read, so the answer does not depend on the filesystem.
   `results/` is excluded because outputs are not inputs, including them would change a run's
-  identity the moment it produced one. The recursion is what distinguishes the identity from
-  the *document* set: a sandbox's `parts/`, `assets/`, `scripts/` and `tools/` are what ran
-  even though they are not workspace documents, and a local part that changes is a different
-  experiment.
+  identity the moment it produced one. `.git` and editor files are excluded because a workspace
+  that is its own repository, or that an editor has touched, is still the same experiment.
+  `results/` and `.git` are excluded before `.vxpignore` is read, so no `!` line can make them
+  inputs, and a directory `.vxpignore` excludes is not entered, so nothing under it can be
+  re-included. `.vxpignore` itself is hashed: it decides what the other inputs are. The matcher
+  is built from the workspace alone, never from a global gitignore or the environment, because
+  an identity that depended on the machine computing it would not identify anything. The
+  recursion is what distinguishes the identity from the *document* set: a sandbox's `parts/`,
+  `assets/`, `scripts/` and `tools/` are what ran even though they are not workspace documents,
+  and a local part that changes is a different experiment.
 
   It answers one question, *did every repetition of this campaign run from the same input?*,
-  and it is one rule because it is recorded in two places that must agree: the daemon's audit
-  records and the results archive's `workspace_sha256`. `vxedge-core` and `vxtelemetry`
-  implement it independently (the latter deliberately does not depend on the former) and pin
-  the **same test vector** over the same fixture. Two implementations of one rule stay honest
-  by agreeing on an answer, not by sharing code; if the rule is revised, both move together.
+  and it is one rule because it is recorded in places that must agree: the daemon's run record
+  and audit records, `Run.workspace_sha256`, and the results archive's `workspace_sha256`.
+  `vxedge-core` and `vxtelemetry` implement it independently (the latter deliberately does not
+  depend on the former) and pin the **same test vectors** over the same fixtures. Two
+  implementations of one rule stay honest by agreeing on an answer, not by sharing code; if the
+  rule is revised, both move together.
 
-  **Revision planned: ignore rules.** The rule above has no exclusions beyond `results/`, so
-  version-control metadata (`.git/`), editor swap files and local build output change a
-  workspace's identity without changing the experiment. The revised rule (`vxws/2`) excludes
-  those by default and honours an optional `.vxpignore` at the workspace root, in `.gitignore`
-  syntax. Every recorded identity then names its algorithm:
-  `workspace_identity: { algorithm: vxws/2, value: <hex> }`. Today's rule becomes `vxws/1` and
-  stays verifiable, so archives already published keep their identity. Identities computed
-  under different algorithms are never compared for equality.
+  **Every recorded identity names its algorithm**, beside the value: `identity_algorithm` in
+  the daemon's run record, and `workspace_identity_algorithm` in audit records, in
+  `Run.workspace_identity_algorithm` and in the archive's `metadata.json`. The previous rule is `vxws/1`: the same walk with only
+  `results/` excluded and no prefix. A record or archive that names no algorithm was written
+  under `vxws/1`, and `vxws/1` stays computable, so archives already published keep a verifiable
+  identity and a daemon upgraded under a running vehicle verifies the old record under the old
+  rule. Identities computed under different algorithms are never compared for equality; the
+  prefix makes them different even for a workspace with nothing to exclude.
 
 - **Reproducibility:**
   - All manifests under `vxperiments` are versioned and authoritative.
