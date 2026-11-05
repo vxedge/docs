@@ -13,7 +13,8 @@ listed per-verb below; everything else fails loudly rather than pretending.
 ## 1. Concepts
 
 - **A workspace is the unit of work: a folder, not a single file.** An experiment is a
-  directory holding a `.vxp` package descriptor (id, version, entry, `requires`) plus
+  directory holding a `vxp.yaml` package descriptor (id, version, entry, `requires`; a legacy
+  workspace has `<id>.vxp` instead) plus
   top-level YAML documents, each declaring its own `kind`: `experiment` (the test),
   `vehicle` (the system under test), `road` (the environment, optional), `baseline` (which
   software), `component`, plus an `id`. Every cross-reference is by id, never by path, so files
@@ -23,8 +24,8 @@ listed per-verb below; everything else fails loudly rather than pretending.
 - **A workspace is a sandbox.** It owns its own `scripts/run.sh` (the campaign: repetitions,
   warmup, measurement window), `parts/` (its loadables), `assets/` (scenario files), `tools/`
   (its own analysis), and `results/` (one archive per run). It is a folder that can be zipped,
-  sent, unzipped and run standalone. `vxedge experiment new <id> [--template minimal|slicing]`
-  scaffolds one; `vxedge experiment validate` runs every cross-file check and every model
+  sent, unzipped and run standalone, or packed into one `.vxp` file with `vxedge pkg pack`.
+  `vxedge experiment new <id> [--template minimal|slicing]` scaffolds one, with its `vxp.lock`; `vxedge experiment validate` runs every cross-file check and every model
   invariant before anything is provisioned. Full schema: ARCHITECTURE.md §6.0.
 - **Structure and software are separate files.** One `vehicle.yaml` carries many `baseline`
   files, so an A/B arm is two baselines over one unchanged vehicle, not two vehicle files that
@@ -77,9 +78,10 @@ All lifecycle verbs follow `up|down[|status]`; operations are idempotent.
 | `vxedge telemetry up\|down\|collect` | live | `up`/`down` run the workspace's `services.telemetry`; `collect` archives what it ingested, with the workspace and image digests, and returns the archive path and sha256 |
 | `vxedge compute up\|down --vxid <id>` / `list` | live | a second RPC surface over the same node backends as `zone`, filtered to `role: hpc` devices, not a separate provisioning path. `add`/`rm`/`image push` planned |
 | `vxedge vehicle up\|down\|status --manifest <vehicle workspace>` | live | brings up the gateway, its slices, every zone, central compute, and the signal plane and services a bare vehicle declares (`kind: vehicle` + `kind: baseline`, no experiment file), and tears them down again. `--stage` restricts it, as on `experiment`. `status` observes the host, so it stays right after a daemon restart. A second vehicle is refused while one is active. `up` refuses before provisioning if a local bundle or `localhost/` image is missing, and no registry login is needed. Verified 2026-11-01 on `vx-vehicle-02`, a multi-zone vehicle with probe guests. `manifest validate` accepts a bare vehicle too, validating it the way `vehicle up` loads it |
-| `vxedge experiment new <id> [--template minimal\|slicing]` | live | scaffolds a workspace folder; no daemon, no network, no GPU |
+| `vxedge experiment new <id> [--template minimal\|slicing] [--namespace <org>]` | live | scaffolds a `vxp/1` package folder (`vxp.yaml`, id `local/<id>` unless `--namespace` names the publisher) and writes its first `vxp.lock`; no daemon, no network, no GPU |
+| `vxedge pkg new\|validate\|lock\|pack\|unpack\|inspect` | on `main`, unreleased | local and offline (ARCHITECTURE.md §6.0.7). `validate` adds the package checks to `experiment validate` and names each file the lock does not match; `lock [--check]`; `pack [--out <dir>]` refuses a stale lock and writes `<name>-<version>.vxp` beside the folder with its `sha256:` digest; `unpack <file> [--into <dir>]`; `inspect [<file>]` prints descriptor, lock and digest from either form |
 | `vxedge experiment validate` | live | local-only; loads the workspace here and runs every cross-file check, reporting all problems at once |
-| `vxedge experiment up\|down\|status` | live | acts on the workspace in the **current directory** (the single `.vxp`); no name, no `--manifest`. `--chdir <dir>` to run from elsewhere. `up` provisions gateway → zones → signal plane → services and **does not start traffic**; use `vxedge traffic up`. `--stage gateway\|zones\|compute\|signal-plane\|services` (repeatable) restricts it, so `--stage services` alone does not start a declared signal plane: a campaign measuring on the host-side veth peers stages only the gateway, and one whose isolation contract is a single arm at a time stages the gateway then brings each arm up with `zone up --vxid` |
+| `vxedge experiment up\|down\|status` | live | acts on the workspace in the **current directory** (its `vxp.yaml`, or a legacy `<id>.vxp`); no name, no `--manifest`. `--chdir <dir>` to run from elsewhere. `up` provisions gateway → zones → signal plane → services and **does not start traffic**; use `vxedge traffic up`. `--stage gateway\|zones\|compute\|signal-plane\|services` (repeatable) restricts it, so `--stage services` alone does not start a declared signal plane: a campaign measuring on the host-side veth peers stages only the gateway, and one whose isolation contract is a single arm at a time stages the gateway then brings each arm up with `zone up --vxid` |
 | `vxedge traffic up\|down --manifest …` | live | drives the declared profiles; kept separate from `experiment up` because load is time-bounded and a campaign sweeps it over a fixed topology. A profile whose endpoint is inside a node (its zone is up) is refused before it starts: host-side traffic needs `experiment up --stage gateway` |
 | Runs, planning, host capabilities, job list and cancel, traffic status | live in vxAPI, CLI planned | `RunService`, `WorkspaceService.Plan`, `HostService.Capabilities`, `JobService.List`/`Cancel` and `TrafficService.Status` have no CLI verb yet. Agents reach them through [`vxmcp`](https://github.com/vxedge/vxmcp) (`run_list`, `workspace_plan`, `host_capabilities`, `job_list`, `job_cancel`, `traffic_status`) |
 

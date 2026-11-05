@@ -468,8 +468,10 @@ offline with zero published artifacts.
 
 Tooling: `vxedge experiment new <id> [--template minimal|slicing]` scaffolds a workspace;
 `vxedge experiment validate [path]` runs every cross-file check and reports all problems at
-once. From vxedge 0.6.0, `vxedge pkg new | validate | lock | pack | unpack | inspect` work on
-packages (§6.0.7), locally and offline, as `experiment validate` does.
+once. `vxedge pkg new | validate | lock | pack | unpack | inspect` work on packages (§6.0.7),
+locally and offline, as `experiment validate` does; they are on `main` after vxedge 0.6.0 and not
+yet in a release. `experiment new` and `pkg new` scaffold the same `vxp/1` package, with id
+`local/<id>` until `--namespace` names the publishing organisation, and write its first lock.
 
 #### 6.0.1 `kind: vehicle`
 
@@ -830,7 +832,9 @@ document is and where to go instead.
 
 #### 6.0.7 Packages: lock, packed form, digest
 
-Ships in vxedge 0.6.0 for `vxp/1` descriptors. A package has two forms of the same content:
+vxedge 0.6.0 reads `vxp/1` descriptors. The lock, the packed form and the `pkg` verbs are on
+`main` after 0.6.0 and not yet released; `up` does not yet check the lock or record the package
+digest. A package has two forms of the same content:
 
 | Form | What it is | Used for |
 |---|---|---|
@@ -850,16 +854,22 @@ locked_with: 0.6.0                  # the vxedge version that wrote this lock
 files:                              # every identity input except vxp.lock, sorted by path
   main.yaml: "sha256:…"
   parts/probe/probe.bin: "sha256:…"
-parts:                              # every published part a document references
-  - { ref: ghcr.io/vxedge/parts/zone/zephyr-ecu, digest: "sha256:…", media_type: "…" }
-images:                             # every container image a part resolves to
+parts:                              # every published bundle or wasm part a document references
+  - { ref: ghcr.io/vxedge/parts/zone/zephyr-ecu, digest: "sha256:…" }
+images:                             # every published container image a document references
   - { ref: docker.io/library/alpine, digest: "sha256:…" }
 vendored:                           # documents copied from elsewhere (`pkg vendor`)
   - { file: vehicle.yaml, source: vxedge/vxperiments/vehicles/vx-vehicle-03, digest: "sha256:…" }
 ```
 
 `files` covers the same set as the workspace identity (§13) minus the lock itself, which cannot
-list its own digest. `vxp.yaml` and `vxp.lock` are inputs to the workspace identity, nothing
+list its own digest. `parts` and `images` record each published reference as the documents pin
+it, read from the documents alone, so `pkg lock` stays offline (decision X-10): the digest already
+fixes the content, and the lock records no media type. A container image named by tag has no
+digest to record, and the entry carries only its `ref`. Local references (`./parts/…`,
+`local/…`, `localhost/…`) are content in `files`, not references. Because the lock records the
+vxedge version that wrote it, re-locking under another version changes the lock and so the
+package digest; a package is packed from its committed lock, not re-locked per host. `vxp.yaml` and `vxp.lock` are inputs to the workspace identity, nothing
 excludes them: a version bump or a re-lock is a different input, and §13's question *did every
 repetition run from the same input?* answers it. `up` on a `vxp/1` package recomputes `files`
 and the referenced digests and refuses with `ERROR_REASON_LOCK_MISMATCH` when a file was added,
@@ -876,10 +886,16 @@ source always gives the same bytes on any host and with any vxedge version:
   as regular files only. Directories are implied by paths. `results/`, `.git` and everything else
   the identity excludes are therefore never packed.
 - Paths are relative, `/`-separated UTF-8, with no `.` or `..` component. Each entry is a plain
-  ustar header: mode `0644`, uid and gid 0, empty user and group names, mtime 0. No PAX or GNU
-  extension headers are written, so a path ustar cannot hold (over 100 bytes after splitting at
-  a `/` into its 155-byte prefix) is refused. The archive ends with two zero blocks and no further
-  padding.
+  ustar header: mode `0644`, uid and gid 0, empty user and group names, mtime 0, type `0`
+  (regular file), empty link name and device numbers, magic `ustar\0` and version `00`. Numeric
+  fields are zero-padded octal ending in NUL; the checksum is six octal digits, NUL, space. A
+  path of up to 100 bytes is the name, with an empty prefix; a longer one is split at the
+  **shortest** prefix, ending before a `/`, that leaves both prefix (up to 155 bytes) and name (up
+  to 100) in their fields, as GNU tar and Python's `tarfile` split it. No PAX or GNU extension
+  headers are written, so a path with no such split is refused, by `pkg validate` and `pkg lock`
+  as well as `pkg pack`. Each file's data is padded with zeros to a 512-byte block. The archive
+  ends with two zero blocks and no further padding; Python's `tarfile` writes the same bytes up to
+  its own padding to a 10 KiB record.
 - Every entry is `0644`, executable or not. The workspace identity ignores modes, and so does
   the package digest: a checkout that drops the executable bit, as some filesystems and
   `core.fileMode=false` do, packs to the same bytes. Scripts in a package run through their
@@ -888,8 +904,9 @@ source always gives the same bytes on any host and with any vxedge version:
   `pkg validate`, `pkg pack` and `up`, not silently skipped or followed, so every run of a `vxp/1`
   package has a package digest.
 
-`pkg unpack` writes the entries into a new directory and refuses an archive that breaks any of
-these rules. The unpacked folder has the source's workspace identity, since its inputs are exactly
+`pkg unpack` writes the entries into a new or empty directory and refuses an archive that breaks
+any of these rules: a reader accepts exactly the bytes a writer would produce from the same entries,
+and nothing else. The unpacked folder has the source's workspace identity, since its inputs are exactly
 the packed entries, and re-packing it gives the same bytes. `pkg pack` writes outside the source folder by
 default; a packed file inside it would be an input to its own next pack.
 
@@ -1297,7 +1314,8 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
   rule. Identities computed under different algorithms are never compared for equality; the
   prefix makes them different even for a workspace with nothing to exclude.
 
-- **Package digest, beside the identity** (vxedge 0.6.0, `vxp/1` packages, §6.0.7). A run of a
+- **Package digest, beside the identity** (`vxp/1` packages, §6.0.7; not yet recorded by a
+  release). A run of a
   `vxp/1` package records the SHA-256 of its packed bytes as well as its workspace identity, in
   the same places: `package_id`, `package_version`, `package_digest` and `package_locked` in the
   daemon's run record and audit records; `digest` and `locked` beside the `id` and `version` the
