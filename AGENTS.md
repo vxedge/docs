@@ -5,7 +5,7 @@ specification**, every other repo's AGENTS.md and TASKS.md derive from it and mu
 
 ## Contents
 
-- `GETTING-STARTED.md`: onboarding: prerequisites (Rust 1.96+/protoc/buf), workspace
+- `GETTING-STARTED.md`: onboarding: prerequisites (Rust 1.99+/protoc/buf), workspace
   cloning, build + smoke test, contribution entry points. Keep its versions current when
   toolchains move.
 - `USER-GUIDE.md`: public-facing usage doc (concepts, per-verb CLI state, workflows,

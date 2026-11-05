@@ -12,7 +12,7 @@ install what the work in front of you needs. `vxedge doctor --tier N` (delivered
 | OS | Ubuntu 24.04 LTS or newer (any modern systemd Linux works) | `lsb_release -a` |
 | Kernel | ≥ 6.8 (each results summary records the kernel it ran on) | `uname -r` |
 | CPU / RAM / disk | 4 cores, 8 GB, 20 GB free | — |
-| Rust | 1.96.1 (pinned by `rust-toolchain.toml`; rustup auto-installs) | `rustc --version` |
+| Rust | 1.99.1 (pinned by `rust-toolchain.toml`; rustup auto-installs) | `rustc --version` |
 | protoc | ≥ 3.21 (36.x current upstream, as of 2026-10) | `protoc --version` |
 | buf (optional) | ≥ 1.71 | `buf --version` |
 | iproute2 | ≥ 6.1 (`ip`, `bridge`, `tc`) | `ip -V` |
