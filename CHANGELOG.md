@@ -16,11 +16,13 @@ All notable changes to this repo are documented here. Format follows
   writes the same bytes. `USER-GUIDE.md`: `experiment new` scaffolds a locked `vxp/1` package,
   and the `pkg` verbs are listed.
 - `ARCHITECTURE.md` §6.0.7 and §13 name what a run records, ahead of the release that records it:
-  `unlocked` on the three `Up` requests; `Run.package_locked` beside `Run.package`, `false` only
+  `unlocked` on the three `Up` requests and on `WorkspacePlanRequest`; `Run.package_locked` beside `Run.package`, `false` only
   for `up --unlocked`; `up` refuses a `vxp/1` package that cannot be packed; and every run records
   its kernel release and whether it is PREEMPT_RT (`kernel_release`, `kernel_preempt_rt`,
   `Run.kernel`, `kernel` in `metadata.json`), so `kernel.preempt_rt: preferred` results say which
   kernel they came from.
+- `ARCHITECTURE.md` §6.0, §6.0.7 and `USER-GUIDE.md`: the lock, the packed form and the `pkg` verbs
+  shipped in vxedge 0.6.1; `up` checking the lock and recording the digest are on `main`.
 
 ### Added
 

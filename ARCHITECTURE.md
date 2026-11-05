@@ -469,8 +469,7 @@ offline with zero published artifacts.
 Tooling: `vxedge experiment new <id> [--template minimal|slicing]` scaffolds a workspace;
 `vxedge experiment validate [path]` runs every cross-file check and reports all problems at
 once. `vxedge pkg new | validate | lock | pack | unpack | inspect` work on packages (§6.0.7),
-locally and offline, as `experiment validate` does; they are on `main` after vxedge 0.6.0 and not
-yet in a release. `experiment new` and `pkg new` scaffold the same `vxp/1` package, with id
+locally and offline, as `experiment validate` does, since vxedge 0.6.1. `experiment new` and `pkg new` scaffold the same `vxp/1` package, with id
 `local/<id>` until `--namespace` names the publishing organisation, and write its first lock.
 
 #### 6.0.1 `kind: vehicle`
@@ -832,9 +831,9 @@ document is and where to go instead.
 
 #### 6.0.7 Packages: lock, packed form, digest
 
-vxedge 0.6.0 reads `vxp/1` descriptors. The lock, the packed form and the `pkg` verbs are on
-`main` after 0.6.0 and not yet released; `up` does not yet check the lock or record the package
-digest. A package has two forms of the same content:
+vxedge 0.6.0 reads `vxp/1` descriptors; 0.6.1 adds the lock, the packed form and the `pkg`
+verbs. `up` checking the lock and recording the package digest are on `main` and not yet released.
+A package has two forms of the same content:
 
 | Form | What it is | Used for |
 |---|---|---|
@@ -875,7 +874,8 @@ repetition run from the same input?* answers it. `up` on a `vxp/1` package recom
 and the referenced digests and refuses with `ERROR_REASON_LOCK_MISMATCH` when a file was added,
 removed or changed, or a reference disagrees, naming each. A missing `vxp.lock` is a mismatch
 too; `pkg new` writes the first one. `up --unlocked` (`unlocked` on `GatewayUpRequest`,
-`ExperimentUpRequest` and `VehicleUpRequest`) skips the check while authoring; the run record
+`ExperimentUpRequest` and `VehicleUpRequest`, and on `WorkspacePlanRequest` so `Plan` answers for
+the same run) skips the check while authoring; the run record
 and the archive record that it ran unlocked (§13), so an unlocked result is never mistaken for a
 locked one. Locked or not, `up` refuses a `vxp/1` package that cannot be packed (a symbolic or
 hard link, a special file, a path ustar cannot hold) with the same error `pkg pack` gives, since
