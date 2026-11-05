@@ -865,7 +865,7 @@ repetition run from the same input?* answers it. `up` on a `vxp/1` package recom
 and the referenced digests and refuses with `ERROR_REASON_LOCK_MISMATCH` when a file was added,
 removed or changed, or a reference disagrees, naming each. A missing `vxp.lock` is a mismatch
 too; `pkg new` writes the first one. `up --unlocked` skips the check while authoring; the run
-record and the archive record `package_locked: false` (§13), so an unlocked result is never
+record and the archive record that it ran unlocked (§13), so an unlocked result is never
 mistaken for a locked one. `vendored` records where a copied document came from, so CI can flag
 drift from its source.
 
@@ -1300,8 +1300,9 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
 - **Package digest, beside the identity** (vxedge 0.6.0, `vxp/1` packages, §6.0.7). A run of a
   `vxp/1` package records the SHA-256 of its packed bytes as well as its workspace identity, in
   the same places: `package_id`, `package_version`, `package_digest` and `package_locked` in the
-  daemon's run record, audit records and the archive's `metadata.json`, and a `PackageRef`
-  (`id`, `version`, `digest`) on `Run`. The two answer different questions. The workspace
+  daemon's run record and audit records; `digest` and `locked` beside the `id` and `version` the
+  archive's `metadata.json` already records under `package`; and a `PackageRef` (`id`,
+  `version`, `digest`) on `Run`. The two answer different questions. The workspace
   identity asks whether repetitions ran from the same input, and is what a running vehicle is
   checked against. The package digest names what was shared, and is what a reproducibility claim
   cites and what anyone can check with `sha256sum`. Results computed under different identity
