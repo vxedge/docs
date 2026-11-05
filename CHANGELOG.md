@@ -6,6 +6,16 @@ All notable changes to this repo are documented here. Format follows
 
 ## [Unreleased]
 
+### Changed
+
+- `ARCHITECTURE.md` §6.0, §6.0.7 and §13: what vxedge 0.6.0 shipped is the `vxp/1` descriptor; the
+  lock, the packed form and the `pkg` verbs are on `main` and unreleased, and no release records
+  the package digest yet. The lock records parts and images as the documents pin them, offline,
+  with no media type (decision X-10). The packed form's ustar header is spelled out field by
+  field, including the name/prefix split and empty device numbers, so a second implementation
+  writes the same bytes. `USER-GUIDE.md`: `experiment new` scaffolds a locked `vxp/1` package,
+  and the `pkg` verbs are listed.
+
 ### Added
 
 - `ARCHITECTURE.md` §6.0.3 and §6.0.7: the package format `vxp/1`, which ships in vxedge 0.6.0. The
