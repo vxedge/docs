@@ -15,6 +15,12 @@ All notable changes to this repo are documented here. Format follows
   field, including the name/prefix split and empty device numbers, so a second implementation
   writes the same bytes. `USER-GUIDE.md`: `experiment new` scaffolds a locked `vxp/1` package,
   and the `pkg` verbs are listed.
+- `ARCHITECTURE.md` §6.0.7 and §13 name what a run records, ahead of the release that records it:
+  `unlocked` on the three `Up` requests; `Run.package_locked` beside `Run.package`, `false` only
+  for `up --unlocked`; `up` refuses a `vxp/1` package that cannot be packed; and every run records
+  its kernel release and whether it is PREEMPT_RT (`kernel_release`, `kernel_preempt_rt`,
+  `Run.kernel`, `kernel` in `metadata.json`), so `kernel.preempt_rt: preferred` results say which
+  kernel they came from.
 
 ### Added
 

@@ -765,8 +765,8 @@ x-oem-acme: { cost_centre: 4711 }   # x- keys are carried and ignored
 - **`requires`** is checked by the daemon's preflight, which `up` and `WorkspaceService.Plan` run;
   `pkg validate` and `experiment validate` are local and check only its shape. A daemon whose
   version is outside `requires.vxedge` refuses with `ERROR_REASON_VXEDGE_VERSION_UNSUPPORTED`.
-  `kernel.preempt_rt: preferred` runs on any kernel and the archive records which it was;
-  `required` refuses a kernel without it.
+  `kernel.preempt_rt: preferred` runs on any kernel, and every run records which kernel it
+  ran on (§13); `required` refuses a kernel without it.
 - **`authors`** lists `{ org }` or `{ name, org }` entries. Packages vxedge publishes name
   organisations only.
 
@@ -874,9 +874,13 @@ excludes them: a version bump or a re-lock is a different input, and §13's ques
 repetition run from the same input?* answers it. `up` on a `vxp/1` package recomputes `files`
 and the referenced digests and refuses with `ERROR_REASON_LOCK_MISMATCH` when a file was added,
 removed or changed, or a reference disagrees, naming each. A missing `vxp.lock` is a mismatch
-too; `pkg new` writes the first one. `up --unlocked` skips the check while authoring; the run
-record and the archive record that it ran unlocked (§13), so an unlocked result is never
-mistaken for a locked one. `vendored` records where a copied document came from, so CI can flag
+too; `pkg new` writes the first one. `up --unlocked` (`unlocked` on `GatewayUpRequest`,
+`ExperimentUpRequest` and `VehicleUpRequest`) skips the check while authoring; the run record
+and the archive record that it ran unlocked (§13), so an unlocked result is never mistaken for a
+locked one. Locked or not, `up` refuses a `vxp/1` package that cannot be packed (a symbolic or
+hard link, a special file, a path ustar cannot hold) with the same error `pkg pack` gives, since
+a run of a `vxp/1` package always records its package digest. Legacy descriptors and inline
+manifests are not lock-checked. `vendored` records where a copied document came from, so CI can flag
 drift from its source.
 
 **Packed form.** The packed file is a POSIX tar archive, uncompressed, built so that the same
@@ -1320,12 +1324,25 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
   the same places: `package_id`, `package_version`, `package_digest` and `package_locked` in the
   daemon's run record and audit records; `digest` and `locked` beside the `id` and `version` the
   archive's `metadata.json` already records under `package`; and a `PackageRef` (`id`,
-  `version`, `digest`) on `Run`. The two answer different questions. The workspace
+  `version`, `digest`) on `Run`, with `Run.package_locked` beside it. `locked` says whether the
+  daemon checked the lock at `up`, so it is `false` only for `up --unlocked`; `vxtelemetry`
+  records what the daemon tells it and omits the key when told nothing, never deriving it. The
+  two answer different questions. The workspace
   identity asks whether repetitions ran from the same input, and is what a running vehicle is
   checked against. The package digest names what was shared, and is what a reproducibility claim
   cites and what anyone can check with `sha256sum`. Results computed under different identity
   algorithms are compared by package digest, never by identity equality. A legacy workspace
   (§6.0.3) records no package digest.
+
+- **Kernel, beside the identity** (every run; not yet recorded by a release). The kernel a run
+  ran on is part of what ran, and `kernel.preempt_rt: preferred` (§6.0) makes it a variable:
+  the same package runs on a PREEMPT_RT kernel and on a stock one. Every run records the kernel
+  release (`/proc/sys/kernel/osrelease`) and whether it is PREEMPT_RT (`/sys/kernel/realtime`,
+  else the version string): `kernel_release` and `kernel_preempt_rt` in the daemon's run record
+  and audit records, a `Kernel` (`release`, `preempt_rt`) on `Run`, and `kernel` (`release`,
+  `preempt_rt`) in the archive's `metadata.json`, which `vxtelemetry` reads on the host it
+  collects on, the run's host. Results from the two kinds of kernel are never pooled without
+  saying so.
 
 - **Reproducibility:**
   - All manifests under `vxperiments` are versioned and authoritative.
