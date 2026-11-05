@@ -22,6 +22,8 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §13: the archive records the package digest and lock state under the `package`
+  object `metadata.json` already writes (`id`, `version`), not as new top-level keys.
 - `ARCHITECTURE.md` §6.0.3: the `.vxp` `id` and `entry` checks are in place, no longer planned.
 - `ARCHITECTURE.md` §13: the results archive carries the full workspace and verifies itself
   (`vxtelemetry verify`).
