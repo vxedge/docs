@@ -8,6 +8,13 @@ All notable changes to this repo are documented here. Format follows
 
 ### Added
 
+- `ARCHITECTURE.md` §6.0.3 and §6.0.7: the package format `vxp/1`, which ships in vxedge 0.6.0. The
+  descriptor becomes `vxp.yaml`, with `schema`, a `namespace/name` id, SemVer `version`, `requires`
+  including a vxedge range, and `x-` keys. `vxp.lock` records each input's digest and every
+  published reference, and `up` refuses a package that disagrees with it. The packed form is
+  `<name>-<version>.vxp`, an uncompressed, deterministic tar of exactly the identity's inputs,
+  and its SHA-256 is the package digest. Legacy `<name>.vxp` descriptors load through vxedge 0.7.x.
+- `ARCHITECTURE.md` §13: a run records the package digest beside the workspace identity.
 - `ARCHITECTURE.md` §6.0.3 (planned): a `schema` discriminator for the `.vxp` descriptor, with
   `x-` extension keys.
 - `ARCHITECTURE.md` §13: the workspace identity rule `vxws/2`, with its default excludes and
