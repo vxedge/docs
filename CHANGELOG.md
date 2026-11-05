@@ -8,6 +8,7 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- Rust 1.99.1 is the documented toolchain, matching vxedge 0.6.1: `TESTBED-SETUP.md` Tier 0, `GETTING-STARTED.md` prerequisites and `AGENTS.md`. `vxedge doctor` now compares versions against the pin and enforces the protoc 3.21 and buf 1.71 floors listed in Tier 0.
 - `ARCHITECTURE.md` §6.0, §6.0.7 and §13: what vxedge 0.6.0 shipped is the `vxp/1` descriptor; the
   lock, the packed form and the `pkg` verbs are on `main` and unreleased, and no release records
   the package digest yet. The lock records parts and images as the documents pin them, offline,
