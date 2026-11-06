@@ -883,6 +883,25 @@ a run of a `vxp/1` package always records its package digest. Legacy descriptors
 manifests are not lock-checked. `vendored` records where a copied document came from, so CI can flag
 drift from its source.
 
+**Vendoring** (decision X-5; not yet in a release). `pkg vendor <dir>` copies the vxedge documents
+of another folder, such as a reference vehicle in `vxperiments/vehicles/`, into the package root,
+so the package stays self-contained without a dependency resolver. It copies documents only, never
+the folder's scripts, its build outputs or a package descriptor, and lists what it left behind:
+a script is a host recipe that may reach outside its folder, and a build output is not content.
+Each copied file is recorded in `vendored` with `file` (its path in the package), `source` and
+`digest` (the SHA-256 of the bytes copied). `source` names the folder as `<owner>/<repo>/<path>`,
+read from the source's git checkout (`vxedge/vxperiments/vehicles/vx-reference-sedan-01`), or as
+given with `--as` when there is none. A destination that exists and was not vendored from the
+same source is refused unless `--replace` is given; vendoring the same source again updates the
+copy. The lock is rewritten with the new entries even when the package no longer builds, for
+example when `main.yaml` still names the vehicle the copy replaced, and the command says what to
+fix before `pkg lock`. Local references the copied documents make and the package lacks (a
+`./` bundle or artifact directory, a `localhost/` image) are listed, since `up` refuses without
+them. `pkg vendor --check` reports a vendored file edited in the package and, when the source
+resolves (the same repository checked out around the package, as in `vxperiments` CI), a source
+that changed since it was copied. A document from a private repository is never vendored into a
+public package.
+
 **Packed form.** The packed file is a POSIX tar archive, uncompressed, built so that the same
 source always gives the same bytes on any host and with any vxedge version:
 
@@ -930,7 +949,8 @@ package, never inside it, so the package digest does not depend on how the packa
 **Verbs** (local, offline, built on `vxedge-core`): `pkg new` scaffolds a `vxp/1` package,
 `pkg validate` runs every check above and §6.0's, `pkg lock` writes `vxp.lock`, `pkg pack` writes
 `<name>-<version>.vxp` and prints its digest, `pkg unpack` restores a source folder, and
-`pkg inspect` prints a package's descriptor, lock and digest from either form.
+`pkg inspect` prints a package's descriptor, lock and digest from either form, and `pkg vendor`
+copies another folder's documents in (above).
 
 ### 6.1–6.2 Experiment and vehicle manifests: **retired 2026-07-31**
 

@@ -8,6 +8,11 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §6.0.7: `pkg vendor` (decision X-5), ahead of the release that ships it: it copies
+  another folder's documents into a package, never its scripts or build outputs; the lock records
+  each copy's `source` (`<owner>/<repo>/<path>`) and digest; `--replace`, re-vendoring, the lock
+  written even when the package no longer builds, the local references it lists, and `--check` for
+  local edits and source drift. A private source is never vendored into a public package.
 - `TESTBED-SETUP.md` Tier M: the SysML v2 standard library pin is SysML-v2-Release 2026-09.1, matching `vxmodels` CI.
 - CI uses `actions/checkout@v7` instead of v4.
 - Rust 1.99.1 is the documented toolchain, matching vxedge 0.6.1: `TESTBED-SETUP.md` Tier 0, `GETTING-STARTED.md` prerequisites and `AGENTS.md`. `vxedge doctor` now compares versions against the pin and enforces the protoc 3.21 and buf 1.71 floors listed in Tier 0.
