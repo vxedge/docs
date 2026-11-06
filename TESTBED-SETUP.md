@@ -62,7 +62,7 @@ effect on results** and no host-resource requirements beyond an editor.
 | Requirement | Version / value | Notes |
 |---|---|---|
 | SysIDE (parse/type gate) | **0.9.1** (`syside-languageserver.zip`, sha256 `1c3da428…`) | headless via `vxmodels/scripts/validate-sysml.mjs` (LSP driver; SysIDE has no one-shot CLI); VS Code extension of the same version for authoring |
-| SysML v2 standard library | **SysML-v2-Release 2026-04** `sysml.library` (tarball sha256 `44996ee2…`) | required for stdlib imports (`ScalarValues::*` …) to resolve |
+| SysML v2 standard library | **SysML-v2-Release 2026-09.1** `sysml.library` (tarball sha256 `00efd27e…`) | required for stdlib imports (`ScalarValues::*` …) to resolve |
 | Node | ≥ 20 | runs the language server + driver |
 | OMG pilot implementation (optional) | 2026-05 (Jupyter kernel) | semantic reference / visualization; not in the CI gate |
 | `vxmodel` renderer | Rust (Tier 0 toolchain) | builds with the same toolchain once the crate lands (M2) |
