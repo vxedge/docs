@@ -8,6 +8,7 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `TESTBED-SETUP.md` Tier M: the SysML v2 standard library pin is SysML-v2-Release 2026-09.1, matching `vxmodels` CI.
 - CI uses `actions/checkout@v7` instead of v4.
 - Rust 1.99.1 is the documented toolchain, matching vxedge 0.6.1: `TESTBED-SETUP.md` Tier 0, `GETTING-STARTED.md` prerequisites and `AGENTS.md`. `vxedge doctor` now compares versions against the pin and enforces the protoc 3.21 and buf 1.71 floors listed in Tier 0.
 - `ARCHITECTURE.md` §6.0, §6.0.7 and §13: what vxedge 0.6.0 shipped is the `vxp/1` descriptor; the
