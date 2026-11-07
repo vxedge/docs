@@ -8,6 +8,12 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `USER-GUIDE.md`: the `pkg` row adds `pkg vendor` and `vendor --check` (vxedge 0.8.0), and the
+  `experiment up` and `vehicle up` rows say that a `vxp/1` package whose lock does not match is
+  refused with `ERROR_REASON_LOCK_MISMATCH` and that `--unlocked` runs it anyway (0.7.0).
+  `ARCHITECTURE.md` §6.0.7 and §13 name the releases that shipped lock enforcement, the package
+  digest, the kernel record and vendoring, and the lock's `parts` include a published config part
+  such as an OTA artifact store (vxedge#100, not yet released).
 - `ARCHITECTURE.md` §6.0.7: `pkg vendor` (decision X-5), ahead of the release that ships it: it copies
   another folder's documents into a package, never its scripts or build outputs; the lock records
   each copy's `source` (`<owner>/<repo>/<path>`) and digest; `--replace`, re-vendoring, the lock

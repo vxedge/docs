@@ -832,7 +832,7 @@ document is and where to go instead.
 #### 6.0.7 Packages: lock, packed form, digest
 
 vxedge 0.6.0 reads `vxp/1` descriptors; 0.6.1 adds the lock, the packed form and the `pkg`
-verbs. `up` checking the lock and recording the package digest are on `main` and not yet released.
+verbs; 0.7.0 checks the lock at `up` and records the package digest; 0.8.0 adds `pkg vendor`.
 A package has two forms of the same content:
 
 | Form | What it is | Used for |
@@ -853,7 +853,7 @@ locked_with: 0.6.0                  # the vxedge version that wrote this lock
 files:                              # every identity input except vxp.lock, sorted by path
   main.yaml: "sha256:…"
   parts/probe/probe.bin: "sha256:…"
-parts:                              # every published bundle or wasm part a document references
+parts:                              # every published bundle, wasm or config part a document references
   - { ref: ghcr.io/vxedge/parts/zone/zephyr-ecu, digest: "sha256:…" }
 images:                             # every published container image a document references
   - { ref: docker.io/library/alpine, digest: "sha256:…" }
@@ -883,7 +883,7 @@ a run of a `vxp/1` package always records its package digest. Legacy descriptors
 manifests are not lock-checked. `vendored` records where a copied document came from, so CI can flag
 drift from its source.
 
-**Vendoring** (decision X-5; not yet in a release). `pkg vendor <dir>` copies the vxedge documents
+**Vendoring** (decision X-5; vxedge 0.8.0). `pkg vendor <dir>` copies the vxedge documents
 of another folder, such as a reference vehicle in `vxperiments/vehicles/`, into the package root,
 so the package stays self-contained without a dependency resolver. It copies documents only, never
 the folder's scripts, its build outputs or a package descriptor, and lists what it left behind:
@@ -1343,8 +1343,8 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
   rule. Identities computed under different algorithms are never compared for equality; the
   prefix makes them different even for a workspace with nothing to exclude.
 
-- **Package digest, beside the identity** (`vxp/1` packages, §6.0.7; not yet recorded by a
-  release). A run of a
+- **Package digest, beside the identity** (`vxp/1` packages, §6.0.7; recorded since vxedge
+  0.7.0 and vxtelemetry 0.4.0). A run of a
   `vxp/1` package records the SHA-256 of its packed bytes as well as its workspace identity, in
   the same places: `package_id`, `package_version`, `package_digest` and `package_locked` in the
   daemon's run record and audit records; `digest` and `locked` beside the `id` and `version` the
@@ -1359,7 +1359,7 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
   algorithms are compared by package digest, never by identity equality. A legacy workspace
   (§6.0.3) records no package digest.
 
-- **Kernel, beside the identity** (every run; not yet recorded by a release). The kernel a run
+- **Kernel, beside the identity** (every run; recorded since vxedge 0.7.0 and vxtelemetry 0.4.0). The kernel a run
   ran on is part of what ran, and `kernel.preempt_rt: preferred` (§6.0) makes it a variable:
   the same package runs on a PREEMPT_RT kernel and on a stock one. Every run records the kernel
   release (`/proc/sys/kernel/osrelease`) and whether it is PREEMPT_RT (`/sys/kernel/realtime`,
