@@ -518,7 +518,7 @@ services:                            # what the vehicle hosts, each placed on on
     type: ota
     image: { url: localhost/vxedge/ota:1, kind: container }
     on: hpc1                         # required here: joins that device's container group
-    config: { listen: "0.0.0.0:9900", artifacts: ./ota-store }
+    config: { listen: "0.0.0.0:9900", artifacts: ./ota-store }   # or a published store, below
 
 signal_plane:                        # the vehicle's signals, placed the way a service is
   kuksa:
@@ -1120,6 +1120,11 @@ deliberately separate:
   updates, both irrelevant to our QEMU/libvirt block-storage bundles, become a
   blocker). Maps naturally onto zone guest bundles, which are already
   kernel+initramfs "slots" in Rugix/RAUC's sense.
+- **The OTA artifact store:** `config.artifacts` is read by shape, as a part ref is. A workspace
+  directory (`./ota-store`) must exist at `up`. A published config part pinned by digest
+  (`ghcr.io/vxedge/parts/svc/ota/config/<name>@sha256:<hex>`) is fetched into the part cache at `up`,
+  as a guest bundle is, and mounted read-only into the placed service; planning does not need it on
+  disk. A host-process service (no `on:`) serves a directory only.
 - **v1 service backend (fidelity caveat):** `SvcService.Up` (§5) spawns
   the service binary (`vxota serve`) as a host-local child process co-located with
   `vxedged`, tracked by a pidfile the same way the microVM zone backend tracks QEMU, not
