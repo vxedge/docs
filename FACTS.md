@@ -63,7 +63,7 @@ The latest tagged release of each code repository.
 
 | Key | Repository | Version | Released |
 |---|---|---|---|
-| `vxedge` | `vxedge` | 0.5.3 | 2026-11-04 |
+| `vxedge` | `vxedge` | 0.8.0 | 2026-11-07 |
 | `vxagents` | `vxagents` | 0.1.1 | 2026-10-28 |
 | `vxmcp` | `vxmcp` | 0.2.2 | 2026-11-04 |
 | `vxmodels` | `vxmodels` | 0.1.0 | 2026-10-29 |
