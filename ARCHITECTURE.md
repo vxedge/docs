@@ -627,8 +627,9 @@ not.
 
 `kind: experiment` carries `network` (slices, tunnels, nos_check), `traffic_profiles`,
 `telemetry`, `services` and `results`, plus `vehicles: [<id>…]`, `baseline: <id>`, `world: <id>`,
-and a `method` block (`duration_s`, `repetitions`, `warmup_s`). It carries no `zones`/`compute`
-inline: structure is the vehicle's, and software is the baseline's.
+and a `method` block (`duration_s`, `repetitions`, `warmup_s`). It may also carry typed intent,
+`hypothesis`, `parameters`, `metrics`, `criteria` and `campaign` (below). It carries no
+`zones`/`compute` inline: structure is the vehicle's, and software is the baseline's.
 
 `services` declared here run as host processes (§8). A service placed inside a slice belongs to
 the vehicle (§6.0.1).
@@ -707,6 +708,78 @@ pinned image's own, fixed port names (SONiC-VS's default reference platform expo
 `Ethernet0`/`Ethernet4`/.../`Ethernet124`, confirmed by booting it, not assumed), validated at
 `vxedge experiment validate` time against that concrete list rather than a free-form string or a
 loose pattern.
+
+**Typed intent** (not yet in a release). A `kind: experiment` can say what it tests and how a
+result is judged, in fields a machine can check before any trial runs. Every block below is
+optional and additive: an experiment without them runs exactly as before.
+
+```yaml
+hypothesis:
+  id: H1
+  statement: A VLAN slice keeps control-traffic p99 within 2x of idle under uplink saturation.
+parameters:                          # the only knobs a caller may turn
+  load_mbps: { type: integer, unit: Mbit/s, default: 0, min: 0, max: 1000,
+               binds: traffic_profiles[bg].bandwidth_mbps }
+metrics:                             # what criteria and observability clients read
+  - { id: ctl_rtt_seconds, kind: histogram, unit: s, entity: measurements/ctl-rtt }
+criteria:
+  - id: h1-p99-bound
+    lhs: { metric: ctl_rtt_seconds, aggregate: p99, select: { arm: saturated } }
+    op: le
+    rhs: { metric: ctl_rtt_seconds, aggregate: p99, select: { arm: idle }, factor: 2.0 }
+    min_samples: 10000
+campaign:
+  arms:
+    idle: { load_mbps: 0 }
+    saturated: { load_mbps: 600 }
+  sweep: { load_mbps: [0, 100, 250, 400, 600] }
+  repetitions: 5
+  warmup_s: 10
+  duration_s: 60
+  profiles:
+    quick: { repetitions: 1, duration_s: 12 }
+    repro: { repetitions: 5 }
+```
+
+- **`hypothesis`** has an `id` and a one-sentence `statement`. It is for people and for citing a
+  result; nothing evaluates it.
+- **`parameters`** are the only values a caller may change between trials. Each has a `type`
+  (`integer`, `number`, `boolean` or `string`), a `unit` for numbers, a `default`, and optional
+  `min`, `max` or `values` (an allowed list). `binds` names the manifest field the parameter sets,
+  by id path: `traffic_profiles[bg].bandwidth_mbps` is the `bandwidth_mbps` of the traffic profile
+  whose `id` is `bg`. There is no text templating, so every document still validates as plain
+  YAML with the defaults in place. A path must name an existing field of a matching type, and two
+  parameters may not bind the same field.
+- **`metrics`** names each series a criterion or a client can read: an `id`, a `kind` (`counter`,
+  `gauge` or `histogram`), a `unit`, and the `entity` it is measured on. `measurements`, which
+  produce them, are specified with the observability contract and are not part of this block.
+- **`criteria`** are structured, never an expression string, so a caller composes one without
+  writing a parser and a bad one is caught by type. Each has an `id`, an `op` (`lt`, `le`, `gt`,
+  `ge` or `within`) and two operands, `lhs` and `rhs`. An operand is either a metric (`metric`,
+  an `aggregate` such as `mean`, `p50`, `p99` or `max`, an optional `select` by arm or by parameter
+  values, and an optional `factor`) or a constant (`value` with a `unit`). `within` takes a
+  `tolerance` and holds when the two operands differ by no more than it. `all: [...]` and
+  `any: [...]` group criteria. `min_samples` is the fewest samples each operand needs.
+- **Each criterion evaluates to `pass`, `fail` or `inconclusive`.** It is `inconclusive` when an
+  operand has fewer than `min_samples` samples or its telemetry is incomplete, and
+  `inconclusive` is never reported as a pass. A group is `pass` only when its rule holds over
+  conclusive members, and `inconclusive` when the outcome depends on an inconclusive one.
+  A one-line text rendering of a criterion is for people; nothing parses it.
+- **`campaign`** says which trials to run: named `arms` (each a set of parameter values), an
+  optional `sweep` over one or more parameters, `repetitions`, `warmup_s` and `duration_s`, and
+  `profiles`, named overrides such as `quick` and `repro`. An arm or a sweep sets only declared
+  parameters, within their bounds. `campaign` replaces `method` for an experiment that declares
+  it, and an experiment may not declare both.
+
+**Checked by `Plan`, before any trial.** `WorkspaceService.Plan`, `experiment validate` and `up`
+check typed intent with the rest of the workspace. A parameter whose type, bounds or `binds`
+path is wrong is a problem with `ERROR_REASON_PARAMETER_INVALID`. A criterion that names an
+unknown metric, compares operands whose units disagree, selects an arm or a parameter value that
+does not exist, or uses an aggregate its metric kind does not have is a problem with
+`ERROR_REASON_CRITERION_INVALID`. An arm, sweep or profile that sets an undeclared parameter or a
+value out of bounds is `ERROR_REASON_PARAMETER_INVALID` too. `Plan` names every problem with the
+document and the field it is in, and `up` refuses on the first, so a bad criterion fails in a
+second, not after an hour of trials.
 
 The descriptor holds packaging rather than content, so a version bump never touches an
 experiment file. **`vxp/1`** (ships in vxedge 0.6.0; vxedge 0.5.x reads only the legacy form below):

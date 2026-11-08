@@ -8,6 +8,13 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §6.0.3: typed experiment intent, ahead of the release that reads it.
+  `hypothesis`; `parameters` with type, unit, default, bounds and `binds` by id path (no
+  templating); `metrics`; structured `criteria` (operands, `lt`/`le`/`gt`/`ge`/`within`,
+  `all`/`any`, `min_samples`) that evaluate to `pass`, `fail` or `inconclusive`, never rounding
+  `inconclusive` to a pass; and `campaign` (arms, sweep, repetitions, warmup, duration, profiles),
+  which replaces `method` where declared. `Plan` reports bad parameters and criteria as
+  `ERROR_REASON_PARAMETER_INVALID` and `ERROR_REASON_CRITERION_INVALID` before any trial.
 - Direction stays internal: `ROADMAP.md` is now phase status and what has shipped, with no open-work
   or publication list. `ARCHITECTURE.md` drops the market positioning in §14, the scope of later
   phases in §15, the planned remote and cloud-hosted modes in §5.3, the phase-4 hardware rungs,
