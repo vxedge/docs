@@ -14,6 +14,14 @@ All notable changes to this repo are documented here. Format follows
   `inconclusive` to a pass; and `campaign` (arms, sweep, repetitions, warmup, duration, profiles),
   which replaces `method` where declared. `Plan` reports bad parameters and criteria as
   `ERROR_REASON_PARAMETER_INVALID` and `ERROR_REASON_CRITERION_INVALID` before any trial.
+- `ARCHITECTURE.md` §6.0.8, distribution and trust: `pkg push`
+  as one OCI artifact whose single layer is the packed file (`application/vnd.vxedge.vxp.v1.tar`,
+  so the layer digest is the package digest); `pkg pull` by digest only; a signature covers the
+  package digest, and verification is recorded beside the package, keyed by digest, since a
+  folder cannot hold its own signature; GitHub attestations for published packages and Sigstore
+  key-pair bundles for air-gapped labs; a host trust policy that refuses unverified packages with
+  `ERROR_REASON_SIGNATURE_INVALID`; and `pack --offline` with parts in an OCI layout beside the
+  package.
 - Direction stays internal: `ROADMAP.md` is now phase status and what has shipped, with no open-work
   or publication list. `ARCHITECTURE.md` drops the market positioning in §14, the scope of later
   phases in §15, the planned remote and cloud-hosted modes in §5.3, the phase-4 hardware rungs,
