@@ -1169,8 +1169,9 @@ deliberately separate:
   plan stays a pure function of the documents. The gateway **adopts** the interface instead of creating a port: it records its current master, enslaves it to the slice bridge with the
   slice VLAN, and returns it to that master at `down`. vxedge owns what the vehicle provides in production, the
   slice, the signal plane and the Vehicle HAL server; the platform's stack owns how the guest boots. Attach nodes
-  start **last within the zones stage** and stop first, so a guest never boots before the vehicle services it
-  dials. `status` decides idempotence, and an adapter acts on its own node only. The previous master is recorded
+  are **last within the zones stage** both ways: a guest never boots before the vehicle services it dials, and
+  stopping its platform kills it without closing its connections, so the vehicle's nodes stop first and close
+  theirs while it can still answer. `status` decides idempotence, and an adapter acts on its own node only. The previous master is recorded
   in the interface's own alias (`vxedge:adopted-from=<master>`), so `down` needs no state outside the kernel. An
   adapter whose platform images live outside the workspace pins them by digest in a file inside the adapter
   directory and refuses to start on a mismatch, so the package digest covers what ran. The same contract adopts
