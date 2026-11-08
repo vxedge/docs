@@ -940,9 +940,13 @@ drift from its source.
 
 **Vendoring** (decision X-5; vxedge 0.8.0). `pkg vendor <dir>` copies the vxedge documents
 of another folder, such as a reference vehicle in `vxperiments/vehicles/`, into the package root,
-so the package stays self-contained without a dependency resolver. It copies documents only, never
-the folder's scripts, its build outputs or a package descriptor, and lists what it left behind:
-a script is a host recipe that may reach outside its folder, and a build output is not content.
+so the package stays self-contained without a dependency resolver. It copies the documents and
+the local part folders they reference (a `./…` part `ref` or artifact store) whose files the
+source's git checkout tracks, such as a vehicle's committed attach adapter. It never copies the
+folder's other scripts, its build outputs or a package descriptor, and lists what it left behind:
+a script is a host recipe that may reach outside its folder, and a file git does not track is a
+build output, not content. Outside a git checkout no part folder is copied. A package keeps no
+file modes, so a copied script runs only through a command that names its interpreter (§9).
 Each copied file is recorded in `vendored` with `file` (its path in the package), `source` and
 `digest` (the SHA-256 of the bytes copied). `source` names the folder as `<owner>/<repo>/<path>`,
 read from the source's git checkout (`vxedge/vxperiments/vehicles/vx-reference-sedan-01`), or as

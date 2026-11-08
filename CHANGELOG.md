@@ -8,6 +8,9 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §6.0.7 and `USER-GUIDE.md`: `pkg vendor` also copies the local part folders the
+  documents reference whose files the source's git checkout tracks, such as an attach adapter;
+  untracked files are build outputs and stay behind.
 - `ARCHITECTURE.md` §9: a `qemu-microvm` bundle sizes its guest (`cpus`, `memory_mb`), and an aarch64 bundle can ask
   for the CPU's virtualization extensions (`"virtualization": true`: EL2, GICv3).
 - `FACTS.md`: vxedge 0.11.0, vxmcp 0.2.5.
