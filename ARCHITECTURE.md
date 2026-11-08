@@ -709,9 +709,9 @@ pinned image's own, fixed port names (SONiC-VS's default reference platform expo
 `vxedge experiment validate` time against that concrete list rather than a free-form string or a
 loose pattern.
 
-**Typed intent** (not yet in a release). A `kind: experiment` can say what it tests and how a
-result is judged, in fields a machine can check before any trial runs. Every block below is
-optional and additive: an experiment without them runs exactly as before.
+**Typed intent.** A `kind: experiment` can say what it tests and how a result is judged, in
+fields a machine can check before any trial runs. Every block below is optional: an experiment
+without them runs exactly as before.
 
 ```yaml
 hypothesis:
@@ -751,8 +751,8 @@ campaign:
   YAML with the defaults in place. A path must name an existing field of a matching type, and two
   parameters may not bind the same field.
 - **`metrics`** names each series a criterion or a client can read: an `id`, a `kind` (`counter`,
-  `gauge` or `histogram`), a `unit`, and the `entity` it is measured on. `measurements`, which
-  produce them, are specified with the observability contract and are not part of this block.
+  `gauge` or `histogram`), a `unit`, and the `entity` it is measured on. The `measurements` that
+  produce them are specified separately.
 - **`criteria`** are structured, never an expression string, so a caller composes one without
   writing a parser and a bad one is caught by type. Each has an `id`, an `op` (`lt`, `le`, `gt`,
   `ge` or `within`) and two operands, `lhs` and `rhs`. An operand is either a metric (`metric`,

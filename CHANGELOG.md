@@ -8,8 +8,7 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
-- `ARCHITECTURE.md` §6.0.3: typed experiment intent, ahead of the release that reads it.
-  `hypothesis`; `parameters` with type, unit, default, bounds and `binds` by id path (no
+- `ARCHITECTURE.md` §6.0.3: typed experiment intent. `hypothesis`; `parameters` with type, unit, default, bounds and `binds` by id path (no
   templating); `metrics`; structured `criteria` (operands, `lt`/`le`/`gt`/`ge`/`within`,
   `all`/`any`, `min_samples`) that evaluate to `pass`, `fail` or `inconclusive`, never rounding
   `inconclusive` to a pass; and `campaign` (arms, sweep, repetitions, warmup, duration, profiles),
