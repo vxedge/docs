@@ -38,6 +38,7 @@ All repositories below are public.
 | [vxparts](https://github.com/vxedge/vxparts) | OCI/ORAS registry of every loadable the platform boots |
 | [vxmodels](https://github.com/vxedge/vxmodels) | SysML v2 models and the manifest renderer |
 | [vxmcp](https://github.com/vxedge/vxmcp) | MCP server over vxAPI |
+| [vxvhal](https://github.com/vxedge/vxvhal) | Android Automotive's gRPC Vehicle HAL, served from Kuksa VSS signals |
 
 ## Links
 
