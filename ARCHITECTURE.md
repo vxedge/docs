@@ -1384,7 +1384,9 @@ archive. Each record names the entity it is about (§12) and its shape in `recor
 
 Times are nanoseconds since the Unix epoch, taken in user space. A renderer draws a break at a
 `gap`, never a line across it. `vxtelemetry` names each scrape target's samples by the entity
-`entities.json` binds it to, and `host` otherwise.
+`entities.json` binds it to, and `host` otherwise. A target that serves many entities names each
+sample's entity in an `entity` label instead, and `vxtelemetry` also scrapes the targets
+`entities.json` lists beside the workspace's own.
 
 **Archive v2** (`vxarchive/2`, from `vxtelemetry collect --archive-version 2`; v1 stays the
 default) is one zip per run whose large record files are zstd-compressed members:
