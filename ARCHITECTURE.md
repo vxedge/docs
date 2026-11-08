@@ -1123,7 +1123,13 @@ deliberately separate:
   VLAN tags; `<cputune>` (vcpupin/emulatorpin), hugepages, and virtio multiqueue express the
   manifest's `realtime:` block; storage pools hold the SHA256-digest-tagged images.
 - **microVM escape hatch:** `backend: qemu-microvm` drives raw QEMU (QMP, `microvm` machine type),
-  bypassing libvirt's device model for the minimal-latency arm of hypothesis H3.
+  bypassing libvirt's device model for the minimal-latency arm of hypothesis H3. It boots aarch64 guests too,
+  the instruction set of production zone ECUs: a bundle names its instruction set in `meta.json` (`"arch":
+  "aarch64"`, or the `org.vxedge.arch` a published vxparts bundle carries; none means x86_64), and an aarch64 node runs on QEMU's `virt` machine, the same virtio-mmio
+  transport, with the PL011 console. KVM runs a guest only on a host of the guest's own instruction set;
+  anywhere else QEMU emulates the CPU (TCG). `NodeStatus.arch` and `NodeStatus.acceleration` (`kvm` or `tcg`)
+  report what the running guest actually got, read from its emulator, and a result names both: a `tcg`
+  result is functional evidence only and is never timed.
   `backend: cloud-hypervisor` does the same through Cloud Hypervisor's REST API on a per-node Unix
   socket, booting the same guest bundle. It is validated on `linux-probe` only, and it is headless.
   All of these hide behind the same `vxedge zone up` interface.
