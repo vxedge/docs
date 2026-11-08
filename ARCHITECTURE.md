@@ -1,6 +1,6 @@
 # Architecture
 
-*The architecture specification for vxedge: research goals, topology, vxAPI, manifest schemas, the network, service and virtualization models, methodology, and the phased roadmap.*
+*The architecture specification for vxedge: research goals, topology, vxAPI, manifest schemas, the network, service and virtualization models, methodology, and the phases.*
 
 vxedge is a research-grade orchestration and experiment platform that evaluates 5G network-slice mapping onto zonal and central software-defined-vehicle (SDV) E/E architectures, **entirely in software**. In short:
 
@@ -8,9 +8,9 @@ vxedge is a research-grade orchestration and experiment platform that evaluates 
 - **Zones.** KVM/QEMU VMs managed through libvirt provide zonal ECUs (QNX, Zephyr, FreeRTOS, Android Automotive).
 - **Compute.** Containerized central compute runs Autoware/ROS 2 and NVIDIA AD workloads (Alpamayo, DeepStream, TensorRT).
 - **Control plane.** A Rust daemon (`vxedged`) orchestrates manifest-driven vehicles, experiments, services and telemetry, and exposes a versioned gRPC/Protobuf API (**vxAPI**).
-- **Frontends.** Thin clients of that API: the `vxedge` CLI today; web/TypeScript and Electron frontends next; and an MCP server (`vxmcp`) for AI agent tooling. Locally over a Unix socket, or cloud-hosted behind mTLS.
+- **Frontends.** Thin clients of that API: the `vxedge` CLI and an MCP server (`vxmcp`) for AI agent tooling, over a local Unix socket.
 
-*Qt/QML is not an operator-dashboard frontend here; see §5.1 for its two real, unrelated roles: an in-vehicle embedded IVI loadable, and a future `vxmodels` graphical design tool.*
+*Qt/QML is not an operator-dashboard frontend here; see §5.1 for its role as an in-vehicle embedded IVI loadable.*
 
 ---
 
@@ -30,7 +30,7 @@ vxedge is a research-grade orchestration and experiment platform that evaluates 
 12. Experiment methodology, metrics, and analysis plan
 13. Reproducibility, CI/CD, artifact publication
 14. Safety, security, licensing, and industrialization notes
-15. Implementation policy & phased roadmap
+15. Implementation policy & phases
 16. Appendix: example manifests, gateway snippets, run sequence
 
 ---
@@ -49,12 +49,10 @@ The platform is designed to:
 - stay production-representative: the same middleware (Eclipse SDV: Kuksa/VSS, Zenoh, uProtocol),
   network stack (OVS/tc/FRR/WireGuard, SONiC as production NOS twin), and AD workloads
   (Autoware, NVIDIA Alpamayo) used or converged on by OEMs;
-- run on a single NVIDIA GPU host (scaling to several), with an explicit later path onto NVIDIA
-  hardware (Jetson AGX, DRIVE AGX / DRIVE OS, BlueField/DOCA offload);
+- run on a single host;
 - be **API-first**: all orchestration lives behind vxAPI (gRPC/Protobuf) served by the `vxedged`
-  daemon. The CLI, GUIs (Electron), web dashboards, and the `vxmcp` MCP server are
-  interchangeable thin clients, human-operated or agent-operated, same rule either way, and
-  the same API hosts locally or in the cloud (controller mode federating multiple hosts).
+  daemon. The CLI and the `vxmcp` MCP server are interchangeable thin clients,
+  human-operated or agent-operated, same rule either way.
 
 No physical router is required: the edge-gateway role is fully absorbed by `vxgateway`.
 
@@ -132,7 +130,7 @@ Canonical repos (under vxedge org):
   implementation detail this workspace's own single-source-of-truth discipline exists to keep
   out of repo topology. Both were **archived 2026-08-04** (GitHub archive, not deleted, their
   history stays reachable to the owner, read-only) once their content was confirmed fully present in
-  `vxparts`, see `vxparts/TASKS.md` Track P for the migration account.
+  `vxparts`.
 - `vxedge/vxota`: OTA server, signing, manifests.
 - `vxedge/vxagents`: Rust agents, metrics exporters.
 - `vxedge/vxtelemetry`: telemetry ingestion and exporters.
@@ -191,16 +189,10 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
   both are real, alternate in-vehicle-HMI baselines, §9). Frontends here are external tooling
   that operates the testbed, not something running inside a simulated vehicle. **Correction
   (2026-08-06): there is no Qt/QML operator dashboard**, any platform monitoring dashboard is
-  web-based (TS) or the CLI, never Qt. A separate, future, not-yet-built Qt/QML tool is planned
-  for `vxmodels`' MBSE tooling (§6.3), a graphical experiment designer, not an operator
-  dashboard and not a vxAPI frontend the way the items below are.
+  web-based (TS) or the CLI, never Qt.
   - **`vxedge` CLI** (Rust): unchanged UX; local Unix socket by default, `--endpoint` for
     remote; auto-spawns an ephemeral local daemon for single-host lab use.
-  - **Web dashboard / Electron** (TypeScript; connect-es-generated SDK over gRPC-Web): cloud
-    console first, "vxedge Studio" desktop app later.
-  - **vxedge-tray** (Rust, StatusNotifierItem/SNI system tray): at-a-glance gateway/experiment
-    state + quick up/down from the desktop; pairs with a **systemd unit for vxedged**
-    (socket-activated where possible). Same thin-client rule: 1:1 vxAPI calls, no logic.
+  - **Web dashboard** (TypeScript; connect-es-generated SDK over gRPC-Web): not built.
   - **`vxmcp`** (Rust, `rmcp`, the official MCP Rust SDK): an MCP server exposing vxAPI to AI
     agent tooling (any MCP client), for the same reason every frontend above exists: a
     thin, 1:1 client over the same RPCs, this time addressed by an LLM agent's tool-call surface
@@ -216,11 +208,8 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
     thin wrapper still needs, a mutating tool (`up`/`down`/`traffic up`) asking its caller to
     confirm before it runs, the same posture a human operator gets from the CLI's own explicit
     verbs, not something an LLM can chain unsupervised into a destructive sequence. Read tools
-    (`status`/`list`/`events subscribe`/results-archive summaries) ship first, since they carry
-    no such confirmation question and are useful standalone; mutating tools follow once the
-    MRTR confirmation flow is built and reviewed. New repo, `vxedge/vxmcp`, phase 3
-    (`docs/ROADMAP.md`), frontend/tooling investment, not hardware-gated, so it doesn't wait on
-    anything phase 3's GPU items do.
+    (`status`/`list`/`events subscribe`/results-archive summaries) carry no such question.
+    Mutating tools run behind that confirmation (`mcp.mutate` in `FACTS.md`). Repo: `vxedge/vxmcp`.
 
 ### 5.2 API surface (vxAPI, `proto/vxedge/v1/`)
 
@@ -288,34 +277,22 @@ which stay for people. All of this is additive to `vxedge.v1`:
 
 **Why gRPC/Protobuf** (not SOME/IP, not bare REST): SOME/IP–`ara::com` is the *in-vehicle service
 plane*, the wrong tool for an orchestration/tooling plane; bare REST lacks first-class streaming
-and codegen rigor. One Protobuf IDL generates every SDK, gRPC-Web covers browsers and Electron,
-and Protobuf is what Eclipse uProtocol already speaks, schema reuse when the signal plane lands
-in phase 3. An optional REST/OpenAPI façade can be added later by transcoding, without touching
-the core.
+and codegen rigor. One Protobuf IDL generates every SDK, gRPC-Web covers browsers,
+and Protobuf is what Eclipse uProtocol already speaks, schema reuse for the signal plane.
 
 ### 5.3 Transport, security, deployment modes
 
 - **Local (default, live today):** Unix domain socket only, `vxedged --listen` rejects any
   other scheme outright, and `vxedge --endpoint` rejects any non-`unix://` value the same way
-  (found while scoping Phase 5, 2026-08-05: neither side has ever accepted anything else).
+  (neither side has ever accepted anything else).
   The access boundary today is filesystem permissions on the socket path, not a per-call
   identity check, no `SO_PEERCRED`/`UCred` peer-credential extraction exists anywhere in the
   code yet. "Peer-credential auth" below is the target for this mode, not its current
   behavior; stated here per this doc's own fidelity rule (§14 / `testbed-quality`)
   rather than implying it already gates local connections.
-- **Remote (planned, Phase 5):** TCP + mTLS, OIDC bearer tokens; roles viewer/operator/admin;
-  every mutating call audit-logged **with the calling actor's identity attached**, a second
-  gap found during the same scoping pass: `Audit::record(rpc, detail)`
-  (`vxedged/src/audit.rs`) has no actor field at all today, because there has only ever been
-  one, local, unauthenticated caller. Remote access without that field would produce an audit
-  log that says what happened but not who did it, not acceptable once "who" is a real
-  question. Full scope: `docs/ROADMAP.md`'s Phase 5 section.
-- **Cloud-hosted (planned, Phase 3):** `vxedged --controller` runs anywhere and federates one
-  or more site daemons (one per GPU host, reached over WireGuard + mTLS) behind the **same
-  vxAPI**. Frontends never know whether they talk to a single host or a fleet controller, and
-  never touch hypervisors directly. A related but distinct concern from Remote access above:
-  federation is site-daemon-to-controller plumbing, not the human/CLI-to-daemon auth path;
-  see `docs/ROADMAP.md`'s Phase 5 section for why the two are scoped separately.
+- **Remote and cloud-hosted modes** do not exist today: there is no TCP listener, no
+  authentication beyond socket permissions, and `Audit::record(rpc, detail)`
+  (`vxedged/src/audit.rs`) carries no caller identity.
 
 ### 5.4 CLI: commands & semantics
 
@@ -328,7 +305,7 @@ the core.
 
 ```bash
 # Daemon / control plane
-vxedged serve [--listen unix:///run/vxedge.sock | https://0.0.0.0:8443] [--controller]
+vxedged serve [--listen unix:///run/vxedge.sock]
 
 # Client endpoint (applies to every command below; defaults to the local Unix socket)
 vxedge [--endpoint <url>] ...
@@ -385,7 +362,7 @@ workspace it is pointed at and observes each declared component on the host (net
 QEMU, Podman), so its answer survives a daemon restart and never comes from `vxedged`'s memory.
 
 Every CLI verb is a 1:1 wrapper over a vxAPI RPC, anything the CLI can do, every other frontend
-(web, Electron, scripts against the TS SDK) can do identically.
+(scripts against the generated SDK) can do identically.
 
 ---
 
@@ -1001,16 +978,9 @@ experiments is structural, not aspirational.
 Out of model scope, by rule: Rust internals, the vxAPI IDL (Protobuf stays the contract,
 SDKs stay generated), and anything zone/compute manifests are authoritative for.
 
-**Future graphical frontend (not yet built, added 2026-08-06)**: a Qt/QML desktop tool,
-analogous to the planned Electron "vxedge Studio," an MBSE/CAD-style variant of the same idea,
-to help OEM engineers design experiments visually instead of hand-authoring `.sysml` text
-directly. It would still read/write the same textual, git-diffable `.sysml` sources (the
-construct-mapping table above stays the contract either way); a graphical editor is a view onto
-that source, not a second model format. Explicitly deferred, no design work done here yet.
-
 Terminology (matches `ROADMAP.md`): track M makes vxedge a **model-governed executable
-virtual prototype**. "Digital twin" is an earned claim reserved for phase-4 hardware parity;
-track M supplies the model half; phase 4 supplies the physical half.
+virtual prototype**. "Digital twin" is an earned claim reserved for hardware parity;
+track M supplies the model half; hardware supplies the physical half.
 
 ---
 
@@ -1079,8 +1049,6 @@ templating):
 - **Determinism controls:** gateway forwarding cores pinned and isolated (`isolcpus`), PREEMPT_RT
   host kernel, hugepages. An optional **FD.io VPP (DPDK)** data-plane variant exists for
   URLLC-focused runs needing minimal per-packet latency variance.
-- **Hardware offload path (phase 4):** the same OVS/tc intent offloads onto NVIDIA
-  **BlueField DPU / ConnectX** via DOCA, the production exit ramp from the virtual gateway.
 - **Monitoring:** gateway counters, tc/OVS statistics, and syslog exported to the central
   Prometheus node.
 
@@ -1139,7 +1107,7 @@ deliberately separate:
   nodes can already reach without a tunnel. `network.tunnels` (§7) now exists as a mechanism
  , a manifest can declare a WireGuard link the gateway terminates, but `vxota` is not yet
   wired to bind `config.listen` onto one; that integration, and scheduling onto a real
-  compute node, remain open (`vxedge/TASKS.md` §4).
+  compute node, do not exist today.
 
 ---
 
@@ -1207,18 +1175,11 @@ deliberately separate:
 - **Fidelity caveat (stated in publications):** production zonal controllers invert this
   stacking, silicon runs a Type-1 hypervisor (QNX Hypervisor and peers) hosting guests, whereas
   here KVM plays the hypervisor and QNX is a guest. Functionally equivalent for slice-isolation
-  research; the gap closes via the **hypervisor fidelity ladder** below and, ultimately, DRIVE OS
-  on DRIVE AGX hardware (phase 4).
+  research; the **hypervisor fidelity ladder** below names the rung each result was measured on.
 - **Hypervisor fidelity ladder** (production-grade rungs only, no research-toy hypervisors):
   - *Rung 0 (software-only, phase 1–3):* KVM with strict static partitioning, isolcpus/cpuset
     pinned cells, hugepages, the Linux approximation of partitioning and the baseline arm of
     the freedom-from-interference experiment (exp-004).
-  - *Rung 1 (phase 4):* **Xen dom0less** as a dedicated boot-entry host profile, production
-    open-source with an active functional-safety track (Xen 4.21 dom0less refactoring; AMD/Honda
-    automotive demos, Xen Summit 2025); Zephyr domUs boot sub-second.
-  - *Rung 2 (phase 4):* **QNX Hypervisor**, the production zonal-controller stack itself
-    (license permitting; pairs with DRIVE OS QNX).
-  Each rung converts part of the stated caveat into a measured claim (exp-004 reruns per rung).
 - CLI stages images, creates instances, and configures network interfaces; persistent storage
   optional per zone; logs and telemetry collected centrally.
 
@@ -1233,8 +1194,7 @@ deliberately separate:
    nodes emit/consume CAN frames per DBC definitions (`sensors:`/`actuators:` in the node
    schema); Kuksa's CAN provider maps DBC signals ↔ VSS. Closed-loop behavior comes from the
    **vxplant agent** (in `vxagents`): subscribes to actuator commands, integrates a plant
-   model (first-order default; FMI/FMU import in phase 4 so OEMs can drop in Simulink-exported
-   models), publishes sensor feedback.
+   model (first-order default), publishes sensor feedback.
 3. **Register-level I/O** (GPIO/ADC/PWM/I2C/SPI): application-class ECUs (QNX, AAOS) use QEMU
    device models (`io.devices`); MCU-class ECUs needing register fidelity use **Renode**
    (`backend: renode`): full peripheral models running unmodified Zephyr/FreeRTOS firmware.
@@ -1243,9 +1203,6 @@ deliberately separate:
    actuation → world. End-to-end **control-loop latency under slice contention** is a
    first-class metric (§12).
 
-**Boundary standards (phase 4):** ASAM **OSI** at the simulator↔stack boundary, **FMI/FMU**
-for plant models, **XIL**-style semantics for the bench API, so the virtual testbed and
-OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
 
 ---
 
@@ -1257,7 +1214,7 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
     via carla-ros-bridge.
   - **NVIDIA Alpamayo / AlpaSim** (open-sourced at CES 2026): reasoning-VLA driving model and
     open simulation framework; runs on the host GPU without DRIVE hardware. Fine-tuning and
-    DRIVE Hyperion integration are out of scope (phase 4).
+    DRIVE Hyperion integration are out of scope.
 - Perception/inference workloads use **DeepStream / TensorRT**; container definitions are
   optimized for GPU pass-through and TensorRT runtime (see `resources.gpu` in the schema).
 - OTA server may be deployed in a compute node if referenced in the experiment manifest.
@@ -1451,23 +1408,13 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
     SONiC, OVS, FRR, Open5GS, UERANSIM, Eclipse SDV components under their upstream OSS licenses.
 
 - **Industrialization notes:**
-  - Middleware and patterns match the production SDV convergence: Eclipse SDV (Kuksa/VSS, Zenoh,
-    uProtocol, Ankaios), SOAFEE-style cloud/vehicle virtual-ECU parity, NVIDIA DRIVE-adjacent
-    compute, and UE-side slicing semantics matching production automotive modems (Qualcomm
-    Snapdragon Auto, URSP). This makes results directly legible to NVIDIA-DRIVE-partner OEMs
-    (JLR-class zonal E/E programs) and Qualcomm-Digital-Chassis programs alike.
-  - ARM64 zone/compute variants (phase 3) target NVIDIA Jetson and the cloud virtual-ECU
-    parity paths both silicon vendors ship: Snapdragon vSoC / Virtual Platforms on Graviton
-    and Google Cloud.
-  - All manifests modular, reusable across multiple experiments.
-  - Gateway patterns have an explicit hardware exit ramp: SONiC on Spectrum, or OVS/DOCA offload
-    on BlueField/ConnectX.
-  - CI/CD pipelines support automated image and manifest validation.
-  - Publishable results designed to integrate into research papers or internal dashboards.
+  - All manifests are modular and reused across experiments.
+  - CI validates images and manifests.
+  - Results publish with the manifests and image digests that produced them.
 
 ---
 
-## 15: Implementation policy & phased roadmap
+## 15: Implementation policy & phases
 
 ### Languages
 
@@ -1477,10 +1424,7 @@ OEM HIL rigs speak the same protocols (the SIL→HIL migration story).
   components (automotive-native, AUTOSAR-adjacent), and the embedded Qt/QML IVI/cluster
   loadable (an in-vehicle-HMI baseline alongside AAOS, see §5.1, §9).
 - **Python**: Sionna, notebooks, analysis pipelines.
-- **TypeScript**: web dashboard, Electron "vxedge Studio", generated vxAPI SDK (connect-es).
-- **Qt/QML** (future, not yet built): a graphical `vxmodels` MBSE frontend for designing
-  experiments visually (see §5.1, §6.3); an Electron-style desktop variant, not an operator
-  dashboard.
+- **TypeScript**: generated vxAPI SDK (connect-es).
 - **Shell**: glue only.
 - **SysML v2** (track M): authoring-time system models in `vxmodels`, rendered to YAML
   manifests by `vxmodel`. Deliberately *not* a third runtime interface.
@@ -1506,77 +1450,26 @@ on a Linux kernel).
 
 ### Phases
 
+Phase states and gates are registered in `FACTS.md`; [`ROADMAP.md`](ROADMAP.md) is the public status.
+
 1. **Phase 1, slicing core, API-first from day one:** `vxedge-core` + `vxedged` + vxAPI v1
    (Gateway/Zone/Compute/Job/Event services) with the CLI as thin client; vxgateway
-   (OVS/tc/FRR/WireGuard) + synthetic traffic + vxagents/vxtelemetry → the H1/H3/H4 isolation
-   numbers. This alone is the paper.
-2. **Phase 2, real slices & workloads:** Open5GS/UERANSIM S-NSSAI slicing (H2) incl.
-   URSP-style `slice_policy` (UE-side selection over concurrent PDU sessions);
-   CARLA → ROS2 → Autoware as real ADAS traffic, **closed-loop** (actuation back into CARLA;
-   control-loop latency metric); per-link harness `impairments` (netem, BASE-T1 emulation);
-   QNX SDP 8 and AAOS zones; SONiC-VS production-NOS twin; TypeScript vxAPI SDK + minimal web
-   dashboard (live slice metrics over gRPC-Web).
-3. **Phase 3, production SDV alignment:** vehicle manifest end-to-end (`vxedge vehicle up`);
-   Kuksa/VSS signal plane; rmw_zenoh/uProtocol comms; Ankaios workload orchestration; Sionna
-   channel realism (NVIDIA 6G Developer Program); Alpamayo/AlpaSim workload; optional
-   Rugix-Ctrl-based atomic slot updates on zone guest bundles (§8 OTA design); embedded
-   Qt/QML IVI/cluster loadable (an alternate in-vehicle-HMI baseline to AAOS, §9); cloud-hosted
-   `vxedged --controller` federating multiple GPU hosts;
-   Electron
-   "vxedge Studio" groundwork; vxedge-tray (Rust SNI tray, thin vxAPI client) + vxedged
-   systemd unit; ARM64 zone/compute/agent variants (Jetson + Snapdragon
-   vSoC / Graviton parity); CAN/LIN edge modeling (`type: can`, SocketCAN/vcan + Kuksa CAN
-   feeders); TSN gateway variant (taprio/cbs + gPTP); UDS/DoIP diagnostic probe for OTA runs;
-   V2X groundwork, multi-vehicle composition (second vehicle-manifest instance, V2V) + `rsu`
-   nodes (V2I); sensor/actuator virtualization, restbus simulation (DBC + Kuksa CAN
-   provider), **vxplant** plant-model agent, QEMU `io.devices`, **Renode backend** for
-   MCU-class virtual ECUs.
-4. **Phase 4, hardware (optional):** Jetson AGX in the loop (affordable DRIVE-lineage stand-in);
-   DRIVE AGX + DRIVE OS (Linux/QNX); BlueField/DOCA gateway offload; Aerial CUDA-Accelerated RAN;
-   V2X radio realism, C-V2X PC5 sidelink (Sionna channel models; PAWR/AERPAW outdoor
-   validation); ASAM boundary standards, OSI (simulator↔stack), FMI/FMU plant-model import,
-   XIL-style bench semantics; optional VSS power-tree modeling; hypervisor fidelity ladder
-   rungs 1–2, Xen dom0less host profile and QNX Hypervisor (freedom-from-interference
-   measured per rung via exp-004).
-5. **Phase 5, remote/multi-user/cloud deployment (backlog, no gate yet):** mTLS + OIDC auth
-   path for vxAPI's TCP transport, with viewer/operator/admin roles (§5.3's own target design;
-   today only the local Unix-socket transport is live, and even that lacks the peer-credential
-   check §5.3 names as its own target, see that section's 2026-08-05 correction). Deliberately
-   not scheduled into an earlier phase: it secures *remote* access, and every frontend that
-   would use it remotely (web dashboard, Electron, `vxmcp`) is itself deferred
-   to phase 3/4 (`docs/ROADMAP.md`'s 2026-08-01 re-scope, "the CLI is the only frontend any experiment
-   uses," and the CLI only ever talks over the local socket). Building the auth layer before a
-   real remote consumer exists would be infrastructure with nothing to test it against; revisit
-   once a phase-3/4 frontend actually needs it. **Scoped 2026-08-05** (full account,
-   `docs/ROADMAP.md` Phase 5 section) into six concrete sub-items, TCP listener support in
-   `vxedged`/`vxedge-cli` (neither accepts anything but `unix://` today), mTLS (cert
-   provisioning is an open design question, not just a library choice), OIDC bearer-token
-   validation, a per-RPC role/authorization model, actor-aware audit logging (a real, present
-   gap, `Audit::record` carries no identity field today), and the concurrent-multi-experiment
-   question this makes sharper (`EdgeState.active` is a single slot, not a collection, already
-   flagged under "Beyond phase 4"). **FRR (BGP for cloud interconnect)** joins it for the
-   same reason, moved here 2026-08-04: unlike VXLAN (which extends an already-documented
-   `network.tunnels` schema hook), FRR has no manifest schema field anywhere in this document;
-   it would need one designed from scratch, and its only stated purpose, cloud interconnect,
-   has no current or near-term consumer; every experiment today uses static routing, which §7
-   already states is sufficient for lab experiments. Revisit alongside mTLS+OIDC once a real
-   multi-host/cloud deployment scenario exists to design and test the schema against.
-   **Deliberately excluded from this scope**: `vxedged --controller` federation (still Phase 3
-  , a site-daemon-to-controller plumbing concern, not the human/CLI-to-daemon auth path this
-   item covers) and the cloud-hosted persistence/multi-tenant-session/event-streaming question
-   (`docs/ROADMAP.md`'s "Beyond phase 4", explicitly speculative, no phase assigned, its own
-   separate sign-off needed before scoping).
+   (OVS/tc/WireGuard) + synthetic traffic + vxagents/vxtelemetry → the H1/H3/H4 isolation
+   numbers. Gate passed.
+2. **Phase 2, real slices & workloads:** Open5GS/UERANSIM S-NSSAI slicing (H2), the OVS data
+   plane, per-link harness `impairments` (netem), and the SONiC-VS production-NOS twin. Gate
+   passed.
+3. **Phase 3, production SDV alignment:** the vehicle manifest end to end (`vxedge vehicle up`)
+   and the Kuksa/VSS signal plane. Gate passed; the phase's content is still in progress.
 
 ### Cross-cutting track M: SysML v2 model governance (twin-readiness)
 
 Not phase-gated; runs alongside phases 2–3 and gates nothing in phases 1–4. All public
-claims keep the *executable virtual prototype* vocabulary until phase-4 hardware parity
-earns the term "digital twin" (`ROADMAP.md` terminology rule); track M builds the
-model half of that claim. Details in §6.3; work items on the program board
-(`docs/ROADMAP.md`) and, once created, `vxmodels/TASKS.md`.
+claims keep the *executable virtual prototype* vocabulary until hardware parity
+earns the term "digital twin"; track M builds the model half of that claim. Details in §6.3.
 
 - **M0, governance & home:** this section + §4/§6.3 scoping; `vxedge/vxmodels` created
-  and seeded (AGENTS.md/TASKS.md/quality guides), all done 2026-07-13.
+  and seeded (AGENTS.md and quality guides), all done 2026-07-13.
 - **M1, retroactive traceability:** H1–H4 as `requirement` definitions with `verify`
   links to the frozen exp-001/exp-002b/exp-003 archives (manifest digests). Zero new
   experiments; demonstrates the requirement → analysis-case → manifest → archive chain on
@@ -1590,14 +1483,7 @@ model half of that claim. Details in §6.3; work items on the program board
   mechanically; a `sysml-authoring` skill so LLM tooling composes typed model elements;
   generated experiments pass the §6.3 double gate before touching the testbed. Aligns
   with phase 2 (the S-NSSAI driver gives variants something real to enumerate).
-- **M4, scenarios + fidelity ledger:** traffic/transportation scenarios as
-  `use case`/`occurrence` structures mapped toward ASAM OpenSCENARIO (extending the
-  phase-4 OSI commitment); fidelity caveats as first-class model annotations so every
-  generated experiment carries its validity envelope; environmental KPIs (energy per
-  slice/workload via the DCGM/NVML hooks) as verified requirements; V2X multi-vehicle
-  scenario families in phase 3.
-
-Paper #3 (`ROADMAP.md`) draws on M1–M4; the twin claim attaches only if phase 4 lands.
+- **M4, scenarios + fidelity ledger:** open.
 
 ---
 

@@ -15,20 +15,19 @@ from blueprint import box, group, line, text, MID  # noqa: E402
 
 W, H = 1200, 640
 bp.start(W, H, "vxAPI layers: frontends, generated SDKs, vxAPI, vxedged and vxedge-core",
-         "Thin frontends call the vxAPI through generated SDKs. On the host, vxAPI fronts the vxedged daemon (job engine, event bus, reconciler, audit log), which sits on vxedge-core (manifests, validation and the libvirt, network, container, 5G and traffic backends). Solid boxes are built today; dashed boxes are specified and not built yet.")
+         "Thin frontends call the vxAPI through generated SDKs. On the host, vxAPI fronts the vxedged daemon (job engine, event bus, reconciler, audit log), which sits on vxedge-core (manifests, validation and the libvirt, network, container, 5G and traffic backends). Every box is built today.")
 
 group(40, 30, 1120, 120, "FRONTENDS  (THIN CLIENTS: NO ORCHESTRATION LOGIC)")
-fronts = [("vxedge CLI", "primary frontend · Rust", "REAL", False), ("vxmcp", "MCP server for AI agent tooling", "BUILDING", False),
-          ("Web dashboard", "TypeScript", "PLANNED", True), ("vxedge Studio", "Electron, future", "PLANNED", True)]
+fronts = [("vxedge CLI", "primary frontend · Rust", "REAL", False), ("vxmcp", "MCP server for AI agent tooling", "LIVE", False)]
 for i, (t, s, st, d) in enumerate(fronts):
-    box(70 + i * 270, 62, 250, 70, t, s, st, d)
-    line(195 + i * 270, 150, 195 + i * 270, 190, dashed=d)
+    box(70 + i * 540, 62, 520, 70, t, s, st, d)
+    line(330 + i * 540, 150, 330 + i * 540, 190, dashed=d)
 
-box(70, 190, 1060, 66, "Generated SDKs", "Rust (built) · TypeScript / connect-es and C++ (planned): generated from the IDL, never hand-written", "BUILDING")
+box(70, 190, 1060, 66, "Generated SDKs", "Rust: generated from the IDL, never hand-written", "BUILDING")
 line(600, 256, 600, 285)
 
 group(40, 285, 1120, 290, "ONE HOST")
-box(70, 318, 1060, 66, "vxAPI", "gRPC / Protobuf, package vxedge.v1 · Unix socket locally · mTLS TCP remote and gRPC-Web are planned (phase 5)", "REAL")
+box(70, 318, 1060, 66, "vxAPI", "gRPC / Protobuf, package vxedge.v1 · Unix socket", "REAL")
 box(70, 398, 1060, 66, "vxedged", "async job engine · event bus · reconciler (desired vs observed) · audit log", "REAL")
 box(70, 478, 1060, 80, "vxedge-core", "manifests · validation · backends", "REAL")
 text(86, 545, "libvirt · rtnetlink / OVSDB · containers · Open5GS · traffic", 12, 400, MID)

@@ -1,7 +1,7 @@
 # AGENTS.md: vxedge/docs
 
 Documentation repo for the vxedge platform. **`ARCHITECTURE.md` is the single architecture
-specification**, every other repo's AGENTS.md and TASKS.md derive from it and must not contradict it.
+specification**, every other repo's AGENTS.md derives from it and must not contradict it.
 
 ## Contents
 
@@ -18,13 +18,13 @@ specification**, every other repo's AGENTS.md and TASKS.md derive from it and mu
   software versions). Anything the testbed needs that it doesn't list is a bug in it.
 - `ARCHITECTURE.md`: the architecture specification (16 sections). Key anchors: §2 hypotheses H1–H4,
   §5 vxAPI/control plane, §6 manifest schemas (experiment + vehicle), §7 vxgateway network
-  model, §9 virtualization (libvirt/QEMU/QNX), §15 language policy + 4-phase roadmap,
+  model, §9 virtualization (libvirt/QEMU/QNX), §15 language policy + phases,
   §16 worked examples.
-- `ROADMAP.md`: the public phase status and open work: phase gates and the cross-repo critical
-  path. Per-repo `TASKS.md` files hold the detailed work items.
+- `ROADMAP.md`: the public phase status: phase gates passed and what has shipped. Open work,
+  plans and future phases are tracked on the maintainers' internal board, never here.
 - `VERSIONING.md`: SemVer + `CHANGELOG.md` (Keep a Changelog) conventions every repo
   follows; when tags get cut (not before the phase-1 gate) and what stays out of scope for
-  hand-maintained docs vs. the devops board (`ROADMAP.md`).
+  hand-maintained docs.
 - `ACRONYMS.md`: glossary of every acronym used across these docs, grouped by field
   (5G/RAN, SDN, SDV, virtualization, compute/AI, vxAPI, standards, OTA, methodology).
   Hand-maintained; update it alongside `ARCHITECTURE.md` when a new acronym lands.
@@ -36,10 +36,12 @@ specification**, every other repo's AGENTS.md and TASKS.md derive from it and mu
 
 ## Rules
 
-- Any change to manifest schemas, vxAPI surface, CLI command shape, or the phase roadmap MUST
-  be made in `ARCHITECTURE.md` first, then propagated to affected repos' AGENTS.md/TASKS.md.
-- When a phase gate is reached, update `FACTS.md`, `ROADMAP.md` and `RESULTS.md` here in the same change set
-  as the per-repo TASKS.md updates.
+- Any change to manifest schemas, vxAPI surface or CLI command shape MUST be made in
+  `ARCHITECTURE.md` first, then propagated to affected repos' AGENTS.md.
+- When a phase gate is reached, update `FACTS.md`, `ROADMAP.md` and `RESULTS.md` here in one change set.
+- **Direction stays internal.** Public docs say what exists and what has shipped. Roadmaps, open work
+  lists, future phases, unreleased product names, publication plans and market or partner
+  positioning live in the private board, not in any public repo.
 - **Numbers live in `FACTS.md`.** A result, phase state or delivery state changes there first, in
   the same change as the summary or state that moved; then `python3 scripts/facts.py check` (CI
   runs it). Never type a measured number into another page, quote the registered value.
