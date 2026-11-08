@@ -63,14 +63,15 @@ The latest tagged release of each code repository.
 
 | Key | Repository | Version | Released |
 |---|---|---|---|
-| `vxedge` | `vxedge` | 0.8.0 | 2026-11-07 |
+| `vxedge` | `vxedge` | 0.9.1 | 2026-11-08 |
 | `vxagents` | `vxagents` | 0.1.1 | 2026-10-28 |
-| `vxmcp` | `vxmcp` | 0.2.2 | 2026-11-04 |
+| `vxmcp` | `vxmcp` | 0.2.4 | 2026-11-08 |
 | `vxmodels` | `vxmodels` | 0.1.0 | 2026-10-29 |
 | `vxota` | `vxota` | 0.1.1 | 2026-10-28 |
 | `vxparts` | `vxparts` | 0.1.0 | 2026-10-29 |
 | `vxperiments` | `vxperiments` | 0.1.0 | 2026-07-13 |
 | `vxtelemetry` | `vxtelemetry` | 0.3.0 | 2026-11-04 |
+| `vxvhal` | `vxvhal` | 0.1.1 | 2026-11-08 |
 
 ### Tracks
 
@@ -247,6 +248,7 @@ How close each part of the virtual vehicle is to production today, and what clos
 | `parity.mcu` | MCU firmware | Unmodified firmware on register-level models | planned | Renode · p3 |
 | `parity.sensors` | Sensors | World streams carried as slice traffic | planned | CARLA · p3 |
 | `parity.compute` | Central compute | Autoware and ROS 2 in containers | planned | DRIVE AGX · p4 |
+| `parity.cockpit` | Cockpit | Android Automotive 26Q2 framework and its gRPC Vehicle HAL path, on x86_64 Cuttlefish | emulated | AAOS on QNX Hypervisor, arm64 · p3 |
 | `parity.timing` | Timing | Userspace timestamps on a shared host | caveat | Kernel timestamps · open |
 
 ### Zones
@@ -266,7 +268,8 @@ The front zones run the ADAS slice and are planned until their QNX / RTOS guests
 
 ### Zone backends
 
-How a zone node runs. Every backend attaches to the gateway the same way.
+How a zone node runs. Every backend but `attach` gets its port from the gateway; an attach node's port is the
+interface its own platform creates, adopted by the gateway.
 
 | Key | Backend | Runs | State | Validated on |
 |---|---|---|---|---|
@@ -275,6 +278,7 @@ How a zone node runs. Every backend attaches to the gateway the same way.
 | `backend.libvirt` | `libvirt` | a guest bundle as a libvirt domain | live | `linux-probe` |
 | `backend.cloud_hypervisor` | `cloud-hypervisor` | a guest bundle under Cloud Hypervisor | live | `linux-probe` only |
 | `backend.wasm_capsule` | `wasm-capsule` | a WASI 0.2 component in a `vxcapsule` process | live | `reflector-capsule` only |
+| `backend.attach` | `attach` | a guest on its own platform's host stack, through an adapter | live | AAOS 26Q2 on Cuttlefish only |
 
 ### Frontends
 
@@ -330,9 +334,10 @@ How a generated experiment reaches the bench.
 | Key | Value | Source |
 |---|---|---|
 | `retarget.validate` | live | an experiment retargets to another vehicle by id and validates |
-| `vehicle.up` | live | the `vehicle` verbs (up, down, status) on a full vehicle: gateway, zones, central compute, and a service and signal plane placed on a slice, with an idempotent second `up`, a clean `down` and other vehicles refused. Verified 2026-11-03 on [`vx-vehicle-03`](https://github.com/vxedge/vxperiments/tree/main/results/signal-plane-2026-11-03), with zones on container, qemu-microvm, cloud-hypervisor and wasm-capsule, and 2026-11-01 on [`vx-vehicle-02`](https://github.com/vxedge/vxperiments/tree/main/results/phase-3-gate-2026-11-01), the phase-3 gate, with zones on container and qemu-microvm. `libvirt` has not run in a full vehicle. Guests are probes: no QNX, Android Automotive or Autoware workload ran |
+| `vehicle.up` | live | the `vehicle` verbs (up, down, status) on a full vehicle: gateway, zones, central compute, and a service and signal plane placed on a slice, with an idempotent second `up`, a clean `down` and other vehicles refused. Verified 2026-11-03 on [`vx-vehicle-03`](https://github.com/vxedge/vxperiments/tree/main/results/signal-plane-2026-11-03), with zones on container, qemu-microvm, cloud-hypervisor and wasm-capsule, and 2026-11-01 on [`vx-vehicle-02`](https://github.com/vxedge/vxperiments/tree/main/results/phase-3-gate-2026-11-01), the phase-3 gate, with zones on container and qemu-microvm. `libvirt` has not run in a full vehicle. Android Automotive 26Q2 ran as an `attach` zone of [`vx-reference-sedan-03`](https://github.com/vxedge/vxperiments/tree/main/results/aaos-gate-2026-11-08), 2026-11-08 (`vehicle.aaos`). The other guests are probes: no QNX or Autoware workload ran |
+| `vehicle.aaos` | live | an Android Automotive 26Q2 guest as a zone of a full vehicle: AOSP Cuttlefish build 16644040 on its own host stack, joined by `backend: attach` (the gateway adopts Cuttlefish's tap as the slice port). CarService in the guest reads the vehicle's signals through the production gRPC Vehicle HAL path, vxvhal on the cockpit gateway ECU reading Kuksa, across the slice. 10 of 10 vxAPI gate runs on `vx-reference-sedan-03` with vxedge 0.9.1, 20 of 20 CarService readings matched (verified 2026-11-08, [gate](https://github.com/vxedge/vxperiments/tree/main/results/aaos-gate-2026-11-08)). Rung `aaos-26q2-x86_64-cf`: x86_64 under Cuttlefish, not the production instruction set, hypervisor or hardware; two read properties, no write path or HMI |
 | `service.placed` | live | a service runs on a container device with `on:`, answering on that device's slice only; `ota` only |
 | `signal.plane` | live | the Kuksa databroker as a stage of `vehicle up` and `experiment up`, in its device's container group. On kuksa-databroker 0.7.1, real `kuksa.val.v2` providers and subscribers on its slice: published values reached subscribers in order, actuation reached a provider, a CAN dump replayed by kuksa-can-provider fed a consumer on another device, and every client on another slice was refused (verified 2026-11-04 on [`vx-vehicle-03`](https://github.com/vxedge/vxperiments/tree/main/results/kuksa-cases-2026-11-04), VSS 6.0 scenarios in [`vss-scenarios-2026-11-04`](https://github.com/vxedge/vxperiments/tree/main/results/vss-scenarios-2026-11-04)). Released in `vxedge` 0.5.0. The providers and consumers are test clients: no plant model or vehicle application ran. Its time across the slice was measured with kuksa-perf, in [`broker-slice-main-2026-11-04`](https://github.com/vxedge/vxperiments/tree/main/results/broker-slice-main-2026-11-04), `exp016.*` under Results; each of those numbers crosses the slice twice, on one shared host. Signals are unauthenticated, so slice isolation is their only protection |
-| `api.agents` | live | an agent runs a trial through `vxmcp` alone on typed fields: plan, up, typed status, events with resume, traffic, collection, daemon restart, cancel and down, 10 of 10 consecutive runs on `vx-vehicle-03` and libvirt on `exp-002-ws` (verified 2026-11-04, [release gate](https://github.com/vxedge/vxperiments/tree/main/results/vxapi-0.5.0-gate-2026-11-04)). One run per host; guests are probes |
+| `api.agents` | live | an agent runs a trial through `vxmcp` alone on typed fields: plan, up, typed status, events with resume, traffic, collection, daemon restart, cancel and down, 10 of 10 consecutive runs on `vx-vehicle-03` and libvirt on `exp-002-ws` (verified 2026-11-04, [release gate](https://github.com/vxedge/vxperiments/tree/main/results/vxapi-0.5.0-gate-2026-11-04)), and the core sequence 10 of 10 on `vx-reference-sedan-03` with its AAOS zone, on vxedge 0.9.1 and vxmcp 0.2.4 release builds (verified 2026-11-08, [gate](https://github.com/vxedge/vxperiments/tree/main/results/aaos-gate-2026-11-08)). One run per host; apart from the AAOS zone, guests are probes |
 | `retarget.fleet` | planned | two vehicles at once (fleet layer) |
 | `paper.1` | in preparation | phase-1 dataset (H1/H3/H4) for arXiv, [`ROADMAP.md`](ROADMAP.md) |
