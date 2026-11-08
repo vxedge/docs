@@ -1126,7 +1126,8 @@ deliberately separate:
   bypassing libvirt's device model for the minimal-latency arm of hypothesis H3. It boots aarch64 guests too,
   the instruction set of production zone ECUs: a bundle names its instruction set in `meta.json` (`"arch":
   "aarch64"`, or the `org.vxedge.arch` a published vxparts bundle carries; none means x86_64), and an aarch64 node runs on QEMU's `virt` machine, the same virtio-mmio
-  transport, with the PL011 console. KVM runs a guest only on a host of the guest's own instruction set;
+  transport, with the PL011 console. The bundle also names the virtio-mmio version its driver speaks
+  (`"virtio_mmio": "legacy"` for version 1; the default is the modern version 2). KVM runs a guest only on a host of the guest's own instruction set;
   anywhere else QEMU emulates the CPU (TCG). `NodeStatus.arch` and `NodeStatus.acceleration` (`kvm` or `tcg`)
   report what the running guest actually got, read from its emulator, and a result names both: a `tcg`
   result is functional evidence only and is never timed.
