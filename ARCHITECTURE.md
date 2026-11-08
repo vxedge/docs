@@ -934,6 +934,52 @@ package, never inside it, so the package digest does not depend on how the packa
 `pkg inspect` prints a package's descriptor, lock and digest from either form, and `pkg vendor`
 copies another folder's documents in (above).
 
+#### 6.0.8 Distribution and trust
+
+**Publishing.** `pkg push <ref>` uploads a packed package as one OCI artifact of artifact type
+`application/vnd.vxedge.vxp.v1`. Its single layer is the packed file, unchanged, with media type
+`application/vnd.vxedge.vxp.v1.tar`, so the layer digest is the package digest: this is why the
+packed form is uncompressed (decision X-9). Its config blob, `application/vnd.vxedge.vxp.config.v1+json`,
+holds the descriptor's `id` and `version` and the lock's `parts` and `images`, so a registry
+listing says what a package needs without downloading it. The tag is the package `version`. A
+registry may compress in transfer; the stored layer is the tar. The registry client is the `oras`
+CLI, as for parts (§6.0); vxedge stores no registry credentials and uses whatever `oras login`
+holds.
+
+**Pulling.** `pkg pull <ref>@sha256:<hex>` fetches the layer into the part cache under its digest,
+refuses bytes that do not hash to it, and refuses a packed file that is not canonical (§6.0.7);
+`pkg unpack` then restores a source folder. A pull names a digest: a tag alone is refused, since a
+tag can move and a result cites what ran.
+
+**What a signature covers.** A signature is over the package digest, never over a folder. A
+folder cannot hold its own signature, because the signature would be an input to the digest it
+signs. So verification is recorded beside the package, not in it: `pkg verify` and `pkg pull`
+write a verification record under the part cache, keyed by the package digest, naming the signer
+and how it was checked. `up` already computes the package digest of every `vxp/1` run (§13) and
+looks the record up by that digest. A folder edited after it was verified has another digest, and
+so no record.
+
+**Signatures.** Two methods, one per audience:
+- *Published packages* carry a GitHub artifact attestation made by the publishing workflow, checked
+  against the repository and workflow that made it.
+- *Air-gapped labs* use a key-pair signature in the Sigstore bundle format, written beside the
+  packed file as `<name>-<version>.vxp.sigstore.json` and checked offline against a public key the
+  lab holds.
+
+**Trust policy.** A host may require signed packages. The policy is the daemon's, read at start
+from a file the operator owns, and names whether signatures are required and which signers are
+allowed: a GitHub repository and workflow for attestations, or a public key for key-pair
+signatures. Without a policy, any package runs, as today. With `require-signed`, `up`, `Plan` and
+`PackageService.Pull` refuse a package whose digest has no verification record from an allowed
+signer with `ERROR_REASON_SIGNATURE_INVALID`, before anything is provisioned; a legacy descriptor
+or an inline manifest has no package digest to verify, so it is refused too. An authoring host,
+where packages are built and changed, runs without the requirement.
+
+**Offline transfer.** `pkg pack --offline` writes, beside the packed file, an OCI image layout
+`<name>-<version>.parts/` holding every published part and image the lock lists, and `pkg pull
+--layout <dir>` loads them into the part cache, so `up` needs no network. The packed file and its
+digest are unchanged by how it travels (decision X-9).
+
 ### 6.1–6.2 Experiment and vehicle manifests: **retired 2026-07-31**
 
 These two schemas are gone: the structs are deleted from `vxedge-core`, nothing parses them, and
