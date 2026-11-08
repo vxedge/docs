@@ -8,6 +8,9 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §9: a `qemu-microvm` bundle sizes its guest (`cpus`, `memory_mb`), and an aarch64 bundle can ask
+  for the CPU's virtualization extensions (`"virtualization": true`: EL2, GICv3).
+- `FACTS.md`: vxedge 0.11.0, vxmcp 0.2.5.
 - `ARCHITECTURE.md` §6.0.3: typed experiment intent. `hypothesis`; `parameters` with type, unit, default, bounds and `binds` by id path (no
   templating); `metrics`; structured `criteria` (operands, `lt`/`le`/`gt`/`ge`/`within`,
   `all`/`any`, `min_samples`) that evaluate to `pass`, `fail` or `inconclusive`, never rounding

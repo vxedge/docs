@@ -1246,7 +1246,10 @@ deliberately separate:
   the instruction set of production zone ECUs: a bundle names its instruction set in `meta.json` (`"arch":
   "aarch64"`, or the `org.vxedge.arch` a published vxparts bundle carries; none means x86_64), and an aarch64 node runs on QEMU's `virt` machine, the same virtio-mmio
   transport, with the PL011 console. The bundle also names the virtio-mmio version its driver speaks
-  (`"virtio_mmio": "legacy"` for version 1; the default is the modern version 2). KVM runs a guest only on a host of the guest's own instruction set;
+  (`"virtio_mmio": "legacy"` for version 1; the default is the modern version 2). It may size its guest, `cpus`
+  (default 1, at most 16, and no more than a pinned node's pinned CPUs) and `memory_mb` (default 128 MiB on x86_64,
+  256 MiB on aarch64), and an aarch64 bundle with `"virtualization": true` gets the CPU's virtualization
+  extensions, the `virt` machine at EL2 with GICv3, for a guest that is itself a hypervisor. KVM runs a guest only on a host of the guest's own instruction set;
   anywhere else QEMU emulates the CPU (TCG). `NodeStatus.arch` and `NodeStatus.acceleration` (`kvm` or `tcg`)
   report what the running guest actually got, read from its emulator, and a result names both: a `tcg`
   result is functional evidence only and is never timed.
