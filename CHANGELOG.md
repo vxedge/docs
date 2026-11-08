@@ -8,6 +8,12 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §6.0.3: typed experiment intent. `hypothesis`; `parameters` with type, unit, default, bounds and `binds` by id path (no
+  templating); `metrics`; structured `criteria` (operands, `lt`/`le`/`gt`/`ge`/`within`,
+  `all`/`any`, `min_samples`) that evaluate to `pass`, `fail` or `inconclusive`, never rounding
+  `inconclusive` to a pass; and `campaign` (arms, sweep, repetitions, warmup, duration, profiles),
+  which replaces `method` where declared. `Plan` reports bad parameters and criteria as
+  `ERROR_REASON_PARAMETER_INVALID` and `ERROR_REASON_CRITERION_INVALID` before any trial.
 - `ARCHITECTURE.md` §6.0.8, distribution and trust: `pkg push`
   as one OCI artifact whose single layer is the packed file (`application/vnd.vxedge.vxp.v1.tar`,
   so the layer digest is the package digest); `pkg pull` by digest only; a signature covers the
