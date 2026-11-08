@@ -1162,14 +1162,19 @@ deliberately separate:
 - **A guest that brings its own host stack:** `backend: attach`. Some guests boot only on their platform's own
   stack: AOSP's Cuttlefish AAOS image needs about 25 Cuttlefish host services (TEE, display, sensors, input,
   modem) and cannot boot on a bare VMM, as a production AAOS guest needs its hypervisor vendor's board support.
-  vxedge does not rebuild that stack. The device's part is an adapter, `attach.yaml`: the network `interface`
-  the platform creates, `start`, `status` and `stop` commands, and a `start_timeout`. The gateway **adopts** the
-  interface instead of creating a port: it records its current master, enslaves it to the slice bridge with the
+  vxedge does not rebuild that stack. The device's part is an adapter directory (`kind: attach`, local) whose
+  `attach.yaml` declares the network `interface` the platform creates, `start`, `status` and `stop` commands,
+  and a `start_timeout_s`; the commands run in that directory with `VX_NODE`, `VX_IP`, `VX_INTERFACE` and
+  `VX_RUNTIME_DIR` set. The device's link endpoint names the same interface as `host_interface`, so the gateway
+  plan stays a pure function of the documents. The gateway **adopts** the interface instead of creating a port: it records its current master, enslaves it to the slice bridge with the
   slice VLAN, and returns it to that master at `down`. vxedge owns what the vehicle provides in production, the
   slice, the signal plane and the Vehicle HAL server; the platform's stack owns how the guest boots. Attach nodes
   start **last within the zones stage** and stop first, so a guest never boots before the vehicle services it
-  dials. `status` decides idempotence, and an adapter acts on its own node only. The same contract adopts a
-  physical NIC, for hardware in the loop.
+  dials. `status` decides idempotence, and an adapter acts on its own node only. The previous master is recorded
+  in the interface's own alias (`vxedge:adopted-from=<master>`), so `down` needs no state outside the kernel. An
+  adapter whose platform images live outside the workspace pins them by digest in a file inside the adapter
+  directory and refuses to start on a mismatch, so the package digest covers what ran. The same contract adopts
+  a physical NIC, for hardware in the loop.
 - **The AAOS ladder**, one contract, a parity label per rung: `aaos-26q2-x86_64-cf` (Cuttlefish on x86_64: the
   AAOS framework and the production Vehicle HAL path over a slice), `aaos-26q2-arm64-cf` (Cuttlefish on Arm: the
   production instruction set), `aaos-on-qnx-hyp` (a guest of QNX Hypervisor beside a QNX cluster: the production
