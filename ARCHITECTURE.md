@@ -538,9 +538,13 @@ functions, a topic flows between behaviours, and which devices they sit on is a 
 decision a study should be able to vary without rewriting the interaction topology.
 
 `role` is `zone-controller | hpc | gateway | ecu | sensor | actuator | switch`. `backend` is
-`container | qemu-microvm | libvirt | cloud-hypervisor | wasm-capsule` and is **required for any device attached to a slice**:
-the planner has to know whether to build a veth or a tap, and guessing produced a workspace
-that validated and then could not boot.
+`container | qemu-microvm | libvirt | cloud-hypervisor | wasm-capsule | attach` and is **required for any device attached to a slice**:
+the planner has to know whether to build a veth or a tap, or to adopt an interface another stack made
+(`attach`, §9), and guessing produced a workspace that validated and then could not boot.
+
+An endpoint's `ip` is one CIDR, or a list of them on the same port: the first is the device's address, and a
+container device also carries the rest, as a multi-homed ECU does (`ip: [10.120.0.60/24, 192.168.98.1/24]`). A
+VM guest is given the first only.
 
 Addressing is `<id>[:<port>]`. Ids are **flat and unique workspace-wide** (`zonefl`, not
 `zones.front-left`): structural paths break when the model is restructured, and flat ids do
@@ -619,13 +623,14 @@ parts:
 ```
 
 Each entry carries `ref`, `digest`, `target_ids`, and, only where the reference is silent
-about it, `kind: container | bundle | wasm`. Class, subtype, layer, name and the VXPN part number are
+about it, `kind: container | bundle | wasm | attach`. Class, subtype, layer, name and the VXPN part number are
 all derivable from the ref path; restating them is the drift the computed-part-number design
 exists to prevent.
 
 `kind` exists because a part knows what it *is* and a device knows how it is *run*, and the two
 have to agree: a container backend boots a container image, libvirt, qemu-microvm and
-cloud-hypervisor boot a guest bundle, wasm-capsule runs a `.wasm` module. The `local/…` namespace is conclusive on its own (a host process, never a
+cloud-hypervisor boot a guest bundle, wasm-capsule runs a `.wasm` module, and attach runs the platform adapter
+an `attach` part declares (§9). The `local/…` namespace is conclusive on its own (a host process, never a
 bundle), and a published vxparts ref is deliberately **not** read for this, its class says
 what kind of node the part loads onto, not how it is packaged, and a zone guest is legitimately
 a container under the netns backend. A `localhost/…` ref is conclusive the other way: a
@@ -1152,8 +1157,24 @@ deliberately separate:
 - **microVM escape hatch:** `backend: qemu-microvm` drives raw QEMU (QMP, `microvm` machine type),
   bypassing libvirt's device model for the minimal-latency arm of hypothesis H3.
   `backend: cloud-hypervisor` does the same through Cloud Hypervisor's REST API on a per-node Unix
-  socket, booting the same guest bundle. It is validated on `linux-probe` only, and it is headless,
-  so AAOS stays on libvirt/QEMU. All of these hide behind the same `vxedge zone up` interface.
+  socket, booting the same guest bundle. It is validated on `linux-probe` only, and it is headless.
+  All of these hide behind the same `vxedge zone up` interface.
+- **A guest that brings its own host stack:** `backend: attach`. Some guests boot only on their platform's own
+  stack: AOSP's Cuttlefish AAOS image needs about 25 Cuttlefish host services (TEE, display, sensors, input,
+  modem) and cannot boot on a bare VMM, as a production AAOS guest needs its hypervisor vendor's board support.
+  vxedge does not rebuild that stack. The device's part is an adapter, `attach.yaml`: the network `interface`
+  the platform creates, `start`, `status` and `stop` commands, and a `start_timeout`. The gateway **adopts** the
+  interface instead of creating a port: it records its current master, enslaves it to the slice bridge with the
+  slice VLAN, and returns it to that master at `down`. vxedge owns what the vehicle provides in production, the
+  slice, the signal plane and the Vehicle HAL server; the platform's stack owns how the guest boots. Attach nodes
+  start **last within the zones stage** and stop first, so a guest never boots before the vehicle services it
+  dials. `status` decides idempotence, and an adapter acts on its own node only. The same contract adopts a
+  physical NIC, for hardware in the loop.
+- **The AAOS ladder**, one contract, a parity label per rung: `aaos-26q2-x86_64-cf` (Cuttlefish on x86_64: the
+  AAOS framework and the production Vehicle HAL path over a slice), `aaos-26q2-arm64-cf` (Cuttlefish on Arm: the
+  production instruction set), `aaos-on-qnx-hyp` (a guest of QNX Hypervisor beside a QNX cluster: the production
+  cockpit architecture), and `aaos-hil` (a real head unit or SoC kit on a physical port: production hardware and
+  BSP). A result is never quoted for a rung it was not run on.
 - **WebAssembly capsules:** `backend: wasm-capsule` runs a WASI 0.2 command component, a local file
   or a part published by digest, as a zone
   node, for a sensor or ECU simulable as a sandboxed control loop rather than a full guest kernel.
@@ -1166,7 +1187,8 @@ deliberately separate:
     production-representative ADAS/safety guest for `front-left`/`front-right` zones. QNX is what
     production ADAS and cockpit controllers run, which anchors OEM relevance.
   - **Zephyr / FreeRTOS**: microVM images for sensor/ECU nodes.
-  - **Android Automotive (AAOS)**: infotainment zone; QEMU with virtio-gpu or GPU passthrough.
+  - **Android Automotive (AAOS)**: infotainment zone, through `backend: attach` and the ladder above; its
+    Vehicle HAL is the gRPC one, served from the vehicle's signal plane.
   - **Embedded Qt/QML IVI/cluster loadable**: an alternate infotainment/cluster baseline to
     AAOS, not desktop tooling (**correction, 2026-08-06**: earlier drafts of this document
     wrongly scoped Qt/QML as an operator dashboard only, it has no such role, see §5.1). Runs
