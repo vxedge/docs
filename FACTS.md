@@ -44,7 +44,7 @@ on modelled hardware), **planned**, **caveat** (works, with a stated limit on wh
 | `project.hypotheses` | 4 | [`ARCHITECTURE.md`](ARCHITECTURE.md) §2 |
 | `project.hypotheses_hold` | 4 | §2 below |
 | `project.reproduced` | 4 | §2 below: each verdict re-reached by an independent second campaign |
-| `project.repos` | 9 | `README.md`: `docs` and eight code repositories |
+| `project.repos` | 10 | `README.md`: `docs` and nine code repositories |
 | `project.mcp_spec` | 2026-07-28 | `vxmcp` targets this MCP specification revision |
 
 ### Phases
@@ -61,7 +61,7 @@ The latest tagged release of each code repository.
 
 | Key | Repository | Version | Released |
 |---|---|---|---|
-| `vxedge` | `vxedge` | 0.9.1 | 2026-11-08 |
+| `vxedge` | `vxedge` | 0.10.0 | 2026-11-08 |
 | `vxagents` | `vxagents` | 0.1.1 | 2026-10-28 |
 | `vxmcp` | `vxmcp` | 0.2.4 | 2026-11-08 |
 | `vxmodels` | `vxmodels` | 0.1.0 | 2026-10-29 |
@@ -272,7 +272,7 @@ interface its own platform creates, adopted by the gateway.
 | Key | Backend | Runs | State | Validated on |
 |---|---|---|---|---|
 | `backend.container` | `container` | a network namespace, or an OCI image in a container group | live | `vxprobe`, OCI payloads |
-| `backend.qemu_microvm` | `qemu-microvm` | a guest bundle under raw QEMU | live | `linux-probe` |
+| `backend.qemu_microvm` | `qemu-microvm` | a guest bundle under raw QEMU: x86_64 on `microvm`, aarch64 on `virt` | live | `linux-probe` (x86_64, KVM; aarch64, TCG only), the Zephyr probe |
 | `backend.libvirt` | `libvirt` | a guest bundle as a libvirt domain | live | `linux-probe` |
 | `backend.cloud_hypervisor` | `cloud-hypervisor` | a guest bundle under Cloud Hypervisor | live | `linux-probe` only |
 | `backend.wasm_capsule` | `wasm-capsule` | a WASI 0.2 component in a `vxcapsule` process | live | `reflector-capsule` only |
