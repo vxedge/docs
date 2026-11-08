@@ -8,6 +8,9 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §11: telemetry records (`sample`, `gap`, `phase`), named by entity, the same
+  live and archived; and archive v2 (`vxarchive/2`), a zip with an index of every member's sha256
+  and zstd-compressed records, readable by Python's standard library from 3.14.
 - `ARCHITECTURE.md` §6.0.7 and `USER-GUIDE.md`: `pkg vendor` also copies the local part folders the
   documents reference whose files the source's git checkout tracks, such as an attach adapter;
   untracked files are build outputs and stay behind.
