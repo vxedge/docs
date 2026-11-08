@@ -53,8 +53,8 @@ done
 | `vxmodels` | SysML v2 system models + `vxmodel` manifest renderer, track M (`ARCHITECTURE.md` §6.3) |
 | `vxmcp` | MCP (Model Context Protocol) server over vxAPI, for agent tooling |
 
-Every repo has an `AGENTS.md` (scope + rules) and `TASKS.md` (phased work items);
-`docs/ROADMAP.md` is the program-level board with the cross-repo critical path.
+Every repo has an `AGENTS.md` (scope + rules) and a `CHANGELOG.md`; `docs/ROADMAP.md` is the
+public phase status.
 
 ## 3. Get the binaries
 
@@ -182,19 +182,12 @@ consistency. Experiment manifests live in `vxperiments/experiments/`, vehicle ma
 - **Bundle build: "vmlinuz not readable"**: Ubuntu ships kernels 0600;
   `sudo chmod 644 /boot/vmlinuz-$(uname -r)`.
 
-## 9. Where to contribute next
+## 9. Where to contribute
 
-Check `docs/ROADMAP.md` (program board) and `RESULTS.md` (what's done vs open). The gates of
+Check `docs/ROADMAP.md` (phase status) and `RESULTS.md` (what is measured). The gates of
 phases 1 to 3 have passed and phase 3 content is in progress ([`FACTS.md`](FACTS.md)); `v0.1.0` was tagged across the delivering
-repos when the phase-1 gate passed (2026-07-13). Current open fronts, from the roadmap's open work:
-
-1. `vxedge`: the vxAPI agent surface (`ARCHITECTURE.md` §5.2, planned for 0.5.0)
-2. `vxparts` (`parts/hpc/`): Autoware/ROS 2 + CARLA + carla-ros-bridge, closed loop (needs a Tier 2 GPU host)
-3. `vxparts` (`parts/zone/`): QNX SDP 8 / AAOS images + real-RTOS guest bundles
-   (Zephyr/FreeRTOS) beyond the linux-probe bundle
-4. Track M: M4 (scenario models, fidelity ledger), which waits on a GPU host
-5. Release pipeline: GHCR images with digests, and a tag-triggered release for the repositories
-   other than `vxedge`
+repos when the phase-1 gate passed (2026-07-13). To propose work, open an issue on the repository it
+belongs to, or on `vxedge/docs` for anything that spans repositories.
 
 Conventions to know before your first PR: manifests are the sole source of truth; no
 orchestration logic in any frontend; every image is digest-tagged. Details per repo in its `AGENTS.md`.

@@ -8,6 +8,11 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- Direction stays internal: `ROADMAP.md` is now phase status and what has shipped, with no open-work
+  or publication list. `ARCHITECTURE.md` drops the market positioning in §14, the scope of later
+  phases in §15, the planned remote and cloud-hosted modes in §5.3, the phase-4 hardware rungs,
+  and unreleased frontends. `GETTING-STARTED.md`, `USER-GUIDE.md`, `README.md` and `AGENTS.md`
+  no longer point to per-repo `TASKS.md` files, which moved to the maintainers' internal board.
 - `USER-GUIDE.md`: the `pkg` row adds `pkg vendor` and `vendor --check` (vxedge 0.8.0), and the
   `experiment up` and `vehicle up` rows say that a `vxp/1` package whose lock does not match is
   refused with `ERROR_REASON_LOCK_MISMATCH` and that `--unlocked` runs it anyway (0.7.0).

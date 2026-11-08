@@ -16,7 +16,7 @@ vxedge is an open, all-software testbed for mapping 5G network slices onto zonal
 | [ARCHITECTURE.md](ARCHITECTURE.md) | The architecture specification: research goals and hypotheses, topology, vxAPI, manifest schemas, network/service/virtualization models, methodology, phased roadmap |
 | [RESULTS.md](RESULTS.md) | Measured results for H1–H4, with numbers, verdicts and caveats |
 | [FACTS.md](FACTS.md) | **The registry of every published number and state.** The website and every README quote it |
-| [ROADMAP.md](ROADMAP.md) | Phase status and open work |
+| [ROADMAP.md](ROADMAP.md) | Phase status and what has shipped |
 | [GETTING-STARTED.md](GETTING-STARTED.md) | From zero to a measured experiment |
 | [USER-GUIDE.md](USER-GUIDE.md) | Concepts, CLI reference, workflows, SDV vocabulary map |
 | [TESTBED-SETUP.md](TESTBED-SETUP.md) | Host requirements, tiered by experiment class |

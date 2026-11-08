@@ -7,7 +7,7 @@ status in [ROADMAP.md](ROADMAP.md); acronyms in [ACRONYMS.md](ACRONYMS.md).
 
 **State banner:** vxedge is a research-grade *executable virtual prototype* of a zonal
 SDV E/E architecture, not a certified tool and not a "digital twin" of any physical vehicle
-(that word is reserved for hardware-in-the-loop parity, phase 4). What is verified today is
+(that word is reserved for hardware-in-the-loop parity). What is verified today is
 listed per-verb below; everything else fails loudly rather than pretending.
 
 ## 1. Concepts
@@ -161,12 +161,12 @@ kernel, userspace timestamps).
 | zones + backends | zonal ECUs under a Type-1 hypervisor (fidelity ladder: KVM → Xen dom0less → QNX Hypervisor) |
 | `type: can` links (phase 3) | CAN/LIN drops behind zonal controllers (restbus, DBC, Kuksa/VSS) |
 | harness `impairments` (delivered) + `harness` block | 100/1000BASE-T1 PHY characteristics (rate/delay/jitter/loss) + declarative length/weight for harness-reduction reporting; TSN variant = 802.1Qbv/Qav + gPTP (phase 2, open) |
-| results archives | test-bench evidence packages (ASAM OSI/FMI/XIL alignment, phase 4) |
+| results archives | test-bench evidence packages |
 
 ## 7. Getting help / contributing
 
-Each repo carries `AGENTS.md` (scope + rules) and `TASKS.md` (work items);
-`docs/ROADMAP.md` is the program board. Quality bars are codified per repo: `rust-patterns`, `testbed-quality`, `experiment-methodology`,
+Each repo carries `AGENTS.md` (scope + rules) and `CHANGELOG.md`;
+`docs/ROADMAP.md` is the public phase status. Quality bars are codified per repo: `rust-patterns`, `testbed-quality`, `experiment-methodology`,
 `gateway-verification` (vxedge), `sysml-authoring` (vxmodels).
 A verb that prints "not wired to the daemon yet (scaffold)" is unimplemented:
 check the CLI reference in §2 before assuming a bug.

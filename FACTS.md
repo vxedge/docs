@@ -54,8 +54,6 @@ on modelled hardware), **planned**, **caveat** (works, with a stated limit on wh
 | `phase.1` | Slicing core, API-first | Reproducible H1/H3/H4 numbers | done |
 | `phase.2` | Real slices and workloads | H2: S-NSSAI vs static VLAN | done |
 | `phase.3` | Production SDV alignment | `vxedge vehicle up` boots a full vehicle end to end | done |
-| `phase.4` | Hardware in the loop | Jetson / DRIVE / BlueField / V2X radio | specified |
-| `phase.5` | Remote and multi-user | none yet | backlog |
 
 ### Releases
 
@@ -291,7 +289,6 @@ no orchestration logic lives in a frontend.
 | `frontend.mcp` | vxmcp | MCP server for AI agent tooling | live |
 | `frontend.sdk` | Generated SDKs | Rust built; TypeScript planned | building |
 | `frontend.web` | Web dashboard | TypeScript | planned |
-| `frontend.studio` | vxedge Studio | Electron, future | planned |
 
 ### Use cases
 
@@ -339,5 +336,3 @@ How a generated experiment reaches the bench.
 | `service.placed` | live | a service runs on a container device with `on:`, answering on that device's slice only; `ota` only |
 | `signal.plane` | live | the Kuksa databroker as a stage of `vehicle up` and `experiment up`, in its device's container group. On kuksa-databroker 0.7.1, real `kuksa.val.v2` providers and subscribers on its slice: published values reached subscribers in order, actuation reached a provider, a CAN dump replayed by kuksa-can-provider fed a consumer on another device, and every client on another slice was refused (verified 2026-11-04 on [`vx-vehicle-03`](https://github.com/vxedge/vxperiments/tree/main/results/kuksa-cases-2026-11-04), VSS 6.0 scenarios in [`vss-scenarios-2026-11-04`](https://github.com/vxedge/vxperiments/tree/main/results/vss-scenarios-2026-11-04)). Released in `vxedge` 0.5.0. The providers and consumers are test clients: no plant model or vehicle application ran. Its time across the slice was measured with kuksa-perf, in [`broker-slice-main-2026-11-04`](https://github.com/vxedge/vxperiments/tree/main/results/broker-slice-main-2026-11-04), `exp016.*` under Results; each of those numbers crosses the slice twice, on one shared host. Signals are unauthenticated, so slice isolation is their only protection |
 | `api.agents` | live | an agent runs a trial through `vxmcp` alone on typed fields: plan, up, typed status, events with resume, traffic, collection, daemon restart, cancel and down, 10 of 10 consecutive runs on `vx-vehicle-03` and libvirt on `exp-002-ws` (verified 2026-11-04, [release gate](https://github.com/vxedge/vxperiments/tree/main/results/vxapi-0.5.0-gate-2026-11-04)), and the core sequence 10 of 10 on `vx-reference-sedan-03` with its AAOS zone, on vxedge 0.9.1 and vxmcp 0.2.4 release builds (verified 2026-11-08, [gate](https://github.com/vxedge/vxperiments/tree/main/results/aaos-gate-2026-11-08)). One run per host; apart from the AAOS zone, guests are probes |
-| `retarget.fleet` | planned | two vehicles at once (fleet layer) |
-| `paper.1` | in preparation | phase-1 dataset (H1/H3/H4) for arXiv, [`ROADMAP.md`](ROADMAP.md) |
