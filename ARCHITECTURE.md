@@ -1452,6 +1452,27 @@ v1 or v2 archive as JSON Lines, and reads a v1 archive's samples as `sample` rec
 
 ---
 
+**Entities.** Every telemetry record names one entity path, derived from the model's ids and
+never from an address, so a sample, a log line and an event about the same thing agree on what it
+is:
+
+```
+<vehicle>/<zone>/<node>        a device in a zone
+<vehicle>/_/<node>             a device the vehicle declares in no zone (a gateway, central compute)
+<vehicle>/links/<link>         a link
+<vehicle>/channels/<channel>   a channel
+<vehicle>/slices/<slice>       a slice the vehicle's links use
+<vehicle>/services/<service>   a service placed on one of the vehicle's devices
+host/services/<service>        a service run as a host process
+host                           the testbed host, including the observer's own cost
+```
+
+The daemon maps each scrape target to an entity once: to the node whose link endpoint carries the
+target's address, and to `host` otherwise. `WorkspaceService.Plan` lists every entity with its
+kind, role, backend, payloads and bound scrape targets (`WorkspacePlan.entities`), and
+`TelemetryService.Collect` writes the same list as `entities.json` beside what was ingested, so the
+archive carries it.
+
 ## 13: Reproducibility, CI/CD, artifact publication (registries)
 
 - **Workspace identity, one rule.** A run's provenance is a SHA-256 over **every file the
