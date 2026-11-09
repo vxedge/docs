@@ -1471,7 +1471,18 @@ The daemon maps each scrape target to an entity once: to the node whose link end
 target's address, and to `host` otherwise. `WorkspaceService.Plan` lists every entity with its
 kind, role, backend, payloads and bound scrape targets (`WorkspacePlan.entities`), and
 `TelemetryService.Collect` writes the same list as `entities.json` beside what was ingested, so the
-archive carries it.
+archive carries it. A host telemetry service finds it there from its start as well.
+
+**Host-side measurements.** The daemon serves its own exporter, Prometheus text at `/metrics` on
+`vxedged --metrics-listen` (default `127.0.0.1:9469`), bound to `host` as a scrape target. Every
+series carries `entity="<path>"`, which names the sample's entity in place of the target's. Each
+scrape reads the kernel's counters as they are then.
+
+| Series | Entity | Read from |
+|---|---|---|
+| `vxedge_node_cpu_seconds_total`, `vxedge_node_memory_bytes` | a node | A container node's cgroup (`cpu.stat`, `memory.current`), or a VM's or capsule's own VMM or runner process (`/proc`: CPU time of all its threads, resident memory). `source` says which. A node nothing on the host runs has none. |
+| `vxedge_slice_sent_bytes_total`, `vxedge_slice_sent_packets_total`, `vxedge_slice_dropped_packets_total`, `vxedge_slice_overlimits_total`, `vxedge_slice_backlog_bytes`, `vxedge_slice_backlog_packets` | a slice | The slice's HTB class on the gateway uplink. The class belongs to the gateway, so every vehicle whose links use the slice reports the same queue. |
+| `vxedge_process_cpu_seconds_total`, `vxedge_process_memory_bytes` | `host` | The daemon's own process (`process="vxedged"`): the observer's cost. |
 
 ## 13: Reproducibility, CI/CD, artifact publication (registries)
 
