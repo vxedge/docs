@@ -221,7 +221,7 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
 | `ExperimentService` | `Up`, `Down`, `Status` |
 | `TrafficService` | `Up`, `Down`, `Status` |
 | `MeasurementService` | `Start`, `Stop`, `Status` (an experiment's `measurements`, run inside each end's network namespace) |
-| `CampaignService` | `Plan` (a campaign's trials, each point's bound document checked; touches nothing) |
+| `CampaignService` | `Plan` (a campaign's trials, each point's bound document checked; touches nothing), `Start` (runs the trials serially as one job), `Get`, `List`, `Watch` (status as it changes) |
 | `PackageService` | `Inspect` (a package's descriptor, digest, lock state, requirements, typed intent, measurements and entities; touches nothing), `List` (the host's package cache), `Pull`, `Import` (client-streaming) |
 | `NosCheckService` | `Up`, `Down`, `Status`, `Verify` |
 | `JobService` | `Get`, `Watch` (server-streamed progress; every mutating RPC returns a `Job`), `List`, `Cancel` |
@@ -798,6 +798,32 @@ campaign:
   to the fields they bind, in memory: the package is never written, so its digest and lock hold
   for the whole campaign. A value the parameter allows but the document cannot run, such as a
   probe rate of 0, is a typed problem naming the point.
+
+**Running a campaign.** `CampaignService.Start` runs the trials serially as one `campaign.run`
+job.
+- **Each trial, in five phases:**
+  1. *provision:* `experiment up` with the trial's values bound, in memory, as in `Plan`;
+  2. *warmup:* the traffic profiles start for the trial's windows, then the warmup passes;
+  3. *measure:* the measurements run for the trial's duration;
+  4. *cooldown:* measurements and traffic stop;
+  5. *teardown:* the telemetry service stops, the trial is archived, and `experiment down` runs.
+- **Stages and markers:** every step is a stage of the campaign job, so it shows as a child job.
+  Each phase starts with a `phase` record in the trial's records (§11).
+- **Archives:** each trial's archive is `vxarchive/2`, and its `metadata.json` names the
+  campaign, the trial, its arm, repetition and parameter values.
+- **Requirements:** a campaign archives through the experiment's own telemetry service, so
+  `Plan` and `Start` refuse an experiment without one.
+- **Failures:** a failed trial is recorded and the next one runs. `down` runs after every trial
+  that started provisioning.
+- **State:** the campaign's state, with each trial's phase, archive and digest, is kept in
+  `campaign.json` beside the archives (`results/<campaign id>/` in the workspace by default) and
+  under the daemon's runtime folder. `Get`, `List` and `Watch` read it, after a restart too.
+- **Resuming:** a retry with the same `request_id` resumes that campaign and skips the trials
+  whose archives exist.
+- **Cancelling:** `JobService.Cancel` stops it between trials.
+- **One at a time:** another campaign is refused as `ERROR_REASON_BUSY`, with `active_campaign`
+  and `retry_after_ms` in `ErrorInfo.metadata`. An unknown campaign id is
+  `ERROR_REASON_CAMPAIGN_UNKNOWN`.
 
 **Checked by `Plan`, before any trial.** `WorkspaceService.Plan`, `experiment validate` and `up`
 check typed intent with the rest of the workspace. A parameter whose type, bounds or `binds`
