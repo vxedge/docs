@@ -1373,6 +1373,39 @@ deliberately separate:
 - Agents and telemetry services configured via manifest and CLI commands.
 - Designed to be lightweight to avoid perturbing experiment results.
 
+**Records.** Telemetry is one JSON object per line, the same while a run is live and in its
+archive. Each record names the entity it is about (§12) and its shape in `record`:
+
+| Record | Fields |
+|---|---|
+| `sample` | `ts_ns`, `entity`, `metric`, `labels` (a map), `value` |
+| `gap` | `entity`, optional `metric`, `from_ns`, `to_ns`, `reason` (a required target that did not answer) |
+| `phase` | `ts_ns`, optional `trial`, `phase` (provision, warmup, measure, cooldown, teardown) |
+
+Times are nanoseconds since the Unix epoch, taken in user space. A renderer draws a break at a
+`gap`, never a line across it. `vxtelemetry` names each scrape target's samples by the entity
+`entities.json` binds it to, and `host` otherwise. A target that serves many entities names each
+sample's entity in an `entity` label instead, and `vxtelemetry` also scrapes the targets
+`entities.json` lists beside the workspace's own.
+
+**Archive v2** (`vxarchive/2`, from `vxtelemetry collect --archive-version 2`; v1 stays the
+default) is one zip per run whose large record files are zstd-compressed members:
+
+```
+index.json                  schema vxarchive/2; every other member with its size and sha256
+metadata.json               as v1, plus `archive: vxarchive/2`
+package/                    the workspace's identity inputs
+entities.json               the entity paths records name
+metrics/samples.jsonl.zst   sample and gap records
+phases.jsonl                phase records, when there are any
+events.jsonl                vxAPI events, when the run recorded them
+```
+
+Python's standard library reads it from 3.14 (`zipfile`, `compression.zstd`). `vxtelemetry verify`
+checks every member against the index, the identity over `package/` and the package digest, so a
+changed, added or missing member fails it. `vxtelemetry records <archive>` prints the records of a
+v1 or v2 archive as JSON Lines, and reads a v1 archive's samples as `sample` records.
+
 ---
 
 ## 12: Experiment methodology, metrics, and analysis plan
