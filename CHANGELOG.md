@@ -8,6 +8,9 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §5 and §11: `TelemetryService.StreamRecords` streams the ingest's sample,
+  gap and phase records live, in archive order, resumable by `seq`; `StreamMetrics` is built and
+  carries its samples by entity.
 - `ARCHITECTURE.md` §12: host-side measurements. The daemon's exporter serves per-node CPU and
   memory and per-slice queue counters, each series labelled with its entity, and is scraped as a
   `host` target.

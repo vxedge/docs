@@ -224,7 +224,7 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
 | `NosCheckService` | `Up`, `Down`, `Status`, `Verify` |
 | `JobService` | `Get`, `Watch` (server-streamed progress; every mutating RPC returns a `Job`), `List`, `Cancel` |
 | `EventService` | `Subscribe` (state transitions, audit events; resumable with `after_id`) |
-| `TelemetryService` | `Collect` (archive job), `StreamMetrics` (live, not built) |
+| `TelemetryService` | `Collect` (archive job), `StreamRecords` (live records, resumable with `after`), `StreamMetrics` (live samples) |
 | `RunService` | `Get`, `List` |
 | `WorkspaceService` | `Plan` |
 | `HostService` | `Capabilities` |
@@ -234,7 +234,7 @@ second source of truth** beside manifests; daemon state stays in ephemeral runti
 
 **Not built.** `Apply`, `Remove` and `PushImage` on `ZoneService` and `ComputeService` answer
 `UNIMPLEMENTED`, and are to be deprecated: manifests define the topology, and parts come from the
-registry. `TelemetryService.StreamMetrics` is not built either.
+registry.
 
 **Versioning.** vxAPI stays in the `vxedge.v1` package, and wire changes are additive: new RPCs,
 fields and values, with old ones kept and marked deprecated. Behaviour may change between releases
@@ -1387,6 +1387,14 @@ Times are nanoseconds since the Unix epoch, taken in user space. A renderer draw
 `entities.json` binds it to, and `host` otherwise. A target that serves many entities names each
 sample's entity in an `entity` label instead, and `vxtelemetry` also scrapes the targets
 `entities.json` lists beside the workspace's own.
+
+**Live.** `vxtelemetry` appends every record to `records.jsonl` in its ingest folder as it
+scrapes, and `TelemetryService.StreamRecords` tails that file, so a live stream carries the same
+records, in the same order, as the archive built from the folder. Each `Record` carries its line
+number as `seq`. A client resumes with `after` set to the last `seq` it saw, narrows to an
+`entity_prefix`, and sets `follow` to keep the stream open as more is written. Without `follow`,
+the stream ends at the last record written. `StreamMetrics` sends the same stream's samples, from
+the first, as `Metric` values with their `entity`, filtered by a `selector` of labels or `entity`.
 
 **Archive v2** (`vxarchive/2`, from `vxtelemetry collect --archive-version 2`; v1 stays the
 default) is one zip per run whose large record files are zstd-compressed members:
