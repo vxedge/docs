@@ -799,7 +799,6 @@ measurements:
     slice: adas              # the slice its packets use
     rate_pps: 500            # default 100
     payload_bytes: 64        # default 64
-    window_s: 1              # default 1
 ```
 
 - **`rtt-probe`** sends paced UDP probes from `from` to a reflector at `to` and records round-trip
@@ -817,7 +816,8 @@ measurements:
   the runtime folder.
 - **Checked by `Plan`.** An end that is not a device (or `internet`, for `to`), an end that is a
   VM or an attached platform, a slice that is not declared or that an end has no link or pinned
-  address on, or a rate, payload or window out of bounds is a problem with
+  address on, two `to: internet` measurements on different slices whose far sides would take one
+  address, or a rate or payload out of bounds is a problem with
   `ERROR_REASON_MEASUREMENT_INVALID`, and `up` and `Start` refuse it. A parameter can bind a
   measurement's field: `binds: measurements[ctl-rtt].rate_pps`.
 - **`Stop`** ends a measurement's processes and removes a far-side interface no other measurement
