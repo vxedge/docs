@@ -8,6 +8,10 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §5 and §11: `LogService.Follow` streams the log lines the ingest reads from
+  each entity's files (serial consoles, hypervisor logs, service and traffic output) as `log`
+  records, resumable by `seq` and filtered by entity and stream; archive v2 keeps them as
+  `logs/<entity>.jsonl.zst`; `Plan` and `entities.json` name each entity's log files.
 - `ARCHITECTURE.md` §5 and §11: `TelemetryService.StreamRecords` streams the ingest's sample,
   gap and phase records live, in archive order, resumable by `seq`; `StreamMetrics` is built and
   carries its samples by entity.

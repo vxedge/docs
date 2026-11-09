@@ -198,7 +198,7 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
     thin, 1:1 client over the same RPCs, this time addressed by an LLM agent's tool-call surface
     instead of a terminal or a GUI. Every MCP tool is a direct wrapper over one vxAPI RPC
     (`GatewayService`/`ZoneService`/`ComputeService`/`VehicleService`/`ExperimentService`/
-    `TrafficService`/`SvcService`/`NosCheckService`/`TelemetryService`/`RunService`/
+    `TrafficService`/`SvcService`/`NosCheckService`/`TelemetryService`/`LogService`/`RunService`/
     `WorkspaceService`/`HostService`/`JobService`/`EventService`), never a multi-step workflow baked into the
     server, the hard rule stated explicitly for this frontend too. Sits directly on
     `vxedge-api`'s generated tonic bindings (a Rust-to-Rust dependency, not a second codegen
@@ -225,6 +225,7 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
 | `JobService` | `Get`, `Watch` (server-streamed progress; every mutating RPC returns a `Job`), `List`, `Cancel` |
 | `EventService` | `Subscribe` (state transitions, audit events; resumable with `after_id`) |
 | `TelemetryService` | `Collect` (archive job), `StreamRecords` (live records, resumable with `after`), `StreamMetrics` (live samples) |
+| `LogService` | `Follow` (live log lines per entity and stream, resumable with `after`) |
 | `RunService` | `Get`, `List` |
 | `WorkspaceService` | `Plan` |
 | `HostService` | `Capabilities` |
@@ -1381,6 +1382,7 @@ archive. Each record names the entity it is about (§12) and its shape in `recor
 | `sample` | `ts_ns`, `entity`, `metric`, `labels` (a map), `value` |
 | `gap` | `entity`, optional `metric`, `from_ns`, `to_ns`, `reason` (a required target that did not answer) |
 | `phase` | `ts_ns`, optional `trial`, `phase` (provision, warmup, measure, cooldown, teardown) |
+| `log` | `ts_ns`, `entity`, `stream`, `line` (one line of one of the entity's log files) |
 
 Times are nanoseconds since the Unix epoch, taken in user space. A renderer draws a break at a
 `gap`, never a line across it. `vxtelemetry` names each scrape target's samples by the entity
@@ -1396,6 +1398,18 @@ number as `seq`. A client resumes with `after` set to the last `seq` it saw, nar
 the stream ends at the last record written. `StreamMetrics` sends the same stream's samples, from
 the first, as `Metric` values with their `entity`, filtered by a `selector` of labels or `entity`.
 
+**Logs.** `entities.json` names each entity's log files with what each is to it (`stream`): a
+VM's `serial` console, a hypervisor's own `vmm` log, a capsule runner's or a host service's
+`stdout`, an attached platform's `attach` scripts, and a traffic generator's
+`traffic-<profile>-<role>` output, bound to the node it runs from (a reflector to the node it
+answers on, or `host`). A container's output stays with Podman and is not listed. Each ingest round
+reads the complete lines each file gained, at most 1 MiB per file, and appends a `log` record per
+line to `logs.jsonl`. A line's `ts_ns` is the round that read it: the files share no clock, and the
+round is the bound the ingest can vouch for. `logs.offsets.json` keeps where each file was read up
+to, so a restarted ingest resumes, and a file that shrinks is read again from its start.
+`LogService.Follow` tails `logs.jsonl` as `StreamRecords` tails `records.jsonl`: `seq` is the line
+number, `after` resumes, and `entity_prefix` and `streams` narrow it.
+
 **Archive v2** (`vxarchive/2`, from `vxtelemetry collect --archive-version 2`; v1 stays the
 default) is one zip per run whose large record files are zstd-compressed members:
 
@@ -1406,13 +1420,15 @@ package/                    the workspace's identity inputs
 entities.json               the entity paths records name
 metrics/samples.jsonl.zst   sample and gap records
 phases.jsonl                phase records, when there are any
+logs/<entity>.jsonl.zst     log records, one member per entity that logged
 events.jsonl                vxAPI events, when the run recorded them
 ```
 
 Python's standard library reads it from 3.14 (`zipfile`, `compression.zstd`). `vxtelemetry verify`
 checks every member against the index, the identity over `package/` and the package digest, so a
 changed, added or missing member fails it. `vxtelemetry records <archive>` prints the records of a
-v1 or v2 archive as JSON Lines, and reads a v1 archive's samples as `sample` records.
+v1 or v2 archive as JSON Lines, and reads a v1 archive's samples as `sample` records; with
+`--logs` it prints a v2 archive's `log` records, entity by entity.
 
 ---
 
@@ -1477,7 +1493,7 @@ host                           the testbed host, including the observer's own co
 
 The daemon maps each scrape target to an entity once: to the node whose link endpoint carries the
 target's address, and to `host` otherwise. `WorkspaceService.Plan` lists every entity with its
-kind, role, backend, payloads and bound scrape targets (`WorkspacePlan.entities`), and
+kind, role, backend, payloads, bound scrape targets and log files (`WorkspacePlan.entities`), and
 `TelemetryService.Collect` writes the same list as `entities.json` beside what was ingested, so the
 archive carries it. A host telemetry service finds it there from its start as well.
 
