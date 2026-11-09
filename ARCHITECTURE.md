@@ -816,12 +816,15 @@ measurements:
   the runtime folder.
 - **Checked by `Plan`.** An end that is not a device (or `internet`, for `to`), an end that is a
   VM or an attached platform, a slice that is not declared or that an end has no link or pinned
-  address on, two `to: internet` measurements on different slices whose far sides would take one
-  address, or a rate or payload out of bounds is a problem with
+  address on, a `to: internet` measurement whose far side would take one address on two
+  slices (with another measurement, or with a traffic profile sending to the uplink), or a rate or payload out of bounds is a problem with
   `ERROR_REASON_MEASUREMENT_INVALID`, and `up` and `Start` refuse it. A parameter can bind a
   measurement's field: `binds: measurements[ctl-rtt].rate_pps`.
+- **Load runs where the node is.** `TrafficService.Up` runs a `traffic_profiles` entry inside its
+  source node in the same way once the node's zone is up, to a target node or to the far side of
+  the uplink, so a campaign's load and its probes share the path they measure.
 - **`Stop`** ends a measurement's processes and removes a far-side interface no other measurement
-  uses. `experiment down` stops every running measurement before it takes the nodes down.
+  or running profile uses. `experiment down` stops every running measurement before it takes the nodes down.
 
 The descriptor holds packaging rather than content, so a version bump never touches an
 experiment file. **`vxp/1`** (ships in vxedge 0.6.0; vxedge 0.5.x reads only the legacy form below):
@@ -1543,7 +1546,7 @@ scrape reads the kernel's counters as they are then.
 | `vxedge_node_cpu_seconds_total`, `vxedge_node_memory_bytes` | a node | A container node's cgroup (`cpu.stat`, `memory.current`), or a VM's or capsule's own VMM or runner process (`/proc`: CPU time of all its threads, resident memory). `source` says which. A node nothing on the host runs has none. |
 | `vxedge_slice_sent_bytes_total`, `vxedge_slice_sent_packets_total`, `vxedge_slice_dropped_packets_total`, `vxedge_slice_overlimits_total`, `vxedge_slice_backlog_bytes`, `vxedge_slice_backlog_packets` | a slice | The slice's HTB class on the gateway uplink. The class belongs to the gateway, so every vehicle whose links use the slice reports the same queue. |
 | `vxedge_process_cpu_seconds_total`, `vxedge_process_memory_bytes` | `host` | The daemon's own process (`process="vxedged"`): the observer's cost. |
-| `vxprobe_sent_total`, `vxprobe_received_total`, `vxprobe_lost_total`, `vxprobe_rtt_seconds` (`quantile`), `vxprobe_rtt_seconds_mean`, `vxprobe_rtt_seconds_stddev` | a measurement | A running measurement's sender, read on `127.0.0.1` inside the sender's own network namespace. |
+| `vxprobe_sent_total`, `vxprobe_received_total`, `vxprobe_lost_total`, `vxprobe_rtt_seconds` (`quantile`), `vxprobe_rtt_seconds_mean`, `vxprobe_rtt_seconds_stddev`, `vxprobe_rtt_distribution_seconds_bucket` (`le`), `_sum`, `_count` | a measurement | A running measurement's sender, read on `127.0.0.1` inside the sender's own network namespace. The distribution's buckets are cumulative from the start of the run (10 µs to 10 s, 1, 2 and 5 per decade), so the difference between two samples is the latency distribution of the round trips between them. |
 
 ## 13: Reproducibility, CI/CD, artifact publication (registries)
 
