@@ -222,6 +222,7 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
 | `TrafficService` | `Up`, `Down`, `Status` |
 | `MeasurementService` | `Start`, `Stop`, `Status` (an experiment's `measurements`, run inside each end's network namespace) |
 | `CampaignService` | `Plan` (a campaign's trials, each point's bound document checked; touches nothing), `Start` (runs the trials serially as one job), `Get`, `List`, `Watch` (status as it changes) |
+| `ResultService` | `List` (a host's results: campaigns' trial archives and a workspace's `results/`), `Get`, `Fetch` (an archive's bytes, server-streaming), by digest |
 | `PackageService` | `Inspect` (a package's descriptor, digest, lock state, requirements, typed intent, measurements and entities; touches nothing), `List` (the host's package cache), `Pull`, `Import` (client-streaming) |
 | `NosCheckService` | `Up`, `Down`, `Status`, `Verify` |
 | `JobService` | `Get`, `Watch` (server-streamed progress; every mutating RPC returns a `Job`), `List`, `Cancel` |
@@ -824,6 +825,16 @@ job.
 - **One at a time:** another campaign is refused as `ERROR_REASON_BUSY`, with `active_campaign`
   and `retry_after_ms` in `ErrorInfo.metadata`. An unknown campaign id is
   `ERROR_REASON_CAMPAIGN_UNKNOWN`.
+
+**Results through vxAPI.** `ResultService` names each archive by the digest of its bytes and
+describes it from its own `metadata.json` only:
+- the archive format, the experiment, and the package with its lock state;
+- the trial: campaign, arm, repetition and parameter values;
+- the collection time, the vxtelemetry version and the kernel.
+
+`List` gives a host's campaign trial archives, and those under a workspace's `results/`, newest
+first. `Get` returns one by digest, and `Fetch` streams its bytes, so a client on another
+filesystem can rerun from it. An unknown digest is `ERROR_REASON_RESULT_UNKNOWN`.
 
 **Checked by `Plan`, before any trial.** `WorkspaceService.Plan`, `experiment validate` and `up`
 check typed intent with the rest of the workspace. A parameter whose type, bounds or `binds`
