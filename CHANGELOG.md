@@ -8,6 +8,9 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §12: host-side measurements. The daemon's exporter serves per-node CPU and
+  memory and per-slice queue counters, each series labelled with its entity, and is scraped as a
+  `host` target.
 - `ARCHITECTURE.md` §12: entity paths, the one name every telemetry record uses for what it is
   about, derived from model ids; scrape targets bound to entities by address; `Plan` lists them and
   `collect` archives them as `entities.json`.
