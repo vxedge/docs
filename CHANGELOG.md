@@ -8,6 +8,8 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `USER-GUIDE.md`: `vxedge traffic up` runs a profile inside its source node once the node's zone is
+  up, instead of refusing it.
 - `ARCHITECTURE.md` §5, §6.0.3 and §12: an experiment's `measurements` block (`rtt-probe`, by node
   id), run by `MeasurementService` (`Start`, `Stop`, `Status`; `vxedge measure`) inside each end's
   network namespace, with the far side of the uplink for `to: internet`. Samples reach the ingest

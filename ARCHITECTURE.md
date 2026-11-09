@@ -820,8 +820,11 @@ measurements:
   address, or a rate or payload out of bounds is a problem with
   `ERROR_REASON_MEASUREMENT_INVALID`, and `up` and `Start` refuse it. A parameter can bind a
   measurement's field: `binds: measurements[ctl-rtt].rate_pps`.
+- **Load runs where the node is.** `TrafficService.Up` runs a `traffic_profiles` entry inside its
+  source node in the same way once the node's zone is up, to a target node or to the far side of
+  the uplink, so a campaign's load and its probes share the path they measure.
 - **`Stop`** ends a measurement's processes and removes a far-side interface no other measurement
-  uses. `experiment down` stops every running measurement before it takes the nodes down.
+  or running profile uses. `experiment down` stops every running measurement before it takes the nodes down.
 
 The descriptor holds packaging rather than content, so a version bump never touches an
 experiment file. **`vxp/1`** (ships in vxedge 0.6.0; vxedge 0.5.x reads only the legacy form below):
