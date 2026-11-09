@@ -8,6 +8,8 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §12: a measurement's samples include `vxprobe_rtt_distribution_seconds`, a
+  cumulative histogram whose differences between samples give latency over time.
 - `USER-GUIDE.md`: `vxedge traffic up` runs a profile inside its source node once the node's zone is
   up, instead of refusing it.
 - `ARCHITECTURE.md` §5, §6.0.3 and §12: an experiment's `measurements` block (`rtt-probe`, by node
