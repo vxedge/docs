@@ -816,8 +816,8 @@ measurements:
   the runtime folder.
 - **Checked by `Plan`.** An end that is not a device (or `internet`, for `to`), an end that is a
   VM or an attached platform, a slice that is not declared or that an end has no link or pinned
-  address on, two `to: internet` measurements on different slices whose far sides would take one
-  address, or a rate or payload out of bounds is a problem with
+  address on, a `to: internet` measurement whose far side would take one address on two
+  slices (with another measurement, or with a traffic profile sending to the uplink), or a rate or payload out of bounds is a problem with
   `ERROR_REASON_MEASUREMENT_INVALID`, and `up` and `Start` refuse it. A parameter can bind a
   measurement's field: `binds: measurements[ctl-rtt].rate_pps`.
 - **Load runs where the node is.** `TrafficService.Up` runs a `traffic_profiles` entry inside its
