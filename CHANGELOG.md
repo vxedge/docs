@@ -8,6 +8,9 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §5 and §11: `TelemetryService.StreamRecords` streams the ingest's sample,
+  gap and phase records live, in archive order, resumable by `seq`; `StreamMetrics` is built and
+  carries its samples by entity.
 - `ARCHITECTURE.md` §12: entity paths, the one name every telemetry record uses for what it is
   about, derived from model ids; scrape targets bound to entities by address; `Plan` lists them and
   `collect` archives them as `entities.json`.
