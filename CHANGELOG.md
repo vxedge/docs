@@ -8,6 +8,10 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §5 and §6.0.3: `CampaignService.Start`, `Get`, `List` and `Watch`. These cover
+  a trial's five phases, archives that carry the trial's identity, `campaign.json`, resuming by
+  `request_id`, cancelling between trials, one campaign at a time, and
+  `ERROR_REASON_CAMPAIGN_UNKNOWN`.
 - `ARCHITECTURE.md` §5 and §6.0.3: `CampaignService.Plan` and how a campaign becomes trials. Every
   sweep point and every arm is a trial, an arm equal to a sweep point names it (decision X-22),
   each trial is provisioned on its own (X-23), and each point's bound document is checked.
