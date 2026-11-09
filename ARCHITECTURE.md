@@ -221,6 +221,7 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
 | `ExperimentService` | `Up`, `Down`, `Status` |
 | `TrafficService` | `Up`, `Down`, `Status` |
 | `MeasurementService` | `Start`, `Stop`, `Status` (an experiment's `measurements`, run inside each end's network namespace) |
+| `CampaignService` | `Plan` (a campaign's trials, each point's bound document checked; touches nothing) |
 | `PackageService` | `Inspect` (a package's descriptor, digest, lock state, requirements, typed intent, measurements and entities; touches nothing), `List` (the host's package cache), `Pull`, `Import` (client-streaming) |
 | `NosCheckService` | `Up`, `Down`, `Status`, `Verify` |
 | `JobService` | `Get`, `Watch` (server-streamed progress; every mutating RPC returns a `Job`), `List`, `Cancel` |
@@ -777,6 +778,26 @@ campaign:
   `profiles`, named overrides such as `quick` and `repro`. An arm or a sweep sets only declared
   parameters, within their bounds. `campaign` replaces `method` for an experiment that declares
   it, and an experiment may not declare both.
+
+**Trials.** `CampaignService.Plan` expands a campaign into the trials it runs:
+- **Points.** Every point of the `sweep` is a trial, and a sweep over several parameters is
+  their product. Every arm is a trial too. A sweep point whose values equal an arm's carries the
+  arm's name instead of running twice: the example above is five points, with `0` labelled
+  `idle` and `600` `saturated`. A parameter neither sets takes its default.
+- **Order.** Points run in order within each repetition, and every point of one repetition runs
+  before the next.
+- **Provisioning.** Each trial is provisioned and torn down on its own, as exp-001's campaign
+  always has been, so a trial cannot inherit another's state.
+- **Profiles.** A profile overrides the repetitions, warmup and duration.
+- **No campaign.** An experiment without one is a single point at its defaults, with its
+  `method`'s repetitions and windows.
+- **What a trial carries.** An id (`r<repetition>-<point>`, where the point is the arm's name or
+  the parameters off their defaults, such as `load_mbps=100`), its arm, every parameter's value,
+  and its windows. The plan also gives the estimated wall time.
+- **Checked per point.** `Plan` builds each distinct point's document with its values written
+  to the fields they bind, in memory: the package is never written, so its digest and lock hold
+  for the whole campaign. A value the parameter allows but the document cannot run, such as a
+  probe rate of 0, is a typed problem naming the point.
 
 **Checked by `Plan`, before any trial.** `WorkspaceService.Plan`, `experiment validate` and `up`
 check typed intent with the rest of the workspace. A parameter whose type, bounds or `binds`

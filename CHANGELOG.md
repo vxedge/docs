@@ -8,6 +8,9 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §5 and §6.0.3: `CampaignService.Plan` and how a campaign becomes trials. Every
+  sweep point and every arm is a trial, an arm equal to a sweep point names it (decision X-22),
+  each trial is provisioned on its own (X-23), and each point's bound document is checked.
 - `ARCHITECTURE.md` §5 and §6.0.8: `PackageService` (`Inspect`, `List`, `Pull`, `Import`), the
   package cache through vxAPI, `ManifestRef.package` by digest and `ERROR_REASON_PACKAGE_UNKNOWN`.
 - `ARCHITECTURE.md` §12: a measurement's samples include `vxprobe_rtt_distribution_seconds`, a
