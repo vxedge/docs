@@ -8,6 +8,9 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §12: entity paths, the one name every telemetry record uses for what it is
+  about, derived from model ids; scrape targets bound to entities by address; `Plan` lists them and
+  `collect` archives them as `entities.json`.
 - `ARCHITECTURE.md` §6.0.7 and `USER-GUIDE.md`: `pkg vendor` also copies the local part folders the
   documents reference whose files the source's git checkout tracks, such as an attach adapter;
   untracked files are build outputs and stay behind.
