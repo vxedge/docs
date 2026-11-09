@@ -221,6 +221,7 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
 | `ExperimentService` | `Up`, `Down`, `Status` |
 | `TrafficService` | `Up`, `Down`, `Status` |
 | `MeasurementService` | `Start`, `Stop`, `Status` (an experiment's `measurements`, run inside each end's network namespace) |
+| `PackageService` | `Inspect` (a package's descriptor, digest, lock state, requirements, typed intent, measurements and entities; touches nothing), `List` (the host's package cache), `Pull`, `Import` (client-streaming) |
 | `NosCheckService` | `Up`, `Down`, `Status`, `Verify` |
 | `JobService` | `Get`, `Watch` (server-streamed progress; every mutating RPC returns a `Job`), `List`, `Cancel` |
 | `EventService` | `Subscribe` (state transitions, audit events; resumable with `after_id`) |
@@ -1073,6 +1074,26 @@ refuses bytes that do not hash to it, and refuses a packed file that is not cano
 `pkg unpack` then restores a source folder. A pull names a digest: a tag alone is refused, since a
 tag can move and a result cites what ran.
 
+**Through vxAPI.** `PackageService` does the same on the daemon's host:
+- `Pull` fetches a package by digest into the cache (`package.pull`).
+- `Import` takes the packed bytes from a client that shares no filesystem with the daemon
+  (`package.import`). The bytes must hash to the digest the first message names.
+- `List` reports what the cache holds.
+- `Inspect` reads a workspace folder, a packed file or a cached package and returns what it is:
+  - the descriptor and the package digest;
+  - whether `vxp.lock` matches;
+  - the host requirements;
+  - the typed intent: parameters with their bounds, metrics, structured criteria each with a
+    one-line rendering for people, and the campaign;
+  - the measurements and the entities;
+  - every problem `Plan` would report.
+
+  It touches nothing.
+
+Once a package is cached, any verb addresses it by digest: `ManifestRef.package` is `sha256:<hex>`,
+and the daemon unpacks it once into its cache. A digest the cache does not hold is
+`ERROR_REASON_PACKAGE_UNKNOWN`.
+
 **What a signature covers.** A signature is over the package digest, never over a folder. A
 folder cannot hold its own signature, because the signature would be an input to the digest it
 signs. So verification is recorded beside the package, not in it: `pkg verify` and `pkg pull`
@@ -1092,7 +1113,7 @@ so no record.
 from a file the operator owns, and names whether signatures are required and which signers are
 allowed: a GitHub repository and workflow for attestations, or a public key for key-pair
 signatures. Without a policy, any package runs, as today. With `require-signed`, `up`, `Plan` and
-`PackageService.Pull` refuse a package whose digest has no verification record from an allowed
+`PackageService.Pull` (before fetching anything) refuse a package whose digest has no verification record from an allowed
 signer with `ERROR_REASON_SIGNATURE_INVALID`, before anything is provisioned; a legacy descriptor
 or an inline manifest has no package digest to verify, so it is refused too. An authoring host,
 where packages are built and changed, runs without the requirement.
