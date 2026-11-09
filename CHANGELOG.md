@@ -8,6 +8,11 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §5, §6.0.3 and §12: an experiment's `measurements` block (`rtt-probe`, by node
+  id), run by `MeasurementService` (`Start`, `Stop`, `Status`; `vxedge measure`) inside each end's
+  network namespace, with the far side of the uplink for `to: internet`. Samples reach the ingest
+  through the daemon's exporter as `measurements/<id>`. `Plan` checks each measurement under
+  `ERROR_REASON_MEASUREMENT_INVALID`, and a VM or attached end is refused.
 - Guest-OS examples are generic and name only guest images that have shipped: `ARCHITECTURE.md` §1, §3, §6.0.2,
   §9, §14 and §15, `FACTS.md` (parity ledger and zones), `ACRONYMS.md`, `USER-GUIDE.md`, `TESTBED-SETUP.md`,
   `NOTICE` and both diagrams. Planned guest images and hypervisor targets are no longer listed.

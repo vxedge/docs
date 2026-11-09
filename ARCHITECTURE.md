@@ -220,6 +220,7 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
 | `VehicleService` | `Up`, `Down`, `Status` |
 | `ExperimentService` | `Up`, `Down`, `Status` |
 | `TrafficService` | `Up`, `Down`, `Status` |
+| `MeasurementService` | `Start`, `Stop`, `Status` (an experiment's `measurements`, run inside each end's network namespace) |
 | `NosCheckService` | `Up`, `Down`, `Status`, `Verify` |
 | `JobService` | `Get`, `Watch` (server-streamed progress; every mutating RPC returns a `Job`), `List`, `Cancel` |
 | `EventService` | `Subscribe` (state transitions, audit events; resumable with `after_id`) |
@@ -346,6 +347,11 @@ vxedge experiment down
 
 # Traffic generation
 vxedge traffic up --manifest ...
+
+# Measurements (in the workspace's folder; the experiment must be up)
+vxedge measure start [--id <measurement>] [--duration-s <s>]
+vxedge measure status
+vxedge measure stop
 
 # Production-NOS config-parity check (never part of `experiment up`, §7)
 vxedge nos-check up|down|status|verify [--experiment <path>]
@@ -751,8 +757,8 @@ campaign:
   YAML with the defaults in place. A path must name an existing field of a matching type, and two
   parameters may not bind the same field.
 - **`metrics`** names each series a criterion or a client can read: an `id`, a `kind` (`counter`,
-  `gauge` or `histogram`), a `unit`, and the `entity` it is measured on. The `measurements` that
-  produce them are specified separately.
+  `gauge` or `histogram`), a `unit`, and the `entity` it is measured on, such as the
+  `measurements/<id>` of the measurement that produces it (below).
 - **`criteria`** are structured, never an expression string, so a caller composes one without
   writing a parser and a bad one is caught by type. Each has an `id`, an `op` (`lt`, `le`, `gt`,
   `ge` or `within`) and two operands, `lhs` and `rhs`. An operand is either a metric (`metric`,
@@ -780,6 +786,42 @@ does not exist, or uses an aggregate its metric kind does not have is a problem 
 value out of bounds is `ERROR_REASON_PARAMETER_INVALID` too. `Plan` names every problem with the
 document and the field it is in, and `up` refuses on the first, so a bad criterion fails in a
 second, not after an hour of trials.
+
+**Measurements.** A `kind: experiment` declares what it measures by node id, and the daemon runs
+it; no script places a probe:
+
+```yaml
+measurements:
+  ctl-rtt:
+    kind: rtt-probe          # the one kind so far
+    from: node-adas-probe-01 # a device: the node the probe sends from
+    to: internet             # a device, or `internet`: the far side of the shared uplink
+    slice: adas              # the slice its packets use
+    rate_pps: 500            # default 100
+    payload_bytes: 64        # default 64
+    window_s: 1              # default 1
+```
+
+- **`rtt-probe`** sends paced UDP probes from `from` to a reflector at `to` and records round-trip
+  time, jitter and loss. Both ends are on `slice`, and a node end needs an `ip` pinned on its link
+  there.
+- **A probe runs inside its node's network namespace.** `MeasurementService.Start` runs the host's
+  `vxprobe` as the sender in the `from` node and as the reflector in the `to` node, for
+  `duration_s` (the request's, else `method.duration_s`). For `to: internet` the reflector runs on
+  a VLAN subinterface of the uplink's peer for the slice, at the first host address of the
+  sender's subnet, so the probe crosses the slice's queue on the shared uplink. A VM node or an
+  attached platform has no namespace on the host to enter, so it cannot be an end yet.
+- **Samples.** Each sender serves its metrics on `127.0.0.1` inside its own namespace. The
+  daemon's exporter reads them there and serves them with `entity="measurements/<id>"` (§12), so
+  a scrape never crosses the slice it measures. When the sender finishes, its summary stays in
+  the runtime folder.
+- **Checked by `Plan`.** An end that is not a device (or `internet`, for `to`), an end that is a
+  VM or an attached platform, a slice that is not declared or that an end has no link or pinned
+  address on, or a rate, payload or window out of bounds is a problem with
+  `ERROR_REASON_MEASUREMENT_INVALID`, and `up` and `Start` refuse it. A parameter can bind a
+  measurement's field: `binds: measurements[ctl-rtt].rate_pps`.
+- **`Stop`** ends a measurement's processes and removes a far-side interface no other measurement
+  uses. `experiment down` stops every running measurement before it takes the nodes down.
 
 The descriptor holds packaging rather than content, so a version bump never touches an
 experiment file. **`vxp/1`** (ships in vxedge 0.6.0; vxedge 0.5.x reads only the legacy form below):
@@ -1482,6 +1524,7 @@ is:
 <vehicle>/services/<service>   a service placed on one of the vehicle's devices
 host/services/<service>        a service run as a host process
 host                           the testbed host, including the observer's own cost
+measurements/<measurement>     a measurement the experiment declares (§6.0.3)
 ```
 
 The daemon maps each scrape target to an entity once: to the node whose link endpoint carries the
@@ -1500,6 +1543,7 @@ scrape reads the kernel's counters as they are then.
 | `vxedge_node_cpu_seconds_total`, `vxedge_node_memory_bytes` | a node | A container node's cgroup (`cpu.stat`, `memory.current`), or a VM's or capsule's own VMM or runner process (`/proc`: CPU time of all its threads, resident memory). `source` says which. A node nothing on the host runs has none. |
 | `vxedge_slice_sent_bytes_total`, `vxedge_slice_sent_packets_total`, `vxedge_slice_dropped_packets_total`, `vxedge_slice_overlimits_total`, `vxedge_slice_backlog_bytes`, `vxedge_slice_backlog_packets` | a slice | The slice's HTB class on the gateway uplink. The class belongs to the gateway, so every vehicle whose links use the slice reports the same queue. |
 | `vxedge_process_cpu_seconds_total`, `vxedge_process_memory_bytes` | `host` | The daemon's own process (`process="vxedged"`): the observer's cost. |
+| `vxprobe_sent_total`, `vxprobe_received_total`, `vxprobe_lost_total`, `vxprobe_rtt_seconds` (`quantile`), `vxprobe_rtt_seconds_mean`, `vxprobe_rtt_seconds_stddev` | a measurement | A running measurement's sender, read on `127.0.0.1` inside the sender's own network namespace. |
 
 ## 13: Reproducibility, CI/CD, artifact publication (registries)
 
