@@ -8,6 +8,8 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §5 and §6.0.8: `PackageService` (`Inspect`, `List`, `Pull`, `Import`), the
+  package cache through vxAPI, `ManifestRef.package` by digest and `ERROR_REASON_PACKAGE_UNKNOWN`.
 - `ARCHITECTURE.md` §12: a measurement's samples include `vxprobe_rtt_distribution_seconds`, a
   cumulative histogram whose differences between samples give latency over time.
 - `USER-GUIDE.md`: `vxedge traffic up` runs a profile inside its source node once the node's zone is
