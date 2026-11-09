@@ -45,8 +45,8 @@ text(600, 410, "802.1Q trunk", 11.5, 600, MID, "middle", True, ".6")
 # zones
 group(70, 424, 690, 214, "ZONES  (QEMU/KVM VIA LIBVIRT · MICROVM · CONTAINER)")
 zones = [
-    ("zone-front-left", "QNX SDP 8 / RTOS (ADAS)", "PLANNED", True),
-    ("zone-front-right", "QNX SDP 8 / RTOS (ADAS)", "PLANNED", True),
+    ("zone-front-left", "RTOS (ADAS)", "PLANNED", True),
+    ("zone-front-right", "RTOS (ADAS)", "PLANNED", True),
     ("zone-rear-left", "comfort · BMS · clients", "EMULATED", False),
     ("zone-rear-right", "comfort · BMS · clients", "EMULATED", False),
     ("zone-central-hpc", "maps to central compute", "EMULATED", False),

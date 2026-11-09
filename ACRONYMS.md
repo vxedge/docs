@@ -128,7 +128,7 @@ The `vxgateway` data plane, relevant to `network-provisioning-patterns`.
   There is no Qt/QML operator dashboard (corrected 2026-08-06); any platform monitoring
   dashboard is web-based or the CLI (ARCHITECTURE.md §5.1).
 - **AUTOSAR**: AUTomotive Open System ARchitecture: the standard automotive software
-  architecture vxedge's QNX/C++ conventions are described as "adjacent" to.
+  architecture vxedge's C++ conventions are described as "adjacent" to.
 - **OEM**: Original Equipment Manufacturer: the vehicle maker, vxedge's target
   audience/adopter.
 - **VSS**: Vehicle Signal Specification: **COVESA**'s standard catalog of vehicle
@@ -166,9 +166,7 @@ The `vxgateway` data plane, relevant to `network-provisioning-patterns`.
   backend runs a sensor or ECU simulable as a control loop as a WebAssembly module.
 - **WASI**: WebAssembly System Interface: the standard way a WebAssembly module reaches files,
   clocks and sockets. A capsule is a WASI 0.2 command component.
-- **QNX / SDP**: QNX Software Development Platform 8: the real-time OS used for
-  ADAS/safety zone guests.
-- **RTOS**: Real-Time Operating System (Zephyr, FreeRTOS, QNX).
+- **RTOS**: Real-Time Operating System (Zephyr, FreeRTOS).
 - **AAOS**: Android Automotive OS: the infotainment zone guest.
 - **MCU**: Microcontroller Unit: the class of chip Renode-backed zones emulate at
   register level.

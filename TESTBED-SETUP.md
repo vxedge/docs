@@ -52,7 +52,7 @@ Everything above, plus:
 
 Adds: Kuksa databroker container, CARLA assets (~20 GB), AAOS emulator images, Qt ≥ 6.8
 (QML HMI), Node 20+ (web dashboard build). RAM comfortably 96 GB for the six-zone
-vehicle manifest with AAOS + QNX guests concurrently.
+vehicle manifest with AAOS and RTOS guests concurrently.
 
 ## Tier M: modeling workstation (optional, any phase; track M)
 

@@ -38,11 +38,11 @@
 <rect x="90" y="456" width="310" height="50" rx="5" fill="#FFFFFF" stroke="#5A5E66" stroke-width="1.5" stroke-dasharray="6 4"/>
 <text x="106" y="478" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="16.7" font-weight="700" fill="#1E2023" text-anchor="start">zone-front-left</text>
 <text x="386" y="476" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.5" font-weight="600" fill="#5A5E66" text-anchor="end" letter-spacing="1">PLANNED</text>
-<text x="106" y="496" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="13.2" font-weight="400" fill="#5A5E66" text-anchor="start">QNX SDP 8 / RTOS (ADAS)</text>
+<text x="106" y="496" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="13.2" font-weight="400" fill="#5A5E66" text-anchor="start">RTOS (ADAS)</text>
 <rect x="420" y="456" width="310" height="50" rx="5" fill="#FFFFFF" stroke="#5A5E66" stroke-width="1.5" stroke-dasharray="6 4"/>
 <text x="436" y="478" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="16.7" font-weight="700" fill="#1E2023" text-anchor="start">zone-front-right</text>
 <text x="716" y="476" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.5" font-weight="600" fill="#5A5E66" text-anchor="end" letter-spacing="1">PLANNED</text>
-<text x="436" y="496" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="13.2" font-weight="400" fill="#5A5E66" text-anchor="start">QNX SDP 8 / RTOS (ADAS)</text>
+<text x="436" y="496" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="13.2" font-weight="400" fill="#5A5E66" text-anchor="start">RTOS (ADAS)</text>
 <rect x="90" y="514" width="310" height="50" rx="5" fill="#FFFFFF" stroke="#1E2023" stroke-width="1.5"/>
 <text x="106" y="536" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="16.7" font-weight="700" fill="#1E2023" text-anchor="start">zone-rear-left</text>
 <text x="386" y="534" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.5" font-weight="600" fill="#0E7C6B" text-anchor="end" letter-spacing="1">EMULATED</text>

@@ -18,7 +18,7 @@ specification**, every other repo's AGENTS.md derives from it and must not contr
   software versions). Anything the testbed needs that it doesn't list is a bug in it.
 - `ARCHITECTURE.md`: the architecture specification (16 sections). Key anchors: §2 hypotheses H1–H4,
   §5 vxAPI/control plane, §6 manifest schemas (experiment + vehicle), §7 vxgateway network
-  model, §9 virtualization (libvirt/QEMU/QNX), §15 language policy + phases,
+  model, §9 virtualization (libvirt/QEMU/KVM), §15 language policy + phases,
   §16 worked examples.
 - `ROADMAP.md`: the public phase status: phase gates passed and what has shipped. Open work,
   plans and future phases are tracked on the maintainers' internal board, never here.
@@ -47,7 +47,7 @@ specification**, every other repo's AGENTS.md derives from it and must not contr
   runs it). Never type a measured number into another page, quote the registered value.
 - The org profile README (`vxedge/.github`, `profile/README.md`) quotes `h1.ratio` in its results table and is not
   covered by `scripts/facts.py check`: when that fact changes, update the README in the same change set.
-- Prose style: state fidelity caveats plainly (shared-host gateway, QNX-as-guest inversion);
+- Prose style: state fidelity caveats plainly (shared-host gateway, RTOS-as-guest inversion);
   reproducibility claims must name the mechanism (digests, versioned manifests, idempotent CLI).
 
 ## Quality bars
