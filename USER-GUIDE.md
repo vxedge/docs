@@ -158,7 +158,7 @@ kernel, userspace timestamps).
 |---|---|
 | vxgateway (bridge/VLAN/HTB) | zonal gateway / central switch QoS (automotive Ethernet) |
 | slices `mode: vlan` → `s-nssai` | static VLAN partitioning → 5G network slicing (S-NSSAI/URSP) |
-| zones + backends | zonal ECUs under a Type-1 hypervisor (fidelity ladder: KVM → Xen dom0less → QNX Hypervisor) |
+| zones + backends | zonal ECUs under a Type-1 hypervisor |
 | `type: can` links (phase 3) | CAN/LIN drops behind zonal controllers (restbus, DBC, Kuksa/VSS) |
 | harness `impairments` (delivered) + `harness` block | 100/1000BASE-T1 PHY characteristics (rate/delay/jitter/loss) + declarative length/weight for harness-reduction reporting; TSN variant = 802.1Qbv/Qav + gPTP (phase 2, open) |
 | results archives | test-bench evidence packages |

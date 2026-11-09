@@ -5,7 +5,7 @@
 vxedge is a research-grade orchestration and experiment platform that evaluates 5G network-slice mapping onto zonal and central software-defined-vehicle (SDV) E/E architectures, **entirely in software**. In short:
 
 - **Gateway.** `vxgateway`, built on the Linux networking stack, replaces physical edge gear.
-- **Zones.** KVM/QEMU VMs managed through libvirt provide zonal ECUs (QNX, Zephyr, FreeRTOS, Android Automotive).
+- **Zones.** KVM/QEMU VMs managed through libvirt provide zonal ECUs (Zephyr, FreeRTOS, Android Automotive).
 - **Compute.** Containerized central compute runs Autoware/ROS 2 and NVIDIA AD workloads (Alpamayo, DeepStream, TensorRT).
 - **Control plane.** A Rust daemon (`vxedged`) orchestrates manifest-driven vehicles, experiments, services and telemetry, and exposes a versioned gRPC/Protobuf API (**vxAPI**).
 - **Frontends.** Thin clients of that API: the `vxedge` CLI and an MCP server (`vxmcp`) for AI agent tooling, over a local Unix socket.
@@ -24,7 +24,7 @@ vxedge is a research-grade orchestration and experiment platform that evaluates 
 6. Manifests (experiment & vehicle schemas)
 7. Network model, vxgateway (SDN slicing)
 8. Service model (OTA, telemetry, extensibility)
-9. Virtualization & zone provisioning (libvirt, QEMU/KVM, QNX, RTOS, containers)
+9. Virtualization & zone provisioning (libvirt, QEMU/KVM, RTOS, containers)
 10. Compute model (Autoware/ROS2, Alpamayo, inference, OTA hosting)
 11. Edge agents & telemetry collection (vxagents / vxtelemetry)
 12. Experiment methodology, metrics, and analysis plan
@@ -103,7 +103,7 @@ today (real, emulated or building), dashed is specified and not built yet. Sourc
 - **vxedge CLI (Rust)**: thin vxAPI client; the primary frontend.
 - **vxgateway**: the software-defined edge gateway: Linux-native data plane (OVS or Linux
   bridge, tc, VXLAN, WireGuard, FRR), provisioned declaratively by the CLI. See §7.
-- **Zone and compute loadables** (zone manifests, VM images for QNX SDP 8, Zephyr, FreeRTOS and AAOS,
+- **Zone and compute loadables** (zone manifests, VM images for Zephyr, FreeRTOS and AAOS,
   RTOS builds, central compute manifests, Autoware/ROS2 images, Alpamayo/AlpaSim, inference): see
   `vxparts` below.
 - **vxota**: OTA server & signing tooling (artifact store).
@@ -185,9 +185,8 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
   researchers directly, and (via `vxmcp`) AI agent tooling acting on their behalf. **None of
   these are the in-vehicle HMI**, that role belongs to **Android Automotive (AAOS)**, already
   the infotainment zone's guest OS, or an **embedded Qt/QML IVI loadable** (running under a
-  QEMU ARM zone node or hosted atop QNX, the production pattern several OEMs actually run;
-  both are real, alternate in-vehicle-HMI baselines, §9). Frontends here are external tooling
-  that operates the testbed, not something running inside a simulated vehicle. **Correction
+  QEMU ARM zone node; both are real, alternate in-vehicle-HMI baselines, §9). Frontends here are
+  external tooling that operates the testbed, not something running inside a simulated vehicle. **Correction
   (2026-08-06): there is no Qt/QML operator dashboard**, any platform monitoring dashboard is
   web-based (TS) or the CLI, never Qt.
   - **`vxedge` CLI** (Rust): unchanged UX; local Unix socket by default, `--endpoint` for
@@ -591,7 +590,7 @@ id: bl-2026-07
 rxswin: RX-VXE-0001-0003             # optional; UN R156, a property of the vehicle TYPE
 
 parts:
-  - ref: ghcr.io/vxedge/parts/zone/qnx/os/sdp8-base:1.0.0
+  - ref: ghcr.io/vxedge/parts/zone/linux/stack/probe-bundle:0.1.0
     digest: sha256:…                 # required for published refs
     target_ids: [zonefl, zonefr]     # scalar or list — declared once, however many nodes
   - ref: ./images/my-autoware        # local; no digest required
@@ -1235,7 +1234,7 @@ deliberately separate:
 
 ---
 
-## 9: Virtualization & zone provisioning (libvirt, QEMU/KVM, QNX, RTOS, containers)
+## 9: Virtualization & zone provisioning (libvirt, QEMU/KVM, RTOS, containers)
 
 **Stack, bottom to top:** host Linux (PREEMPT_RT, isolcpus, hugepages) → KVM → QEMU, managed by
 **libvirt**, driven by `vxedged` through `virsh`, run as the daemon's own user and authorized by
@@ -1281,8 +1280,7 @@ deliberately separate:
   a physical NIC, for hardware in the loop.
 - **The AAOS ladder**, one contract, a parity label per rung: `aaos-26q2-x86_64-cf` (Cuttlefish on x86_64: the
   AAOS framework and the production Vehicle HAL path over a slice), `aaos-26q2-arm64-cf` (Cuttlefish on Arm: the
-  production instruction set), `aaos-on-qnx-hyp` (a guest of QNX Hypervisor beside a QNX cluster: the production
-  cockpit architecture), and `aaos-hil` (a real head unit or SoC kit on a physical port: production hardware and
+  production instruction set), and `aaos-hil` (a real head unit or SoC kit on a physical port: production hardware and
   BSP). A result is never quoted for a rung it was not run on.
 - **WebAssembly capsules:** `backend: wasm-capsule` runs a WASI 0.2 command component, a local file
   or a part published by digest, as a zone
@@ -1292,25 +1290,20 @@ deliberately separate:
   WebAssembly engine stays out of `vxedged`, a capsule stops by signal even while blocked on a
   socket, and it outlives a daemon restart. It is validated on the `reflector-capsule` part only.
 - **Guest palette:**
-  - **QNX SDP 8** (free non-commercial license): QEMU x86-64/ARM guest; the
-    production-representative ADAS/safety guest for `front-left`/`front-right` zones. QNX is what
-    production ADAS and cockpit controllers run, which anchors OEM relevance.
   - **Zephyr / FreeRTOS**: microVM images for sensor/ECU nodes.
   - **Android Automotive (AAOS)**: infotainment zone, through `backend: attach` and the ladder above; its
     Vehicle HAL is the gRPC one, served from the vehicle's signal plane.
   - **Embedded Qt/QML IVI/cluster loadable**: an alternate infotainment/cluster baseline to
     AAOS, not desktop tooling (**correction, 2026-08-06**: earlier drafts of this document
     wrongly scoped Qt/QML as an operator dashboard only, it has no such role, see §5.1). Runs
-    either as an app/middleware layer atop the QNX guest above (the production QNX+Qt
-    cluster/IVI pattern several OEMs actually ship) or under a bare QEMU ARM zone node;
+    under a bare QEMU ARM zone node;
     exercises the same "one vehicle, many baselines" mechanism (`ARCHITECTURE.md` §6.0) that
     lets an experiment swap AAOS for Qt/QML (or vice versa) on the same infotainment zone
     without touching the vehicle's structural definition.
   - **Containers**: for nodes where packaging as a container is the experimental variable.
 - **Fidelity caveat (stated in publications):** production zonal controllers invert this
-  stacking, silicon runs a Type-1 hypervisor (QNX Hypervisor and peers) hosting guests, whereas
-  here KVM plays the hypervisor and QNX is a guest. Functionally equivalent for slice-isolation
-  research; the **hypervisor fidelity ladder** below names the rung each result was measured on.
+  stacking, silicon runs a Type-1 hypervisor hosting guests, whereas here KVM plays the hypervisor
+  and the RTOS is a guest. Functionally equivalent for slice-isolation research; the **hypervisor fidelity ladder** below names the rung each result was measured on.
 - **Hypervisor fidelity ladder** (production-grade rungs only, no research-toy hypervisors):
   - *Rung 0 (software-only, phase 1–3):* KVM with strict static partitioning, isolcpus/cpuset
     pinned cells, hugepages, the Linux approximation of partitioning and the baseline arm of
@@ -1330,7 +1323,7 @@ deliberately separate:
    schema); Kuksa's CAN provider maps DBC signals ↔ VSS. Closed-loop behavior comes from the
    **vxplant agent** (in `vxagents`): subscribes to actuator commands, integrates a plant
    model (first-order default), publishes sensor feedback.
-3. **Register-level I/O** (GPIO/ADC/PWM/I2C/SPI): application-class ECUs (QNX, AAOS) use QEMU
+3. **Register-level I/O** (GPIO/ADC/PWM/I2C/SPI): application-class ECUs (AAOS) use QEMU
    device models (`io.devices`); MCU-class ECUs needing register fidelity use **Renode**
    (`backend: renode`): full peripheral models running unmodified Zephyr/FreeRTOS firmware.
 4. **Actuation loop closure**: control commands (steering/throttle/brake) return to CARLA via
@@ -1614,7 +1607,7 @@ scrape reads the kernel's counters as they are then.
 - **Safety:**
   - Non-safety-critical lab environment; no real vehicle control signals.
   - Experiments simulate zonal ECU traffic in virtual/isolated networks.
-  - The platform is production-*representative*, not safety-certified; the QNX-as-guest
+  - The platform is production-*representative*, not safety-certified; the RTOS-as-guest
     inversion (§9) and shared-host gateway are documented fidelity caveats.
 
 - **Security:**
@@ -1625,8 +1618,7 @@ scrape reads the kernel's counters as they are then.
 
 - **Licensing:**
   - Open-source Rust CLI and agents (MIT/Apache-2.0).
-  - QNX SDP 8 under QNX free non-commercial license (research use); Zephyr/FreeRTOS under their
-    respective licenses.
+  - Zephyr/FreeRTOS under their respective licenses.
   - Autoware/ROS2 under Apache-2.0; Alpamayo models/AlpaSim under NVIDIA's open-model licenses;
     SONiC, OVS, FRR, Open5GS, UERANSIM, Eclipse SDV components under their upstream OSS licenses.
 
@@ -1643,9 +1635,8 @@ scrape reads the kernel's counters as they are then.
 
 - **Rust**: `vxedge-core`, `vxedged` daemon (vxAPI/tonic), `vxedge` CLI, `vxagents`, gateway
   provisioning (rtnetlink/OVSDB, `virt` crate for libvirt).
-- **C++**: everything touching ROS 2/DDS/Autoware, DeepStream/TensorRT plugins, QNX-side
-  components (automotive-native, AUTOSAR-adjacent), and the embedded Qt/QML IVI/cluster
-  loadable (an in-vehicle-HMI baseline alongside AAOS, see §5.1, §9).
+- **C++**: everything touching ROS 2/DDS/Autoware, DeepStream/TensorRT plugins, and the
+  embedded Qt/QML IVI/cluster loadable (an in-vehicle-HMI baseline alongside AAOS, see §5.1, §9).
 - **Python**: Sionna, notebooks, analysis pipelines.
 - **TypeScript**: generated vxAPI SDK (connect-es).
 - **Shell**: glue only.

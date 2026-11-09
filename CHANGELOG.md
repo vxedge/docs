@@ -8,6 +8,9 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- Guest-OS examples are generic and name only guest images that have shipped: `ARCHITECTURE.md` §1, §3, §6.0.2,
+  §9, §14 and §15, `FACTS.md` (parity ledger and zones), `ACRONYMS.md`, `USER-GUIDE.md`, `TESTBED-SETUP.md`,
+  `NOTICE` and both diagrams. Planned guest images and hypervisor targets are no longer listed.
 - `ARCHITECTURE.md` §5 and §11: `LogService.Follow` streams the log lines the ingest reads from
   each entity's files (serial consoles, hypervisor logs, service and traffic output) as `log`
   records, resumable by `seq` and filtered by entity and stream; archive v2 keeps them as
@@ -213,8 +216,7 @@ release across the phase-1-participating repos.
 ### Notable decisions folded in along the way
 - Cumulus VX deprecated in favor of a from-scratch software-defined vxgateway
   (bridge/VLAN/tc HTB, OVS variant planned), no physical/vendor router anywhere.
-- Jailhouse hypervisor evaluated and rejected (stale upstream, no OEM adoption); the
-  hypervisor fidelity ladder targets Xen dom0less and QNX Hypervisor instead (phase 4).
+- Jailhouse hypervisor evaluated and rejected (stale upstream, no OEM adoption).
 - OTA design (§8) adopts Uptane's trust-model vocabulary (signed root/targets metadata,
   image-repo vs. director-repo split) without taking aktualizr as a dependency; **Rugix
   Ctrl** recommended over RAUC for phase-3 atomic slot updates, evaluated against
