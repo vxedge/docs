@@ -8,6 +8,8 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §9: `backend: qemu-mcu`, microcontroller firmware on QEMU's `mps2-an385`: the firmware
+  bundle, the semihosting command line, the NIC's MAC, and TCG-only results. §6.0 lists the new backend value.
 - `ARCHITECTURE.md` §6.0.3: a parameter can bind a storyboard parameter
   (`scenario.parameters.<name>`), and `pkg vendor` carries a scenario's road and storyboard.
 - `ARCHITECTURE.md` §6.0.3: the descriptor's `requires.simulator`, how a host has a simulator
