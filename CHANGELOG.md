@@ -8,6 +8,10 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §5 and §6.0.3, `USER-GUIDE.md`: `ResultService.Verdict`. It judges an
+  experiment's criteria over a campaign's archives, typed per criterion. The verdict recorded at
+  a campaign's end goes into `campaign.json`, `CampaignStatus.verdict` and `verdict.json`. Adds
+  `vxedge campaign verdict`.
 - `ARCHITECTURE.md` §6.0.3: how a criterion reads results. A metric names its `series` and
   `labels`, or the `ratio` of two metrics, and gives each trial one value: the series' last sample
   inside the trial's measure phase (decision X-24). Aggregates run across the selected trials and
