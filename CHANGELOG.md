@@ -8,6 +8,8 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §6.0.8: an offline layout also carries the infra image every container node
+  runs, with its Linux platforms only.
 - `ARCHITECTURE.md` §6.0.3: the example writes exp-001's loss bound as a member of `all`, as its
   notebook judges it, and the `guards` text names where guards are used instead.
 - `ARCHITECTURE.md` §6.0.3: a `vxarchive/1` archive's failed scrapes are noted on a value, not
