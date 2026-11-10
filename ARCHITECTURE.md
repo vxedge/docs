@@ -222,7 +222,7 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
 | `TrafficService` | `Up`, `Down`, `Status` |
 | `MeasurementService` | `Start`, `Stop`, `Status` (an experiment's `measurements`, run inside each end's network namespace) |
 | `CampaignService` | `Plan` (a campaign's trials, each point's bound document checked; touches nothing), `Start` (runs the trials serially as one job), `Get`, `List`, `Watch` (status as it changes) |
-| `ResultService` | `List` (a host's results: campaigns' trial archives and a workspace's `results/`), `Get`, `Fetch` (an archive's bytes, server-streaming), by digest; `Verdict` (an experiment's criteria judged over a campaign's archives) |
+| `ResultService` | `List` (a host's results: campaigns' trial archives and a workspace's `results/`), `Get`, `Fetch` (an archive's bytes, server-streaming), by digest; `Verdict` (an experiment's criteria judged over a campaign's archives), `Compare` (a campaign against a reference campaign) |
 | `PackageService` | `Inspect` (a package's descriptor, digest, lock state, requirements, typed intent, measurements and entities; touches nothing), `List` (the host's package cache), `Pull`, `Import` (client-streaming) |
 | `NosCheckService` | `Up`, `Down`, `Status`, `Verify` |
 | `JobService` | `Get`, `Watch` (server-streamed progress; every mutating RPC returns a `Job`), `List`, `Cancel` |
@@ -881,6 +881,15 @@ it says only what the archives hold.
   experiment without criteria records none.
 - **Errors:** an unknown campaign is `ERROR_REASON_CAMPAIGN_UNKNOWN`, and an archive that cannot be
   read is `ERROR_REASON_RESULT_UNKNOWN`.
+
+**Comparing.** `ResultService.Compare` sets a campaign against a reference campaign, both judged
+by the first campaign's experiment and read from their archives. A trial's point is its id
+without the `r<repetition>-` prefix, so the repetitions of a point are compared together.
+- **Per metric, at every point both archived:** each side's median and IQR over its
+  repetitions, the difference of the medians, and whether that difference is within the
+  reference's IQR. This is the reproducibility check exp-001's reruns use.
+- **Per criterion:** its outcome in each campaign. Also each campaign's verdict, and how many
+  metric points are within the reference's IQR.
 
 **Checked by `Plan`, before any trial.** `WorkspaceService.Plan`, `experiment validate` and `up`
 check typed intent with the rest of the workspace. A parameter whose type, bounds or `binds`
