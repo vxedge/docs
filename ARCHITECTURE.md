@@ -730,13 +730,25 @@ parameters:                          # the only knobs a caller may turn
   load_mbps: { type: integer, unit: Mbit/s, default: 0, min: 0, max: 1000,
                binds: traffic_profiles[bg].bandwidth_mbps }
 metrics:                             # what criteria and observability clients read
-  - { id: ctl_rtt_seconds, kind: histogram, unit: s, entity: measurements/ctl-rtt }
+  - { id: ctl_p99_seconds, kind: gauge, unit: s, entity: measurements/ctl-rtt,
+      series: vxprobe_rtt_seconds, labels: { quantile: "0.99" } }
+  - { id: ctl_lost, kind: counter, unit: "1", entity: measurements/ctl-rtt,
+      series: vxprobe_lost_total }
+  - { id: ctl_sent, kind: counter, unit: "1", entity: measurements/ctl-rtt,
+      series: vxprobe_sent_total }
+  - { id: ctl_loss_pct, kind: gauge, unit: "%", entity: measurements/ctl-rtt,
+      ratio: [ctl_lost, ctl_sent], factor: 100 }
 criteria:
   - id: h1-p99-bound
-    lhs: { metric: ctl_rtt_seconds, aggregate: p99, select: { arm: saturated } }
+    lhs: { metric: ctl_p99_seconds, aggregate: median, select: { arm: saturated } }
     op: le
-    rhs: { metric: ctl_rtt_seconds, aggregate: p99, select: { arm: idle }, factor: 2.0 }
-    min_samples: 10000
+    rhs: { metric: ctl_p99_seconds, aggregate: median, select: { arm: idle }, factor: 2.0 }
+    min_samples: 5
+    guards:
+      - id: h1-loss-bound
+        lhs: { metric: ctl_loss_pct, aggregate: median, select: { arm: saturated } }
+        op: le
+        rhs: { metric: ctl_loss_pct, aggregate: median, select: { arm: idle }, offset: 0.5 }
 campaign:
   arms:
     idle: { load_mbps: 0 }
@@ -759,21 +771,40 @@ campaign:
   whose `id` is `bg`. There is no text templating, so every document still validates as plain
   YAML with the defaults in place. A path must name an existing field of a matching type, and two
   parameters may not bind the same field.
-- **`metrics`** names each series a criterion or a client can read: an `id`, a `kind` (`counter`,
-  `gauge` or `histogram`), a `unit`, and the `entity` it is measured on, such as the
-  `measurements/<id>` of the measurement that produces it (below).
+- **`metrics`** names what a criterion or a client reads: an `id`, a `kind` (`counter`, `gauge`
+  or `histogram`), a `unit`, and the `entity` it is measured on, such as the `measurements/<id>`
+  of the measurement that produces it (below). A metric gives each trial one value. It names a
+  `series` (with the `labels` that pick one of its lines), and its value in a trial is the
+  series' last sample on the entity inside the trial's measure phase, or in the whole archive
+  when the archive records no phases. Or it is the `ratio` of two such metrics in the same trial,
+  times an optional `factor`, such as a loss percentage from the lost and sent counters.
 - **`criteria`** are structured, never an expression string, so a caller composes one without
   writing a parser and a bad one is caught by type. Each has an `id`, an `op` (`lt`, `le`, `gt`,
-  `ge` or `within`) and two operands, `lhs` and `rhs`. An operand is either a metric (`metric`,
-  an `aggregate` such as `mean`, `p50`, `p99` or `max`, an optional `select` by arm or by parameter
-  values, and an optional `factor`) or a constant (`value` with a `unit`). `within` takes a
-  `tolerance` and holds when the two operands differ by no more than it. `all: [...]` and
-  `any: [...]` group criteria. `min_samples` is the fewest samples each operand needs.
+  `ge`, `within` or `outside`) and two operands, `lhs` and `rhs`. An operand is one of:
+  - a metric: `metric`, an `aggregate` over the values of the trials it selects, an optional
+    `select` by arm or by parameter values, and an optional `factor` and then `offset`;
+  - a constant: `value` with a `unit`;
+  - a combination: `ratio: [a, b]` (a / b, in unit `1`), `diff: [a, b]` (a − b), or `max` or
+    `min` of a list of operands, each with an optional `factor` and `offset`. The combined
+    operands' units must agree.
+
+  The aggregates are `mean`, `median`, `min`, `max`, `sum`, `count`, `iqr`, `stddev`, `p50`,
+  `p90`, `p95` and `p99`. Percentiles are nearest-rank. `median` averages the middle two of an
+  even count. `iqr` is the third quartile minus the first, by the exclusive method of Python's
+  `statistics.quantiles`, and the range below four values. `stddev` is the sample standard
+  deviation. `within` holds when the operands differ by no more than its `tolerance`, and
+  `outside` when they differ by more. A tolerance is a number in the operands' unit, or an
+  operand, such as the larger of an arm's IQR and a noise floor. `all: [...]` and `any: [...]`
+  group criteria. `min_samples` is the fewest trial values each metric operand needs. `guards`
+  are criteria that must pass for a criterion to be conclusive, such as a loss bound under a
+  latency bound.
 - **Each criterion evaluates to `pass`, `fail` or `inconclusive`.** It is `inconclusive` when an
-  operand has fewer than `min_samples` samples or its telemetry is incomplete, and
-  `inconclusive` is never reported as a pass. A group is `pass` only when its rule holds over
-  conclusive members, and `inconclusive` when the outcome depends on an inconclusive one.
-  A one-line text rendering of a criterion is for people; nothing parses it.
+  operand has fewer than `min_samples` trial values, a selected trial has no value or incomplete
+  telemetry (a `gap` on the metric's entity while the trial measured, or a failed scrape in a
+  `vxarchive/1` archive), a ratio divides by zero, or a guard does not pass. `inconclusive` is
+  never reported as a pass. A group is `pass` only when its rule holds over conclusive members,
+  and `inconclusive` when the outcome depends on an inconclusive one. A one-line text rendering of
+  a criterion is for people; nothing parses it.
 - **`campaign`** says which trials to run: named `arms` (each a set of parameter values), an
   optional `sweep` over one or more parameters, `repetitions`, `warmup_s` and `duration_s`, and
   `profiles`, named overrides such as `quick` and `repro`. An arm or a sweep sets only declared
@@ -840,7 +871,8 @@ filesystem can rerun from it. An unknown digest is `ERROR_REASON_RESULT_UNKNOWN`
 check typed intent with the rest of the workspace. A parameter whose type, bounds or `binds`
 path is wrong is a problem with `ERROR_REASON_PARAMETER_INVALID`. A criterion that names an
 unknown metric, compares operands whose units disagree, selects an arm or a parameter value that
-does not exist, or uses an aggregate its metric kind does not have is a problem with
+does not exist, uses an unknown aggregate, or names a metric with neither a `series` nor a
+`ratio` of two metrics that have one is a problem with
 `ERROR_REASON_CRITERION_INVALID`. An arm, sweep or profile that sets an undeclared parameter or a
 value out of bounds is `ERROR_REASON_PARAMETER_INVALID` too. `Plan` names every problem with the
 document and the field it is in, and `up` refuses on the first, so a bad criterion fails in a
