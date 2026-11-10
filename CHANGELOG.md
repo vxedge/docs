@@ -8,6 +8,9 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §5 and §6.0.3, `USER-GUIDE.md`: `ResultService.Compare`. It sets a campaign
+  against a reference, per metric at each point against the reference's median and IQR, and per
+  criterion. Adds `vxedge campaign compare`.
 - `ARCHITECTURE.md` §5 and §6.0.3, `USER-GUIDE.md`: `ResultService.Verdict`. It judges an
   experiment's criteria over a campaign's archives, typed per criterion. The verdict recorded at
   a campaign's end goes into `campaign.json`, `CampaignStatus.verdict` and `verdict.json`. Adds
