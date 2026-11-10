@@ -936,7 +936,14 @@ parameters:                                # the storyboard's ParameterDeclarati
   package. Every other entity of the storyboard is traffic, driven by the storyboard. Campaigns
   run serially, so a scenario has one ego.
 - **Parameters** name the storyboard's `ParameterDeclaration`s and give a number a `unit` and
-  bounds.
+  bounds. An experiment parameter turns one by id path, `binds:
+  scenario.parameters.EgoTargetSpeed`, so a campaign sweeps it like any other parameter. The
+  scenario must declare it, and the experiment parameter's bounds must lie inside the scenario's,
+  in the same unit. The value travels with the trial's parameters, for the simulator that runs
+  the scenario. The experiment document is not changed.
+- **Ownership:** a scenario used by one package lives only in it. A reusable one lives once in
+  `vxperiments/scenarios/<name>/` and is vendored with `vxedge pkg vendor`, as vehicles are,
+  which also copies the road and storyboard files its documents name.
 - **What vxedge reads:** the storyboard's entity names and parameter declarations, and that the
   road is an OpenDRIVE file. Checking the storyboard itself is the simulator's job.
 - **Checked by `Plan`, `experiment validate` and `up`:** each file exists and has the right

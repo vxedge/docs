@@ -8,6 +8,8 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §6.0.3: a parameter can bind a storyboard parameter
+  (`scenario.parameters.<name>`), and `pkg vendor` carries a scenario's road and storyboard.
 - `ARCHITECTURE.md` §6.0.3: the descriptor's `requires.simulator`, how a host has a simulator
   (`HostService.Capabilities`), and `ERROR_REASON_SIMULATOR_UNAVAILABLE`.
 - `ARCHITECTURE.md` §6.0 and §6.0.3: `kind: road` and `kind: scenario` point at OpenDRIVE and
