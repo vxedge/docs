@@ -222,7 +222,7 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
 | `TrafficService` | `Up`, `Down`, `Status` |
 | `MeasurementService` | `Start`, `Stop`, `Status` (an experiment's `measurements`, run inside each end's network namespace) |
 | `CampaignService` | `Plan` (a campaign's trials, each point's bound document checked; touches nothing), `Start` (runs the trials serially as one job), `Get`, `List`, `Watch` (status as it changes) |
-| `ResultService` | `List` (a host's results: campaigns' trial archives and a workspace's `results/`), `Get`, `Fetch` (an archive's bytes, server-streaming), by digest |
+| `ResultService` | `List` (a host's results: campaigns' trial archives and a workspace's `results/`), `Get`, `Fetch` (an archive's bytes, server-streaming), by digest; `Verdict` (an experiment's criteria judged over a campaign's archives) |
 | `PackageService` | `Inspect` (a package's descriptor, digest, lock state, requirements, typed intent, measurements and entities; touches nothing), `List` (the host's package cache), `Pull`, `Import` (client-streaming) |
 | `NosCheckService` | `Up`, `Down`, `Status`, `Verify` |
 | `JobService` | `Get`, `Watch` (server-streamed progress; every mutating RPC returns a `Job`), `List`, `Cancel` |
@@ -866,6 +866,21 @@ describes it from its own `metadata.json` only:
 `List` gives a host's campaign trial archives, and those under a workspace's `results/`, newest
 first. `Get` returns one by digest, and `Fetch` streams its bytes, so a client on another
 filesystem can rerun from it. An unknown digest is `ERROR_REASON_RESULT_UNKNOWN`.
+
+**Verdicts.** `ResultService.Verdict` judges the experiment's criteria, as its workspace holds
+them, over a campaign's archived trials. It reads them from the archives again on every call, so
+it says only what the archives hold.
+- **Trials:** each trial the campaign archived counts once, with its arm and parameter values
+  from the campaign's record. A trial that failed or was never archived is not judged.
+- **What it returns:** the verdict (`pass` when every criterion passes, `fail` when one fails,
+  else `inconclusive`) and every criterion's outcome. With each: its operands' and tolerance's
+  values, every metric it read with the trials and values behind it, its members and guards, and
+  why it is inconclusive when it is. It also returns each trial's value of each metric.
+- **Recorded:** when a campaign finishes, its verdict goes into `campaign.json` and
+  `CampaignStatus.verdict`, and the full verdict into `verdict.json` beside the archives. An
+  experiment without criteria records none.
+- **Errors:** an unknown campaign is `ERROR_REASON_CAMPAIGN_UNKNOWN`, and an archive that cannot be
+  read is `ERROR_REASON_RESULT_UNKNOWN`.
 
 **Checked by `Plan`, before any trial.** `WorkspaceService.Plan`, `experiment validate` and `up`
 check typed intent with the rest of the workspace. A parameter whose type, bounds or `binds`
