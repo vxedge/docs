@@ -8,6 +8,8 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §5 and §6.0.3: `ResultService` (`List`, `Get`, `Fetch`): results by digest,
+  described from their own metadata, and `ERROR_REASON_RESULT_UNKNOWN`.
 - `ARCHITECTURE.md` §5 and §6.0.3: `CampaignService.Start`, `Get`, `List` and `Watch`. These cover
   a trial's five phases, archives that carry the trial's identity, `campaign.json`, resuming by
   `request_id`, cancelling between trials, one campaign at a time, and
