@@ -1402,6 +1402,15 @@ deliberately separate:
   adapter whose platform images live outside the workspace pins them by digest in a file inside the adapter
   directory and refuses to start on a mismatch, so the package digest covers what ran. The same contract adopts
   a physical NIC, for hardware in the loop.
+- **CPU pinning:** a device's `realtime.pinned_cpus` keeps the whole node on those CPUs, on every backend that
+  can do so. `qemu-microvm`, `cloud-hypervisor` and `wasm-capsule` start their process under `taskset`, so every
+  thread (vCPUs, virtio and VMM workers, the runtime's own) inherits the set. `libvirt` writes `<cputune>` with
+  `vcpupin` and `emulatorpin`, so the emulator, I/O and vhost threads follow the vCPU. `container` gives the
+  node's payload and infra containers that cpuset, which rootless Podman applies only when the user's systemd
+  service delegates the `cpuset` controller. `Plan` and `up` refuse, before anything starts and under
+  `HOST_REQUIREMENT_UNMET`, a pinned device they cannot honour: a container without the controller, a container
+  node that runs a host process, and an `attach` device, whose platform starts its own processes. A pinned
+  `qemu-microvm` node gets no more vCPUs than it has pinned CPUs.
 - **The AAOS ladder**, one contract, a parity label per rung: `aaos-26q2-x86_64-cf` (Cuttlefish on x86_64: the
   AAOS framework and the production Vehicle HAL path over a slice), `aaos-26q2-arm64-cf` (Cuttlefish on Arm: the
   production instruction set), and `aaos-hil` (a real head unit or SoC kit on a physical port: production hardware and
