@@ -8,6 +8,12 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §6.0.3: how a criterion reads results. A metric names its `series` and
+  `labels`, or the `ratio` of two metrics, and gives each trial one value: the series' last sample
+  inside the trial's measure phase (decision X-24). Aggregates run across the selected trials and
+  add `median`, `iqr`, `sum` and `stddev`. Operands combine as `ratio`, `diff`, `max` and `min`
+  and take an `offset`. A tolerance can be an operand, `outside` joins the ops, and `guards`
+  make a criterion inconclusive unless they pass (decision X-25).
 - `ARCHITECTURE.md` §5 and §6.0.3: `ResultService` (`List`, `Get`, `Fetch`): results by digest,
   described from their own metadata, and `ERROR_REASON_RESULT_UNKNOWN`.
 - `ARCHITECTURE.md` §9: what `realtime.pinned_cpus` does on each backend, and the devices `Plan` and `up`
