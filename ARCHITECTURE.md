@@ -525,7 +525,7 @@ functions, a topic flows between behaviours, and which devices they sit on is a 
 decision a study should be able to vary without rewriting the interaction topology.
 
 `role` is `zone-controller | hpc | gateway | ecu | sensor | actuator | switch`. `backend` is
-`container | qemu-microvm | libvirt | cloud-hypervisor | wasm-capsule | attach` and is **required for any device attached to a slice**:
+`container | qemu-microvm | libvirt | cloud-hypervisor | wasm-capsule | attach | qemu-mcu` and is **required for any device attached to a slice**:
 the planner has to know whether to build a veth or a tap, or to adopt an interface another stack made
 (`attach`, §9), and guessing produced a workspace that validated and then could not boot.
 
@@ -615,8 +615,8 @@ all derivable from the ref path; restating them is the drift the computed-part-n
 exists to prevent.
 
 `kind` exists because a part knows what it *is* and a device knows how it is *run*, and the two
-have to agree: a container backend boots a container image, libvirt, qemu-microvm and
-cloud-hypervisor boot a guest bundle, wasm-capsule runs a `.wasm` module, and attach runs the platform adapter
+have to agree: a container backend boots a container image, libvirt, qemu-microvm,
+cloud-hypervisor and qemu-mcu boot a guest bundle, wasm-capsule runs a `.wasm` module, and attach runs the platform adapter
 an `attach` part declares (§9). The `local/…` namespace is conclusive on its own (a host process, never a
 bundle), and a published vxparts ref is deliberately **not** read for this, its class says
 what kind of node the part loads onto, not how it is packaged, and a zone guest is legitimately
@@ -1522,8 +1522,18 @@ deliberately separate:
   adapter whose platform images live outside the workspace pins them by digest in a file inside the adapter
   directory and refuses to start on a mismatch, so the package digest covers what ran. The same contract adopts
   a physical NIC, for hardware in the loop.
+- **Microcontroller firmware:** `backend: qemu-mcu`. The bundle is `firmware.elf` and a `meta.json` naming its
+  board (`machine`, or the published `org.vxedge.machine`); QEMU's `mps2-an385` (Cortex-M3) is the board, with its
+  LAN9118 NIC on the node's tap and the node's MAC. An MCU has no kernel command line, so the same `vx.ip=<cidr>
+  vx.node=<id>` words reach the firmware as its **semihosting command line** (one `arg=` per word in
+  `-semihosting-config`), which it reads with `SYS_GET_CMDLINE`. The firmware takes its MAC from the NIC, writes
+  its console to UART0 (the node's `serial` stream) and echoes UDP on :9800. There is no KVM for M-profile cores,
+  so the node always runs under TCG: `NodeStatus` reports `arch: armv7m`, `acceleration: tcg`, and a result is
+  functional evidence only, never timed. Status and `down` are `qemu-microvm`'s (pidfile, and the `vx.node=`
+  marker on QEMU's command line). A bundle without its firmware, with no `meta.json`, or naming another board or
+  arch is refused at `up`, naming what is supported.
 - **CPU pinning:** a device's `realtime.pinned_cpus` keeps the whole node on those CPUs, on every backend that
-  can do so. `qemu-microvm`, `cloud-hypervisor` and `wasm-capsule` start their process under `taskset`, so every
+  can do so. `qemu-microvm`, `qemu-mcu`, `cloud-hypervisor` and `wasm-capsule` start their process under `taskset`, so every
   thread (vCPUs, virtio and VMM workers, the runtime's own) inherits the set. `libvirt` writes `<cputune>` with
   `vcpupin` and `emulatorpin`, so the emulator, I/O and vhost threads follow the vCPU. `container` gives the
   node's payload and infra containers that cpuset, which rootless Podman applies only when the user's systemd
@@ -1543,7 +1553,7 @@ deliberately separate:
   WebAssembly engine stays out of `vxedged`, a capsule stops by signal even while blocked on a
   socket, and it outlives a daemon restart. It is validated on the `reflector-capsule` part only.
 - **Guest palette:**
-  - **Zephyr / FreeRTOS**: microVM images for sensor/ECU nodes.
+  - **Zephyr / FreeRTOS**: microVM images for sensor/ECU nodes, and microcontroller firmware on `qemu-mcu`.
   - **Android Automotive (AAOS)**: infotainment zone, through `backend: attach` and the ladder above; its
     Vehicle HAL is the gRPC one, served from the vehicle's signal plane.
   - **Embedded Qt/QML IVI/cluster loadable**: an alternate infotainment/cluster baseline to
