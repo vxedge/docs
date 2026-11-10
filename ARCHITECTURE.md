@@ -739,12 +739,13 @@ metrics:                             # what criteria and observability clients r
   - { id: ctl_loss_pct, kind: gauge, unit: "%", entity: measurements/ctl-rtt,
       ratio: [ctl_lost, ctl_sent], factor: 100 }
 criteria:
-  - id: h1-p99-bound
-    lhs: { metric: ctl_p99_seconds, aggregate: median, select: { arm: saturated } }
-    op: le
-    rhs: { metric: ctl_p99_seconds, aggregate: median, select: { arm: idle }, factor: 2.0 }
-    min_samples: 5
-    guards:
+  - id: h1
+    all:
+      - id: h1-p99-bound
+        lhs: { metric: ctl_p99_seconds, aggregate: median, select: { arm: saturated } }
+        op: le
+        rhs: { metric: ctl_p99_seconds, aggregate: median, select: { arm: idle }, factor: 2.0 }
+        min_samples: 5
       - id: h1-loss-bound
         lhs: { metric: ctl_loss_pct, aggregate: median, select: { arm: saturated } }
         op: le
@@ -796,8 +797,9 @@ campaign:
   `outside` when they differ by more. A tolerance is a number in the operands' unit, or an
   operand, such as the larger of an arm's IQR and a noise floor. `all: [...]` and `any: [...]`
   group criteria. `min_samples` is the fewest trial values each metric operand needs. `guards`
-  are criteria that must pass for a criterion to be conclusive, such as a loss bound under a
-  latency bound.
+  are criteria that must pass for a criterion to be conclusive: exp-002b and exp-003 guard each
+  latency comparison with a loss bound, so a lossy arm makes it inconclusive rather than failed.
+  exp-001's loss bound above is a member of `all` instead, because its notebook fails H1 on it.
 - **Each criterion evaluates to `pass`, `fail` or `inconclusive`.** It is `inconclusive` when an
   operand has fewer than `min_samples` trial values, a selected trial has no value or incomplete
   telemetry (a `gap` on the metric's entity while the trial measured), a ratio divides by zero,
