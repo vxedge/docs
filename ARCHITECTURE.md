@@ -390,11 +390,12 @@ h1-slice-isolation/
   .vxpignore               # optional: further identity exclusions (§13)
   main.yaml                # kind: experiment  — the test
   vehicle.yaml             # kind: vehicle     — the system under test
-  road1.yaml               # kind: road        — the environment (omit if unused)
+  road1.yaml               # kind: road        — the road network (omit if unused)
+  scenario.yaml            # kind: scenario    — what happens on the road (omit if unused)
   parts.yaml               # kind: baseline    — which software
   scripts/run.sh           # the campaign: repetitions, warmup, measurement window
   parts/                   # this experiment's own loadables
-  assets/                  # scenario files, traces, maps
+  assets/                  # OpenDRIVE roads, OpenSCENARIO storyboards, traces, maps
   tools/                   # analysis specific to this experiment
   results/                 # archives, one per run
 ```
@@ -405,7 +406,7 @@ parts live three directories up is not something a recipient can unpack. Only th
 `*.yaml` are workspace *documents*; the subdirectories are content, and the loader ignores them
 (a `part.yaml` inside `parts/` describes a loadable, not an experiment).
 
-Kinds: `experiment` | `vehicle` | `road` | `baseline` | `component`. Loading is: read the
+Kinds: `experiment` | `vehicle` | `road` | `scenario` | `baseline` | `component`. Loading is: read the
 descriptor, glob `*.yaml` (non-recursive, so a `results/` archive is never absorbed), index by
 `(kind, id)`, resolve references by id. No includes, no import boilerplate, no ordering rules.
 Files exist only when the experiment needs them. `vxp.yaml` is the descriptor, not a document, and
@@ -635,8 +636,9 @@ not.
 #### 6.0.3 `kind: experiment` and the package descriptor
 
 `kind: experiment` carries `network` (slices, tunnels, nos_check), `traffic_profiles`,
-`telemetry`, `services` and `results`, plus `vehicles: [<id>…]`, `baseline: <id>`, `world: <id>`,
-and a `method` block (`duration_s`, `repetitions`, `warmup_s`). It may also carry typed intent,
+`telemetry`, `services` and `results`, plus `vehicles: [<id>…]`, `baseline: <id>`,
+`scenario: <id>` (below; `world: <id>` is its legacy name and still reads as it), and a `method`
+block (`duration_s`, `repetitions`, `warmup_s`). It may also carry typed intent,
 `hypothesis`, `parameters`, `metrics`, `criteria` and `campaign` (below). It carries no
 `zones`/`compute` inline: structure is the vehicle's, and software is the baseline's.
 
@@ -906,6 +908,45 @@ does not exist, uses an unknown aggregate, or names a metric with neither a `ser
 value out of bounds is `ERROR_REASON_PARAMETER_INVALID` too. `Plan` names every problem with the
 document and the field it is in, and `up` refuses on the first, so a bad criterion fails in a
 second, not after an hour of trials.
+
+**Scenarios and roads.** A scenario is what happens on the road during a trial. vxedge invents
+no road or manoeuvre format: a package carries ASAM OpenDRIVE (`.xodr`) and OpenSCENARIO (`.xosc`)
+files unchanged in `assets/`, and two kinds point at them with what a reproducible trial needs:
+
+```yaml
+kind: road
+id: town-grid-small
+network: assets/town-grid-small.xodr       # ASAM OpenDRIVE, unchanged
+---
+kind: scenario
+id: urban-stop-line
+road: town-grid-small                      # by id
+storyboard: assets/urban-stop-line.xosc    # ASAM OpenSCENARIO XML, unchanged
+simulator: esmini                          # esmini | carla
+clock: { tick_ms: 10, mode: synchronous }  # the simulator is the master clock
+seed: 42
+actors:
+  Ego: { vehicle: vx-vehicle-02 }          # storyboard entity -> the vxedge vehicle it is
+parameters:                                # the storyboard's ParameterDeclarations
+  EgoTargetSpeed: { unit: m/s, min: 0, max: 22.2 }
+```
+
+- **The experiment** names its scenario with `scenario: <id>`. A package has at most one.
+- **Actors:** only the entities named under `actors` are vxedge vehicles, each a vehicle of the
+  package. Every other entity of the storyboard is traffic, driven by the storyboard. Campaigns
+  run serially, so a scenario has one ego.
+- **Parameters** name the storyboard's `ParameterDeclaration`s and give a number a `unit` and
+  bounds.
+- **What vxedge reads:** the storyboard's entity names and parameter declarations, and that the
+  road is an OpenDRIVE file. Checking the storyboard itself is the simulator's job.
+- **Checked by `Plan`, `experiment validate` and `up`:** each file exists and has the right
+  root element, the road id resolves, the simulator is one vxedge knows, every actor is an entity
+  of the storyboard and a vehicle of the package, and every parameter is declared there (a string
+  parameter takes no bounds). Each problem is `ERROR_REASON_SCENARIO_INVALID`, and `up` refuses on
+  the first.
+- **Inspect:** `PackageService.Inspect` returns the scenario typed: road, storyboard, simulator,
+  clock, seed, actors, the storyboard's entities, and each parameter with its bounds and the
+  value the storyboard declares.
 
 **Measurements.** A `kind: experiment` declares what it measures by node id, and the daemon runs
 it; no script places a probe:

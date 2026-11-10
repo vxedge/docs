@@ -8,6 +8,10 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §6.0 and §6.0.3: `kind: road` and `kind: scenario` point at OpenDRIVE and
+  OpenSCENARIO files, and an experiment names its scenario with `scenario:` (`world:` still reads
+  as it). Covers what `Plan` checks, `ERROR_REASON_SCENARIO_INVALID`, and the typed scenario in
+  `PackageService.Inspect`.
 - `ARCHITECTURE.md` §6.0.8: an offline layout also carries the infra image every container node
   runs, with its Linux platforms only.
 - `ARCHITECTURE.md` §6.0.3: the example writes exp-001's loss bound as a member of `all`, as its
