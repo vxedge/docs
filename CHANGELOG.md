@@ -8,6 +8,8 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §6.0.3: the descriptor's `requires.simulator`, how a host has a simulator
+  (`HostService.Capabilities`), and `ERROR_REASON_SIMULATOR_UNAVAILABLE`.
 - `ARCHITECTURE.md` §6.0 and §6.0.3: `kind: road` and `kind: scenario` point at OpenDRIVE and
   OpenSCENARIO files, and an experiment names its scenario with `scenario:` (`world:` still reads
   as it). Covers what `Plan` checks, `ERROR_REASON_SCENARIO_INVALID`, and the typed scenario in

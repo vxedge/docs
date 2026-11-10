@@ -1004,6 +1004,7 @@ requires:
   kvm: true
   kernel: { preempt_rt: preferred } # required | preferred | any
   backends: [container, qemu-microvm]
+  simulator: [esmini]               # esmini | carla: what the package's scenario runs on
 provenance:                         # optional, written by generators such as vxmodel render
   generated_by: { tool: vxmodel, version: 0.3.0, model_digest: "sha256:…" }
 x-oem-acme: { cost_centre: 4711 }   # x- keys are carried and ignored
@@ -1027,6 +1028,12 @@ x-oem-acme: { cost_centre: 4711 }   # x- keys are carried and ignored
   version is outside `requires.vxedge` refuses with `ERROR_REASON_VXEDGE_VERSION_UNSUPPORTED`.
   `kernel.preempt_rt: preferred` runs on any kernel, and every run records which kernel it
   ran on (§13); `required` refuses a kernel without it.
+- **`requires.simulator`** lists the simulators the package's scenario runs on. A simulator is
+  available on a host when one of its executables is on vxedged's `PATH` (`esmini`; for CARLA,
+  `CarlaUE4.sh` or `CarlaUnreal.sh`), and `HostService.Capabilities` lists them. A host without
+  one refuses with `ERROR_REASON_SIMULATOR_UNAVAILABLE`. A scenario's `simulator` must be listed
+  here, or it is a scenario problem. vxedge reads `requires.simulator` from 0.15.0, so a package
+  that declares it sets `requires.vxedge` to `>=0.15.0`.
 - **`authors`** lists `{ org }` or `{ name, org }` entries. Packages vxedge publishes name
   organisations only.
 
