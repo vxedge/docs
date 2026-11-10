@@ -858,7 +858,8 @@ job.
   `campaign.json` beside the archives (`results/<campaign id>/` in the workspace by default) and
   under the daemon's runtime folder. `Get`, `List` and `Watch` read it, after a restart too.
 - **Resuming:** a retry with the same `request_id` resumes that campaign and skips the trials
-  whose archives exist.
+  whose archives exist. While the campaign runs, the retry gets its job. A retry with another
+  profile is refused as `ERROR_REASON_PARAMETER_INVALID`, never merged.
 - **Cancelling:** `JobService.Cancel` stops it between trials.
 - **One at a time:** another campaign is refused as `ERROR_REASON_BUSY`, with `active_campaign`
   and `retry_after_ms` in `ErrorInfo.metadata`. An unknown campaign id is
