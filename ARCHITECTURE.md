@@ -800,8 +800,11 @@ campaign:
   latency bound.
 - **Each criterion evaluates to `pass`, `fail` or `inconclusive`.** It is `inconclusive` when an
   operand has fewer than `min_samples` trial values, a selected trial has no value or incomplete
-  telemetry (a `gap` on the metric's entity while the trial measured, or a failed scrape in a
-  `vxarchive/1` archive), a ratio divides by zero, or a guard does not pass. `inconclusive` is
+  telemetry (a `gap` on the metric's entity while the trial measured), a ratio divides by zero,
+  or a guard does not pass. A `vxarchive/1` archive names no entities and records no gaps or
+  phases: its series is matched by name and labels and refused when two scrape targets served
+  it, and its count of failed scrapes is noted on the value, since it cannot be placed in time.
+  `inconclusive` is
   never reported as a pass. A group is `pass` only when its rule holds over conclusive members,
   and `inconclusive` when the outcome depends on an inconclusive one. A one-line text rendering of
   a criterion is for people; nothing parses it.

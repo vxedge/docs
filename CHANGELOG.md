@@ -8,6 +8,8 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §6.0.3: a `vxarchive/1` archive's failed scrapes are noted on a value, not
+  counted as a gap. `USER-GUIDE.md`: `vxedge results verdict` and `compare`, offline.
 - `ARCHITECTURE.md` §5 and §6.0.3, `USER-GUIDE.md`: `ResultService.Compare`. It sets a campaign
   against a reference, per metric at each point against the reference's median and IQR, and per
   criterion. Adds `vxedge campaign compare`.
