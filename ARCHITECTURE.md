@@ -1239,7 +1239,10 @@ where packages are built and changed, runs without the requirement.
 
 **Offline transfer.** `pkg pack --offline` writes, beside the packed file, an OCI image layout
 `<name>-<version>.parts/` holding every published part and image the lock lists, and `pkg pull
---layout <dir>` loads them into the part cache, so `up` needs no network. The packed file and its
+--layout <dir>` loads them into the part cache, so `up` needs no network. The layout also holds
+the infra image vxedge runs every container node with (`registry.k8s.io/pause`, pinned by
+digest), which no lock lists. Only its Linux platforms travel, and its index travels unchanged,
+so the pinned digest still resolves. The packed file and its
 digest are unchanged by how it travels (decision X-9).
 
 ### 6.1–6.2 Experiment and vehicle manifests: **retired 2026-07-31**
