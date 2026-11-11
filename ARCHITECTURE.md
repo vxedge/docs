@@ -222,7 +222,7 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
 | `TrafficService` | `Up`, `Down`, `Status` |
 | `MeasurementService` | `Start`, `Stop`, `Status` (an experiment's `measurements`, run inside each end's network namespace) |
 | `CampaignService` | `Plan` (a campaign's trials, each point's bound document checked; touches nothing), `Start` (runs the trials serially as one job), `Get`, `List`, `Watch` (status as it changes) |
-| `ResultService` | `List` (a host's results: campaigns' trial archives and a workspace's `results/`), `Get`, `Fetch` (an archive's bytes, server-streaming), by digest; `Verdict` (an experiment's criteria judged over a campaign's archives), `Compare` (a campaign against a reference campaign) |
+| `ResultService` | `List` (a host's results: campaigns' trial archives and a workspace's `results/`), `Get`, `Fetch` (an archive's bytes, server-streaming), by digest; `Verdict` (an experiment's criteria judged over a campaign's archives), `Compare` (a campaign against a reference campaign, run on this host or recorded in a workspace's `results/`) |
 | `PackageService` | `Inspect` (a package's descriptor, digest, lock state, requirements, typed intent, measurements and entities; touches nothing), `List` (the host's package cache), `Pull`, `Import` (client-streaming) |
 | `NosCheckService` | `Up`, `Down`, `Status`, `Verify` |
 | `JobService` | `Get`, `Watch` (server-streamed progress; every mutating RPC returns a `Job`), `List`, `Cancel` |
@@ -898,6 +898,13 @@ without the `r<repetition>-` prefix, so the repetitions of a point are compared 
   reference's IQR. This is the reproducibility check exp-001's reruns use.
 - **Per criterion:** its outcome in each campaign. Also each campaign's verdict, and how many
   metric points are within the reference's IQR.
+- **A reference this host did not run:** with `reference_workspace`, the reference is that
+  workspace's `results/<reference_campaign_id>/campaign.json`, such as a frozen campaign published
+  with its archives. Such a record needs only `campaign_id` and its trials (id, arm, repetition,
+  parameters, state, archive, sha256). Each archive is read from the record's folder: a relative
+  path below it, or an absolute path by its file name. Each must hash to the record's `sha256`, else
+  `ERROR_REASON_CHECKSUM_MISMATCH`. A record or an archive that is missing, or a path outside the
+  folder, is `ERROR_REASON_CAMPAIGN_UNKNOWN` or `ERROR_REASON_RESULT_UNKNOWN`.
 
 **Checked by `Plan`, before any trial.** `WorkspaceService.Plan`, `experiment validate` and `up`
 check typed intent with the rest of the workspace. A parameter whose type, bounds or `binds`
