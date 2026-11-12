@@ -1205,11 +1205,35 @@ criteria:
 - **Checked by `Plan`.** A tool not pinned, a step that does not do exactly one thing or runs on a
   node that is not a container node of the vehicles, a `with`, `wait` or `stop` naming a step that
   is not a background step started earlier and still running, a file the package does not hold, a
-  case that reads a step recording nothing or expects more than one thing, and `checks` with
-  `windows` or with no duration are problems with `ERROR_REASON_CHECK_INVALID`. A criterion naming
+  case that reads a step recording nothing or expects more than one thing, `samples` on a step
+  that is not a tool step, a bad series or label name, a series declared twice on one step, an
+  empty `value` or `unit`, a metric on `checks/<step>` whose step does not declare its series in
+  its unit with every label it picks, and `checks` with `windows` or with no duration are problems
+  with `ERROR_REASON_CHECK_INVALID`. A criterion naming
   a case that is not declared, or an `observe` one, is `ERROR_REASON_CRITERION_INVALID`.
-- **A later use.** The same lines can carry numbers a tool measures itself, such as kuksa-perf's
-  latency; reading them as samples a metric aggregates is not built yet.
+- **Samples.** The same lines can carry numbers a tool measures itself, such as kuksa-perf's
+  latency percentiles, and a tool step's `samples` reads them as series a metric aggregates:
+
+  ```yaml
+  steps:
+    - id: publish-idle
+      tool: perf
+      on: cabin1
+      samples:
+        - { series: kuksa_perf_latency_us, where: { op: latency }, value: us, unit: us,
+            labels: [quantile] }
+  metrics:
+    - { id: publish_idle_p50, kind: gauge, unit: us, entity: checks/publish-idle,
+        series: kuksa_perf_latency_us, labels: { quantile: "50" } }
+  ```
+
+  Each line its `where` selects that holds a number at `value` (a dotted path) is one sample of
+  `series` on the step's entity `checks/<step>`, at the time the line was recorded, labelled with
+  the values of its `labels` fields, each under the field's name. A line whose value is not a
+  number, or that lacks a label field, gives none. A metric then reads the series as it reads a
+  probe's, reduced over the measure phase as its `reduce` says, and criteria aggregate it across
+  trials. The samples are read from the step's archived output when a trial is judged, so
+  an offline verdict reads the same values as the daemon's.
 
 The descriptor holds packaging rather than content, so a version bump never touches an
 experiment file. **`vxp/1`** (ships in vxedge 0.6.0; vxedge 0.5.x reads only the legacy form below):
