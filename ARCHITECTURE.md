@@ -1029,7 +1029,7 @@ it; no script places a probe:
 measurements:
   ctl-rtt:
     kind: rtt-probe          # the one kind so far
-    from: node-adas-probe-01 # a device: the node the probe sends from
+    from: node-adas-probe-01 # a device, or `host`: where the probe sends from
     to: internet             # a device, or `internet`: the far side of the shared uplink
     slice: adas              # the slice its packets use
     rate_pps: 500            # default 100
@@ -1050,14 +1050,29 @@ measurements:
   `vxprobe` as the sender in the `from` node and as the reflector in the `to` node, for
   `duration_s` (the request's, else `method.duration_s`). For `to: internet` the reflector runs on
   a VLAN subinterface of the uplink's peer for the slice, at the first host address of the
-  sender's subnet, so the probe crosses the slice's queue on the shared uplink. A VM node or an
-  attached platform has no namespace on the host to enter, so it cannot be an end yet.
+  sender's subnet, so the probe crosses the slice's queue on the shared uplink.
+- **`from: host`.** The sender runs in the host's own namespace and reaches the `to` node over the
+  slice's VLAN, from the first host address of the `to` node's subnet: the far side a
+  `to: internet` probe answers on, used the other way round. `to` is then a device.
+- **A guest as `to`.** A node that boots a guest (`qemu-microvm`, `libvirt`, `cloud-hypervisor`,
+  `qemu-mcu`) has no namespace on the host to enter, but its guest may run a reflector of its own.
+  Its part declares it, `org.vxedge.reflector: udp/<port>` in the bundle's `meta.json` (and as a
+  manifest annotation when published), and the probe is aimed at that port; nothing is started in
+  the guest. A part that declares none cannot be a `to`. `Plan` reads the declaration from a local
+  bundle, or a published one already in the part cache; a published bundle not yet fetched is
+  read when the measurement starts, after `up` has fetched it. A guest cannot send a probe, and an
+  attached platform, whose software vxedge does not place, is no end at all.
+- **The reflector answers first.** Before the sender starts, the reflector must echo a datagram
+  sent from where the sender runs, within 90 s, so a guest still booting is waited for. One that
+  never answers fails the measurement, naming its address and port, rather than recording a
+  window of pure loss.
 - **Samples.** Each sender serves its metrics on `127.0.0.1` inside its own namespace. The
   daemon's exporter reads them there and serves them with `entity="measurements/<id>"` (§12), so
   a scrape never crosses the slice it measures. When the sender finishes, its summary stays in
   the runtime folder.
-- **Checked by `Plan`.** An end that is not a device (or `internet`, for `to`), an end that is a
-  VM or an attached platform, a slice that is not declared or that an end has no link or (on a
+- **Checked by `Plan`.** An end that is not a device (or `host`, for `from`, or `internet`, for
+  `to`), a guest as `from`, a guest `to` whose part declares no reflector, an attached platform, a
+  device end other than the device the experiment isolates, a slice that is not declared or that an end has no link or (on a
   VLAN slice) pinned address on, a `to` other than `internet` on an `s-nssai` slice, a `to: internet` measurement whose far side would take one address on two
   slices (with another measurement, or with a traffic profile sending to the uplink), or a rate or payload out of bounds is a problem with
   `ERROR_REASON_MEASUREMENT_INVALID`, and `up` and `Start` refuse it. A parameter can bind a
@@ -1065,6 +1080,28 @@ measurements:
 - **Load runs where the node is.** `TrafficService.Up` runs a `traffic_profiles` entry inside its
   source node in the same way once the node's zone is up, to a target node or to the far side of
   the uplink, so a campaign's load and its probes share the path they measure.
+- **One device up: `isolate`.** An experiment's `isolate: <device>` makes `up` start that device
+  alone, every other device staying down, and `down` stops whatever is up. A campaign whose arms
+  are packagings of one ECU runs one arm at a time this way: concurrent guests contend for host CPU
+  and show as loss that is not the packaging's. Per arm, a `string` parameter binds `isolate` and
+  another binds the measurement's `to`:
+
+  ```yaml
+  isolate: node-cont-01
+  measurements:
+    rtt: { kind: rtt-probe, from: host, to: node-cont-01, slice: adas, rate_pps: 1000 }
+  parameters:
+    arm_device: { type: string, default: node-cont-01, binds: isolate,
+                  values: [node-cont-01, node-microvm-01, node-libvirt-01] }
+    arm_target: { type: string, default: node-cont-01, binds: "measurements[rtt].to",
+                  values: [node-cont-01, node-microvm-01, node-libvirt-01] }
+  campaign:
+    arms:
+      container: { arm_device: node-cont-01, arm_target: node-cont-01 }
+      microvm: { arm_device: node-microvm-01, arm_target: node-microvm-01 }
+  ```
+
+  A device that is not one of the vehicles' is a workspace error.
 - **`Stop`** ends a measurement's processes and removes a far-side interface no other measurement
   or running profile uses. `experiment down` stops every running measurement before it takes the nodes down.
 
