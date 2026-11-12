@@ -61,13 +61,13 @@ The latest tagged release of each code repository.
 
 | Key | Repository | Version | Released |
 |---|---|---|---|
-| `vxedge` | `vxedge` | 0.18.0 | 2026-11-12 |
+| `vxedge` | `vxedge` | 0.20.0 | 2026-11-12 |
 | `vxagents` | `vxagents` | 0.2.1 | 2026-11-12 |
-| `vxmcp` | `vxmcp` | 0.4.3 | 2026-11-11 |
+| `vxmcp` | `vxmcp` | 0.4.5 | 2026-11-12 |
 | `vxmodels` | `vxmodels` | 0.1.0 | 2026-10-29 |
 | `vxota` | `vxota` | 0.1.1 | 2026-10-28 |
 | `vxparts` | `vxparts` | 0.1.0 | 2026-10-29 |
-| `vxperiments` | `vxperiments` | 0.1.0 | 2026-07-13 |
+| `vxperiments` | `vxperiments` | 0.2.0 | 2026-11-12 |
 | `vxtelemetry` | `vxtelemetry` | 0.6.0 | 2026-11-10 |
 | `vxvhal` | `vxvhal` | 0.1.1 | 2026-11-08 |
 
@@ -272,12 +272,27 @@ interface its own platform creates, adopted by the gateway.
 | Key | Backend | Runs | State | Validated on |
 |---|---|---|---|---|
 | `backend.container` | `container` | a network namespace, or an OCI image in a container group | live | `vxprobe`, OCI payloads |
-| `backend.qemu_microvm` | `qemu-microvm` | a guest bundle under raw QEMU: x86_64 on `microvm`, aarch64 on `virt` | live | `linux-probe` (x86_64, KVM; aarch64, TCG only), the Zephyr probe |
+| `backend.qemu_microvm` | `qemu-microvm` | a guest bundle under raw QEMU: x86_64 on `microvm`, aarch64 on `virt` | live | `linux-probe` (x86_64, KVM; aarch64, TCG only), the FreeRTOS and Zephyr probe bundles |
 | `backend.libvirt` | `libvirt` | a guest bundle as a libvirt domain | live | `linux-probe` |
 | `backend.cloud_hypervisor` | `cloud-hypervisor` | a guest bundle under Cloud Hypervisor | live | `linux-probe` only |
 | `backend.wasm_capsule` | `wasm-capsule` | a WASI 0.2 component in a `vxcapsule` process | live | `reflector-capsule` only |
 | `backend.attach` | `attach` | a guest on its own platform's host stack, through an adapter | live | AAOS 26Q2 on Cuttlefish only |
 | `backend.qemu_mcu` | `qemu-mcu` | microcontroller firmware on QEMU's `mps2-an385` (Cortex-M3), TCG only | live | the FreeRTOS and Zephyr `probe-mps2` firmware |
+
+### Probe parts
+
+The probe guests published in [`vxparts`](https://github.com/vxedge/vxparts) under
+`ghcr.io/vxedge/parts/`. Each declares `org.vxedge.reflector: udp/9800`: a UDP reflector on port
+9800 that a measurement can target inside the guest. Pin a part by its digest.
+
+| Key | Part | Version | Digest |
+|---|---|---|---|
+| `part.linux_probe_bundle` | `zone/linux/stack/probe-bundle` | 0.1.1 | `sha256:dce921197fa93f7a6bd306b1748b93785e329e443504bd2113a98ccfad52c5e6` |
+| `part.linux_probe_bundle_aarch64` | `zone/linux/stack/probe-bundle-aarch64` | 0.1.1 | `sha256:bfe13a9628689618a0a3203bb0ad4db854012e205228692663d58fb877857276` |
+| `part.freertos_probe_bundle` | `zone/freertos/stack/probe-bundle` | 0.1.1 | `sha256:5c1a314c658c2e1ebdb71761c1d0aecdb2d8ae0ae792840b77964c7ec0fa6e0d` |
+| `part.zephyr_probe_bundle` | `zone/zephyr/stack/probe-bundle` | 0.1.1 | `sha256:f613afb32a87a9fc78b455ad2f15ed4b168c755b5acdaae2c14736ebc558e34d` |
+| `part.freertos_probe_mps2` | `zone/freertos/firmware/probe-mps2` | 0.1.1 | `sha256:ca728131ca8a2d0b0f6253c258c91abdb47d9666926e79474b01907571dd4a9f` |
+| `part.zephyr_probe_mps2` | `zone/zephyr/firmware/probe-mps2` | 0.1.1 | `sha256:3114361b2c184d5a0f58512147135007178e6f131d5def5fdf344dd77eb54156` |
 
 ### Frontends
 
