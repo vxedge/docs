@@ -1662,6 +1662,43 @@ deliberately separate:
   (`ghcr.io/vxedge/parts/svc/ota/config/<name>@sha256:<hex>`) is fetched into the part cache at `up`,
   as a guest bundle is, and mounted read-only into the placed service; planning does not need it on
   disk. A host-process service (no `on:`) serves a directory only.
+- **A store made per run: `publish`.** In place of `artifacts`, a host-process service may name the
+  artifacts the daemon makes when the service starts:
+  `publish: { burst-artifact: { size_bytes: 5242880 } }`. Each is that many random bytes, signed
+  into a fresh store under its name with a fresh root key (`vxota keygen`, then `vxota publish`).
+  The store and the key live in the runtime folder, the key outside the store, and both are
+  replaced on every start, so a package needs no store built on the host before it runs, and no
+  key is ever in a package. A service gives `artifacts` or `publish`, never both.
+- **An update in progress: `fetch`.** `fetch: { target, clients, interval_s, metrics }` runs
+  `clients` OTA clients (`vxota-probe fetch`, default 1) beside a host-process service. Each
+  downloads and verifies `target` again `interval_s` (default 0) after its last delivery ends,
+  pinned to the store's root key, until the service stops. They start once the service answers on
+  `config.listen` and stop before it. Each exports `vxota_deployments_total{status}` and
+  `vxota_delivery_latency_seconds` on `metrics` (default `127.0.0.1:9902`, the port rising by one
+  per client), bound to the service's entity (`host/services/<key>`), and logs to the stream
+  `fetch-<n>`. A parameter that binds `services.<key>.config.fetch.clients` turns the load on per
+  arm; `clients: 0` runs none. vxedged runs the client from `--vxota-probe-bin`. exp-003's burst
+  arm is one client with `interval_s: 0`:
+
+  ```yaml
+  services:
+    ota:
+      id: ota-01
+      type: ota
+      image: { url: local/vxota:host-process, kind: container }
+      config:
+        listen: 127.0.0.1:9900
+        publish: { burst-artifact: { size_bytes: 5242880 } }
+        fetch: { target: burst-artifact, clients: 0 }
+  parameters:
+    ota_clients: { type: integer, unit: "1", default: 0, min: 0, max: 16,
+                   binds: services.ota.config.fetch.clients }
+  ```
+
+  `Plan` refuses a store given twice or not at all, a `publish` name that is not one path
+  component, a size of 0 or above 1 GiB, a `fetch.target` that `publish` does not make, more than
+  16 clients, an address that does not parse, and `publish` or `fetch` on a placed service
+  (`ERROR_REASON_WORKSPACE_INVALID`).
 - **v1 service backend (fidelity caveat):** `SvcService.Up` (§5) spawns
   the service binary (`vxota serve`) as a host-local child process co-located with
   `vxedged`, tracked by a pidfile the same way the microVM zone backend tracks QEMU, not
