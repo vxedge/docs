@@ -2070,6 +2070,19 @@ scrape reads the kernel's counters as they are then.
   collects on, the run's host. Results from the two kinds of kernel are never pooled without
   saying so.
 
+- **Tool binaries, beside the identity** (every collect). The tools a run spawns are part of
+  what ran, and their build changes the result: a debug `vxprobe` hides an effect a release one
+  shows. At every `TelemetryService.Collect` the daemon writes `tools.json` to the ingest
+  folder, and `vxtelemetry` records it as `tools` in the archive's `metadata.json`: vxedged itself, then every
+  tool flag (`--vxprobe-bin`, `--vxtraffic-bin`, `--vxota-bin`, `--vxota-probe-bin`,
+  `--vxtelemetry-bin`), whether or not the run used it. Each entry has `name`, the `path` that
+  runs (resolved on `PATH` as the daemon spawns it, symlinks resolved), the `version` its
+  `--version` reports, the `sha256` of the file, and `profile`: `debug` or `release` when the
+  tool says so (vxedged knows its own build; another tool's `--version` line may end in
+  `(debug)` or `(release)`), else `unknown`, never guessed from the path. A tool that cannot be
+  found, read or run is still listed, with an `error`. Each file is read once, and again only
+  when it changes on disk.
+
 - **Reproducibility:**
   - All manifests under `vxperiments` are versioned and authoritative.
   - Images and RTOS builds tagged with SHA256 digest.
@@ -2087,7 +2100,7 @@ scrape reads the kernel's counters as they are then.
   - Results are archived under the experiment's `results.artifact_dir`, or the `--out` path
     given to `telemetry collect`.
   - Metadata includes the experiment ID, the workspace identity (above), the package id and
-    version (and, for a `vxp/1` package, its digest and whether it ran locked), the `vxtelemetry` version, the ingest statistics, and, when the campaign opts in,
+    version (and, for a `vxp/1` package, its digest and whether it ran locked), the `vxtelemetry` version, the tool binaries the daemon runs (above), the ingest statistics, and, when the campaign opts in,
     the content-addressed digests of the container images it ran against (`host-process` for a
     local host-process part).
   - The archive carries **every file the workspace identity covers** under `workspace/`: the
