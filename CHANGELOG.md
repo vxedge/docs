@@ -8,6 +8,8 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `FACTS.md` zone backends: `backend.qemu_mcu`, live, validated on the FreeRTOS and Zephyr `probe-mps2` firmware
+  (vxparts `zone/{freertos,zephyr}/firmware/probe-mps2` 0.1.0, public; `vx-vehicle-04` gate 10/10 on vxedge 0.17.0).
 - `ARCHITECTURE.md` §9: `backend: qemu-mcu`, microcontroller firmware on QEMU's `mps2-an385`: the firmware
   bundle, the semihosting command line, the NIC's MAC, and TCG-only results. §6.0 lists the new backend value.
 - `ARCHITECTURE.md` §6.0.3: a parameter can bind a storyboard parameter

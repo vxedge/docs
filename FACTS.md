@@ -277,6 +277,7 @@ interface its own platform creates, adopted by the gateway.
 | `backend.cloud_hypervisor` | `cloud-hypervisor` | a guest bundle under Cloud Hypervisor | live | `linux-probe` only |
 | `backend.wasm_capsule` | `wasm-capsule` | a WASI 0.2 component in a `vxcapsule` process | live | `reflector-capsule` only |
 | `backend.attach` | `attach` | a guest on its own platform's host stack, through an adapter | live | AAOS 26Q2 on Cuttlefish only |
+| `backend.qemu_mcu` | `qemu-mcu` | microcontroller firmware on QEMU's `mps2-an385` (Cortex-M3), TCG only | live | the FreeRTOS and Zephyr `probe-mps2` firmware |
 
 ### Frontends
 
