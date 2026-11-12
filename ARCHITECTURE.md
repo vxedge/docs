@@ -2148,12 +2148,18 @@ scrape reads the kernel's counters as they are then.
     local host-process part).
   - The archive carries **every file the workspace identity covers** under `workspace/`: the
     documents, `parts/`, `assets/`, `scripts/` and `tools/`, and nothing the identity excludes.
-    It is enough to re-run from, and it verifies itself: re-hashing `workspace/` under the
-    recorded `workspace_identity_algorithm` reproduces `workspace_sha256`
-    (`vxtelemetry verify <archive>`, which exits non-zero on a mismatch). Every entry under
-    `workspace/` counts, so a file added to an archive is a mismatch. An archive that names no
-    algorithm was written when archives carried only the documents; it cannot be re-hashed, and
-    `verify` refuses it with that reason.
+    It is enough to re-run from, and it verifies itself: re-hashing `workspace/` (`package/` in
+    archive v2) under the recorded `workspace_identity_algorithm` reproduces `workspace_sha256`
+    (`vxtelemetry verify <archive>`). Every entry counts, so a file added to an archive is a
+    mismatch.
+  - `verify` reports the identity as **checked**, **mismatch** or **not checkable** with the
+    reason, and never assumes an algorithm. For archive v2, the index check (every member
+    against `index.json`) is the integrity result. An archive that records no algorithm was
+    written before identity algorithms were recorded, when archives carried only the documents;
+    one that records only `manifest_sha256` was written before workspace identities. Neither can
+    be re-hashed to its identity. Exit codes: 0 every check passed; 1 the index, the identity or
+    the package digest does not match; 3 nothing failed but the identity is not checkable (from
+    vxtelemetry 0.7.1). A v1 archive that records no algorithm is refused with that reason.
   - Registry uploads optional; ensures compliance with reproducible research principles.
 
 ---
