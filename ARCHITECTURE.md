@@ -222,7 +222,7 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
 | `TrafficService` | `Up`, `Down`, `Status` |
 | `MeasurementService` | `Start`, `Stop`, `Status` (an experiment's `measurements`, run inside each end's network namespace) |
 | `CampaignService` | `Plan` (a campaign's trials, each point's bound document checked; touches nothing), `Start` (runs the trials serially as one job), `Get`, `List`, `Watch` (status as it changes) |
-| `ResultService` | `List` (a host's results: campaigns' trial archives and a workspace's `results/`), `Get`, `Fetch` (an archive's bytes, server-streaming), by digest; `Verdict` (an experiment's criteria judged over a campaign's archives), `Compare` (a campaign against a reference campaign, run on this host or recorded in a workspace's `results/`) |
+| `ResultService` | `List` (a host's results: campaigns' trial archives and a workspace's `results/`), `Get`, `Fetch` (an archive's bytes, server-streaming), by digest; `Verdict` (an experiment's criteria judged over a campaign's archives, with the reference campaigns they read), `Compare` (a campaign against a reference campaign, run on this host or recorded in a workspace's `results/`) |
 | `PackageService` | `Inspect` (a package's descriptor, digest, lock state, requirements, typed intent, measurements and entities; touches nothing), `List` (the host's package cache), `Pull`, `Import` (client-streaming) |
 | `NosCheckService` | `Up`, `Down`, `Status`, `Verify` |
 | `JobService` | `Get`, `Watch` (server-streamed progress; every mutating RPC returns a `Job`), `List`, `Cancel` |
@@ -784,11 +784,30 @@ campaign:
   metric is the `ratio` of two such metrics in the same trial, times an optional `factor`, such as
   a loss percentage from the lost and sent counters, or a cold window's slowest round trip over
   the steady window's median.
+- **`references`** name the other campaigns a criterion reads, each `<name>: { campaign: <id> }`
+  with an optional `statement`: exp-010's H2 holds when its p99 growth from 0 to 600 Mbit/s stays
+  within 1.10x of exp-001's. A reference's trials are read with this experiment's metrics, as
+  `Compare` reads a reference, and its arms are its own campaign's. A criterion that reads a
+  reference the verdict cannot find is `inconclusive`, and says which.
+
+  ```yaml
+  references:
+    vlan: { campaign: exp-001, statement: "the static VLAN mapping, frozen" }
+  criteria:
+    - id: h2
+      op: le
+      lhs: { ratio: [{ metric: p99, aggregate: median, select: { load_mbps: 600 } },
+                     { metric: p99, aggregate: median, select: { load_mbps: 0 } }] }
+      rhs: { ratio: [{ metric: p99, aggregate: median, select: { load_mbps: 600 }, reference: vlan },
+                     { metric: p99, aggregate: median, select: { load_mbps: 0 }, reference: vlan }],
+             factor: 1.10 }
+  ```
 - **`criteria`** are structured, never an expression string, so a caller composes one without
   writing a parser and a bad one is caught by type. Each has an `id`, an `op` (`lt`, `le`, `gt`,
   `ge`, `within` or `outside`) and two operands, `lhs` and `rhs`. An operand is one of:
   - a metric: `metric`, an `aggregate` over the values of the trials it selects, an optional
-    `select` by arm or by parameter values, and an optional `factor` and then `offset`;
+    `select` by arm or by parameter values, and an optional `factor` and then `offset`. With
+    `reference: <name>`, the trials are those of a declared reference campaign instead (below);
   - a constant: `value` with a `unit`;
   - a combination: `ratio: [a, b]` (a / b, in unit `1`), `diff: [a, b]` (a − b), or `max` or
     `min` of a list of operands, each with an optional `factor` and `offset`. The combined
@@ -907,9 +926,15 @@ it says only what the archives hold.
   else `inconclusive`) and every criterion's outcome. With each: its operands' and tolerance's
   values, every metric it read with the trials and values behind it, its members and guards, and
   why it is inconclusive when it is. It also returns each trial's value of each metric.
+- **References:** each campaign the experiment's `references` declare is read from the
+  `reference_workspace` given, as `results/<campaign>/campaign.json` with its archives
+  hash-checked (as for `Compare`). With none given, it is a campaign this host ran, or a record in
+  the judged campaign's own workspace's `results/`. A read names the reference it came from.
 - **Recorded:** when a campaign finishes, its verdict goes into `campaign.json` and
   `CampaignStatus.verdict`, and the full verdict into `verdict.json` beside the archives. An
-  experiment without criteria records none.
+  experiment without criteria records none. The recorded verdict finds references without a
+  `reference_workspace`, so a criterion on a reference recorded elsewhere is `inconclusive`
+  there; `Verdict` with the workspace judges it.
 - **Errors:** an unknown campaign is `ERROR_REASON_CAMPAIGN_UNKNOWN`, and an archive that cannot be
   read is `ERROR_REASON_RESULT_UNKNOWN`.
 
@@ -920,7 +945,9 @@ without the `r<repetition>-` prefix, so the repetitions of a point are compared 
   repetitions, the difference of the medians, and whether that difference is within the
   reference's IQR. This is the reproducibility check exp-001's reruns use.
 - **Per criterion:** its outcome in each campaign. Also each campaign's verdict, and how many
-  metric points are within the reference's IQR.
+  metric points are within the reference's IQR. A criterion that reads a declared reference
+  (`references`) reads the same one on both sides, found as `Verdict` finds it, in the
+  `reference_workspace` when one is given.
 - **A reference this host did not run:** with `reference_workspace`, the reference is that
   workspace's `results/<reference_campaign_id>/campaign.json`, such as a frozen campaign published
   with its archives. Such a record needs only `campaign_id` and its trials (id, arm, repetition,
