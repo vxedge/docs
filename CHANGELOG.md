@@ -8,6 +8,9 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §6.0.3: a check tool step's `samples` read its output lines as series on
+  `checks/<step>`, which metrics and criteria aggregate like a probe's, and what `Plan` refuses
+  in them (X9.15).
 - `FACTS.md` zone backends: `backend.qemu_mcu`, live, validated on the FreeRTOS and Zephyr `probe-mps2` firmware
   (vxparts `zone/{freertos,zephyr}/firmware/probe-mps2` 0.1.0, public; `vx-vehicle-04` gate 10/10 on vxedge 0.17.0).
 - `ARCHITECTURE.md` §9: `backend: qemu-mcu`, microcontroller firmware on QEMU's `mps2-an385`: the firmware
