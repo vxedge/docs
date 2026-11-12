@@ -1212,8 +1212,8 @@ criteria:
   `series` on the step's entity `checks/<step>`, at the time the line was recorded, labelled with
   the values of its `labels` fields, each under the field's name. A line whose value is not a
   number, or that lacks a label field, gives none. A metric then reads the series as it reads a
-  probe's: its last sample in the measure phase is the trial's value, and criteria aggregate it
-  across trials. The samples are read from the step's archived output when a trial is judged, so
+  probe's, reduced over the measure phase as its `reduce` says, and criteria aggregate it across
+  trials. The samples are read from the step's archived output when a trial is judged, so
   an offline verdict reads the same values as the daemon's.
 
 The descriptor holds packaging rather than content, so a version bump never touches an
