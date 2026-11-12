@@ -1105,6 +1105,93 @@ measurements:
 - **`Stop`** ends a measurement's processes and removes a far-side interface no other measurement
   or running profile uses. `experiment down` stops every running measurement before it takes the nodes down.
 
+**Functional checks.** Some experiments are suites, not measurements: exp-015 and exp-017 judge
+whether a Kuksa databroker does what `kuksa.val.v2` documents, with a client that prints one JSON
+line per event. A `kind: experiment` declares such a suite in `checks`: the `tools` it runs, the
+`steps` a trial runs in order, and the `cases` that judge each step's output. No script drives a
+client:
+
+```yaml
+checks:
+  tools:
+    kv2: { image: localhost/vxperiments/kv2:1, args: [--server, "10.100.0.50:55555"] }
+    broker: { image: "ghcr.io/eclipse-kuksa/kuksa-databroker@sha256:…" }
+  steps:
+    - { id: state-before, observe: member, on: hpc1, member: kuksa-databroker }
+    - { id: sub, tool: kv2, on: cabin1, args: [subscribe, Vehicle.Speed, --count, "3"],
+        background: true, ready: { op: subscribe, result: open } }
+    - { id: pub, tool: kv2, on: hpc1, args: [publish, Vehicle.Speed, "10"] }
+    - { wait: sub, timeout_s: 30 }
+    - { id: rx0, observe: port, on: zone-rl }
+    - { id: denied, tool: kv2, on: zone-rl, args: [--connect-s, "5", get, Vehicle.Speed] }
+    - { id: rx1, observe: port, on: zone-rl }
+    - { id: drop, tool: kv2, on: hpc1, args: [actuate, X, "false"],
+        until: { op: actuate, code: UNAVAILABLE }, every_s: 0.5, attempts: 20 }
+    - { id: b61, tool: broker, on: alone, args: [--vss, /vss/vss.json],
+        files: { /vss/vss.json: assets/vss-6.1.json }, background: true }
+    - { sleep_s: 2 }
+    - { id: list61, tool: kv2, with: b61, args: [--server, "127.0.0.1:55555", list] }
+    - { stop: b61 }
+  cases:
+    - { id: seen, step: sub, where: { op: update }, field: value, ends_with: [10] }
+    - { id: refused, step: denied, where: { op: connect }, field: result, equals: refused }
+    - { id: reached-bridge, compare: { lhs: { step: rx1, field: rx_packets }, op: gt,
+                                       rhs: { step: rx0, field: rx_packets } } }
+    - { id: actuate-code, step: drop, where: { op: actuate }, field: code, observe: true }
+criteria:
+  - { id: kuksa-v2, cases: [seen, refused, reached-bridge] }
+```
+
+- **`tools`** are OCI images, each pinned by digest (`<reference>@sha256:<digest>`) or a
+  `localhost/` image built on the host that runs the package, as a device payload may be. A tool's
+  `args` go before each step's own, and `entrypoint` replaces the image's to run another program it
+  holds. Every image is made present before the first step, so no step's time includes a download.
+- **A step does one thing.** A tool step runs a tool `on` a container node, in that node's group
+  and so in its network namespace, as the node's own software sees the network; `on: alone` gives
+  it a namespace of its own with loopback only, for a throwaway server; `with: <step>` joins a
+  background step's namespace, for a client of that server. `files` mounts package files
+  read-only. The output of every step before it is readable at `/vx/checks/<step>.log`. A step runs
+  in the foreground for at most `timeout_s` (60 s by default), or, with `until`, again every
+  `every_s` until a line of the attempt matches, `attempts` times at most. A `background` step is
+  started and left running, the next step waiting for its `ready` line when it names one; a later
+  `wait` waits for it to exit and `stop` stops it, and any still running is stopped after the last
+  step. An `observe` step reads the host's side: `member` a node's group member (`running`,
+  `restarts`, `started_at`), `port` a node's bridge port (`rx_packets`, `tx_packets`, `rx_bytes`,
+  `tx_bytes`). `sleep_s` pauses.
+- **Output is recorded.** Each tool or observe step's output, one line per event, is a log stream of
+  the entity `checks/<step>` (§12), so it lands in the trial's archive under
+  `logs/checks/<step>.jsonl.zst`, on the trial's clock, with everything else. After each step's own
+  output the daemon adds one line, `{"op": "vx.step", …}`: its `exit` code, whether it `timed_out`,
+  the `attempts` it took and whether `until` `matched`, whether a background step was `ready` and
+  `running_at_stop`, and `elapsed_s`. A line that is not a JSON object reads as `{"text": <line>}`.
+- **Where checks run.** A campaign trial runs its steps in its measure phase, within the measure
+  duration (`campaign.duration_s`, or `method.duration_s`): the phase lasts as long as they take,
+  and a step is cut short by the time left. Steps the duration does not reach are skipped. An
+  experiment with `checks` therefore declares a duration and no `windows`.
+- **A case** selects the JSON lines of one `step` whose fields equal those its `where` names (a
+  `null` wants a field unset; a `field` is a dotted path), and expects one thing of them: the last
+  selected line's `field` `equals` a value, is `one_of` a list, `contains` a value (a substring, a
+  list element or a map value), or is `present`; a `count` of selected lines (a number, or a rule
+  such as `{ ge: 1 }`); the selected lines' `field` values in order are a `sequence`, `ends_with` a
+  list, or `includes` one in order; or a `compare` of two steps' last selected values (`eq`, `ne`,
+  `lt`, `le`, `gt`, `ge`). With no expectation, a line must match. Numbers compare by value, so `10`
+  is `10.0`.
+- **Judging.** Each case is `pass` or `fail` in each trial, and `inconclusive` when its step did not
+  run in that trial: a case that never ran never passes. A criterion `{ id, cases: [...] }` fails
+  when one of its cases fails in any trial, is `inconclusive` when none fails but one could not be
+  judged, and passes otherwise. A case marked `observe` records what it found, such as what the
+  documentation under test does not say, and is never judged; the verdict lists it under
+  `observations`, and a criterion may not name it. The verdict reports each case of a `cases`
+  criterion, per trial, with the value it read and why it did not pass.
+- **Checked by `Plan`.** A tool not pinned, a step that does not do exactly one thing or runs on a
+  node that is not a container node of the vehicles, a `with`, `wait` or `stop` naming a step that
+  is not a background step started earlier and still running, a file the package does not hold, a
+  case that reads a step recording nothing or expects more than one thing, and `checks` with
+  `windows` or with no duration are problems with `ERROR_REASON_CHECK_INVALID`. A criterion naming
+  a case that is not declared, or an `observe` one, is `ERROR_REASON_CRITERION_INVALID`.
+- **A later use.** The same lines can carry numbers a tool measures itself, such as kuksa-perf's
+  latency; reading them as samples a metric aggregates is not built yet.
+
 The descriptor holds packaging rather than content, so a version bump never touches an
 experiment file. **`vxp/1`** (ships in vxedge 0.6.0; vxedge 0.5.x reads only the legacy form below):
 
@@ -1856,6 +1943,7 @@ is:
 host/services/<service>        a service run as a host process
 host                           the testbed host, including the observer's own cost
 measurements/<measurement>     a measurement the experiment declares (§6.0.3)
+checks/<step>                  a functional check step's output (§6.0.3)
 ```
 
 The daemon maps each scrape target to an entity once: to the node whose link endpoint carries the
