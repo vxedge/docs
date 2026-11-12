@@ -32,12 +32,11 @@ know exactly what they're getting.
    SDK directly). Manifest schema changes (`ARCHITECTURE.md` §6) are the
    second coupling point, same rule.
 6. **Reproducibility tags stay separate from release tags.** Experiment results already
-   pin an exact state via `metadata.json` (manifest SHA-256, and now `tool_versions`; see
-   `vxperiments/scripts/run-exp-002b.sh`'s `env_metadata()` for the current shape). That's
-   a *finer-grained* provenance mechanism than a repo release tag and is not replaced by
-   this policy; a future result should record `tool_versions` per repo (already 3 of 3 in
-   place for the `exp-002b` runner: `vxedge`, `vxagents`, `vxtelemetry`) rather than a
-   coarser release tag, since a campaign can run between tags.
+   pin an exact state via `metadata.json`: the workspace identity, the package digest, and
+   `tools`, every tool binary the daemon runs with its version, sha256 and build profile
+   (`ARCHITECTURE.md` §13). That's a *finer-grained* provenance mechanism than a repo release
+   tag and is not replaced by this policy: a campaign can run between tags, or on a tool built
+   from a branch, and the binary's digest still says which.
 
 ## What OEM-adoption needs beyond this doc
 
