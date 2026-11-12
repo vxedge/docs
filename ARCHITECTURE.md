@@ -864,7 +864,11 @@ campaign:
   before the next.
 - **Provisioning.** Each trial is provisioned and torn down on its own, as exp-001's campaign
   always has been, so a trial cannot inherit another's state.
-- **Profiles.** A profile overrides the repetitions, warmup and duration (but not the windows').
+- **Profiles.** A profile overrides the repetitions, warmup and duration. With `windows`, it
+  changes a window's length through its own `windows`, by window id
+  (`quick: { repetitions: 1, windows: { steady: 12 } }`); the windows and what each sets stay the
+  campaign's, and a profile `duration_s` beside windows, or a window id the campaign does not
+  declare, is a problem.
 - **No campaign.** An experiment without one is a single point at its defaults, with its
   `method`'s repetitions and windows.
 - **What a trial carries.** An id (`r<repetition>-<point>`, where the point is the arm's name or
@@ -932,9 +936,14 @@ it says only what the archives hold.
   the judged campaign's own workspace's `results/`. A read names the reference it came from.
 - **Recorded:** when a campaign finishes, its verdict goes into `campaign.json` and
   `CampaignStatus.verdict`, and the full verdict into `verdict.json` beside the archives. An
-  experiment without criteria records none. The recorded verdict finds references without a
-  `reference_workspace`, so a criterion on a reference recorded elsewhere is `inconclusive`
-  there; `Verdict` with the workspace judges it.
+  experiment without criteria records none. `CampaignStartRequest.reference_workspace` names
+  where the references are recorded, and is recorded with the campaign: the verdict judged when
+  it finishes reads them there, and so do a later `Verdict` and `Compare`'s criteria that name no
+  workspace of their own. Without it, a criterion on a reference recorded elsewhere is
+  `inconclusive` until `Verdict` is called with the workspace.
+- **Offline:** `vxedge results verdict` and `results compare` take `--reference-workspace` and
+  read the references from it the same way, hash-checked; without it, a criterion on a reference
+  is `inconclusive` and says so.
 - **Errors:** an unknown campaign is `ERROR_REASON_CAMPAIGN_UNKNOWN`, and an archive that cannot be
   read is `ERROR_REASON_RESULT_UNKNOWN`.
 
@@ -1028,8 +1037,15 @@ measurements:
 ```
 
 - **`rtt-probe`** sends paced UDP probes from `from` to a reflector at `to` and records round-trip
-  time, jitter and loss. Both ends are on `slice`, and a node end needs an `ip` pinned on its link
-  there.
+  time, jitter and loss. Both ends are on `slice`, and on a VLAN slice a node end needs an `ip`
+  pinned on its link there.
+- **A UE end.** On a `mode: s-nssai` slice a node's link pins no address: the node's end is the
+  slice's UE, whose PDU-session address the 5G core assigns at `up`. Such a measurement runs
+  between the UE and the data network, so its `to` is `internet`. When it starts, the daemon
+  learns the UE's address, runs the reflector in the UE bound to it, and runs the sender on the
+  host, which reaches the UE through the core's uplink: the path the core routes, as
+  `TrafficService` probes a UE. The figures are round trips, so they read the same either way
+  round. The UE's reflector stays until the 5G core comes down.
 - **A probe runs inside its node's network namespace.** `MeasurementService.Start` runs the host's
   `vxprobe` as the sender in the `from` node and as the reflector in the `to` node, for
   `duration_s` (the request's, else `method.duration_s`). For `to: internet` the reflector runs on
@@ -1041,8 +1057,8 @@ measurements:
   a scrape never crosses the slice it measures. When the sender finishes, its summary stays in
   the runtime folder.
 - **Checked by `Plan`.** An end that is not a device (or `internet`, for `to`), an end that is a
-  VM or an attached platform, a slice that is not declared or that an end has no link or pinned
-  address on, a `to: internet` measurement whose far side would take one address on two
+  VM or an attached platform, a slice that is not declared or that an end has no link or (on a
+  VLAN slice) pinned address on, a `to` other than `internet` on an `s-nssai` slice, a `to: internet` measurement whose far side would take one address on two
   slices (with another measurement, or with a traffic profile sending to the uplink), or a rate or payload out of bounds is a problem with
   `ERROR_REASON_MEASUREMENT_INVALID`, and `up` and `Start` refuse it. A parameter can bind a
   measurement's field: `binds: measurements[ctl-rtt].rate_pps`.
