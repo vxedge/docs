@@ -777,13 +777,32 @@ campaign:
 - **`metrics`** names what a criterion or a client reads: an `id`, a `kind` (`counter`, `gauge`
   or `histogram`), a `unit`, and the `entity` it is measured on, such as the `measurements/<id>`
   of the measurement that produces it (below). A metric gives each trial one value. It names a
-  `series` (with the `labels` that pick one of its lines), and its value in a trial is the
-  series' last sample on the entity inside the trial's measure phase, or in the whole archive
-  when the archive records no phases. When the campaign declares `windows` (below), a series
-  metric names the `window` it reads, and its value is the last sample inside that window. Or a
-  metric is the `ratio` of two such metrics in the same trial, times an optional `factor`, such as
-  a loss percentage from the lost and sent counters, or a cold window's slowest round trip over
-  the steady window's median.
+  `series` (with the `labels` that pick one of its lines), and its value in a trial comes from the
+  series' samples on the entity inside the trial's measure phase, or in the whole archive when the
+  archive records no phases. When the campaign declares `windows` (below), a series metric names
+  the `window` it reads, and only that window's samples count. Or a metric is the `ratio` of two
+  such metrics in the same trial, times an optional `factor`, such as a loss percentage from the
+  lost and sent counters, or a cold window's slowest round trip over the steady window's median.
+- **`reduce`** on a series metric sets how its samples become the trial's value:
+  - `last` (the default) is the last sample.
+  - `delta` is the last sample less the first. It spans the first sample to the last, not the
+    phase's edges.
+  - `rate` is that delta per second between the same two samples.
+  - `mean`, `min` and `max` are the samples' mean, least and greatest.
+
+  `delta` and `rate` need two samples. A counter or histogram that goes down has restarted: it is
+  counted on from 0, as Prometheus's `increase` reads it, and the value says how many times. A
+  gauge's `delta` is plain last less first, such as memory growth. `rate` reads a counter or a
+  histogram's cumulative series; `mean`, `min` and `max` read a gauge. A reduction other than
+  `last` refuses two lines of the series that `labels` do not tell apart. A node's cost over the
+  window, as exp-002b reports it per arm, is two metrics:
+
+  ```yaml
+  - { id: cpu, kind: counter, unit: "1", entity: vx-h3-vehicle/front-left/node-cont-01,
+      series: vxedge_node_cpu_seconds_total, reduce: rate }    # share of one CPU
+  - { id: rss, kind: gauge, unit: B, entity: vx-h3-vehicle/front-left/node-cont-01,
+      series: vxedge_node_memory_bytes, reduce: mean }
+  ```
 - **`references`** name the other campaigns a criterion reads, each `<name>: { campaign: <id> }`
   with an optional `statement`: exp-010's H2 holds when its p99 growth from 0 to 600 Mbit/s stays
   within 1.10x of exp-001's. A reference's trials are read with this experiment's metrics, as
@@ -1996,7 +2015,7 @@ scrape reads the kernel's counters as they are then.
 
 | Series | Entity | Read from |
 |---|---|---|
-| `vxedge_node_cpu_seconds_total`, `vxedge_node_memory_bytes` | a node | A container node's cgroup (`cpu.stat`, `memory.current`), or a VM's or capsule's own VMM or runner process (`/proc`: CPU time of all its threads, resident memory). `source` says which. A node nothing on the host runs has none. |
+| `vxedge_node_cpu_seconds_total`, `vxedge_node_memory_bytes` | a node | A container node's cgroup (`cpu.stat`, `memory.current`); for a container node that runs no image, the processes in its network namespace, summed (such as a measurement's reflector); or a VM's or capsule's own VMM or runner process (`/proc`: CPU time of all its threads, resident memory). `source` (`cgroup`, `netns` or `process`) says which. A node nothing on the host runs, including an empty namespace, has none. |
 | `vxedge_slice_sent_bytes_total`, `vxedge_slice_sent_packets_total`, `vxedge_slice_dropped_packets_total`, `vxedge_slice_overlimits_total`, `vxedge_slice_backlog_bytes`, `vxedge_slice_backlog_packets` | a slice | The slice's HTB class on the gateway uplink. The class belongs to the gateway, so every vehicle whose links use the slice reports the same queue. |
 | `vxedge_process_cpu_seconds_total`, `vxedge_process_memory_bytes` | `host` | The daemon's own process (`process="vxedged"`): the observer's cost. |
 | `vxprobe_sent_total`, `vxprobe_received_total`, `vxprobe_lost_total`, `vxprobe_rtt_seconds` (`quantile`), `vxprobe_rtt_seconds_max` (vxagents 0.2.1), `vxprobe_rtt_seconds_mean`, `vxprobe_rtt_seconds_stddev`, `vxprobe_rtt_distribution_seconds_bucket` (`le`), `_sum`, `_count` | a measurement | A running measurement's sender, read on `127.0.0.1` inside the sender's own network namespace. The distribution's buckets are cumulative from the start of the run (10 µs to 10 s, 1, 2 and 5 per decade), so the difference between two samples is the latency distribution of the round trips between them. |
