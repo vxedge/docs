@@ -61,14 +61,14 @@ The latest tagged release of each code repository.
 
 | Key | Repository | Version | Released |
 |---|---|---|---|
-| `vxedge` | `vxedge` | 0.11.0 | 2026-11-08 |
-| `vxagents` | `vxagents` | 0.1.1 | 2026-10-28 |
-| `vxmcp` | `vxmcp` | 0.2.5 | 2026-11-08 |
+| `vxedge` | `vxedge` | 0.18.0 | 2026-11-12 |
+| `vxagents` | `vxagents` | 0.2.1 | 2026-11-12 |
+| `vxmcp` | `vxmcp` | 0.4.3 | 2026-11-11 |
 | `vxmodels` | `vxmodels` | 0.1.0 | 2026-10-29 |
 | `vxota` | `vxota` | 0.1.1 | 2026-10-28 |
 | `vxparts` | `vxparts` | 0.1.0 | 2026-10-29 |
 | `vxperiments` | `vxperiments` | 0.1.0 | 2026-07-13 |
-| `vxtelemetry` | `vxtelemetry` | 0.3.0 | 2026-11-04 |
+| `vxtelemetry` | `vxtelemetry` | 0.6.0 | 2026-11-10 |
 | `vxvhal` | `vxvhal` | 0.1.1 | 2026-11-08 |
 
 ### Tracks
