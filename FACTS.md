@@ -61,14 +61,14 @@ The latest tagged release of each code repository.
 
 | Key | Repository | Version | Released |
 |---|---|---|---|
-| `vxedge` | `vxedge` | 0.24.0 | 2026-11-12 |
+| `vxedge` | `vxedge` | 0.25.0 | 2026-11-13 |
 | `vxagents` | `vxagents` | 0.2.3 | 2026-11-12 |
 | `vxmcp` | `vxmcp` | 0.4.6 | 2026-11-12 |
 | `vxmodels` | `vxmodels` | 0.1.0 | 2026-10-29 |
 | `vxota` | `vxota` | 0.1.2 | 2026-11-12 |
 | `vxparts` | `vxparts` | 0.1.0 | 2026-10-29 |
 | `vxperiments` | `vxperiments` | 0.2.0 | 2026-11-12 |
-| `vxtelemetry` | `vxtelemetry` | 0.7.0 | 2026-11-12 |
+| `vxtelemetry` | `vxtelemetry` | 0.7.1 | 2026-11-13 |
 | `vxvhal` | `vxvhal` | 0.1.1 | 2026-11-08 |
 
 ### Tracks
@@ -283,11 +283,12 @@ interface its own platform creates, adopted by the gateway.
 
 The probe guests published in [`vxparts`](https://github.com/vxedge/vxparts) under
 `ghcr.io/vxedge/parts/`. Each declares `org.vxedge.reflector: udp/9800`: a UDP reflector on port
-9800 that a measurement can target inside the guest. Pin a part by its digest.
+9800 that a measurement can target inside the guest. The x86-64 Linux bundle also declares
+`org.vxedge.virtio-pci: true`, so it boots with a PCI virtio transport. Pin a part by its digest.
 
 | Key | Part | Version | Digest |
 |---|---|---|---|
-| `part.linux_probe_bundle` | `zone/linux/stack/probe-bundle` | 0.1.1 | `sha256:dce921197fa93f7a6bd306b1748b93785e329e443504bd2113a98ccfad52c5e6` |
+| `part.linux_probe_bundle` | `zone/linux/stack/probe-bundle` | 0.1.2 | `sha256:7d7f0c0c2d5c70f94661d67f5221b16093591aa01144a4d4dc2d99572a1e53b0` |
 | `part.linux_probe_bundle_aarch64` | `zone/linux/stack/probe-bundle-aarch64` | 0.1.1 | `sha256:bfe13a9628689618a0a3203bb0ad4db854012e205228692663d58fb877857276` |
 | `part.freertos_probe_bundle` | `zone/freertos/stack/probe-bundle` | 0.1.1 | `sha256:5c1a314c658c2e1ebdb71761c1d0aecdb2d8ae0ae792840b77964c7ec0fa6e0d` |
 | `part.zephyr_probe_bundle` | `zone/zephyr/stack/probe-bundle` | 0.1.1 | `sha256:f613afb32a87a9fc78b455ad2f15ed4b168c755b5acdaae2c14736ebc558e34d` |
