@@ -779,8 +779,11 @@ campaign:
   of the measurement that produces it (below). A metric gives each trial one value. It names a
   `series` (with the `labels` that pick one of its lines), and its value in a trial is the
   series' last sample on the entity inside the trial's measure phase, or in the whole archive
-  when the archive records no phases. Or it is the `ratio` of two such metrics in the same trial,
-  times an optional `factor`, such as a loss percentage from the lost and sent counters.
+  when the archive records no phases. When the campaign declares `windows` (below), a series
+  metric names the `window` it reads, and its value is the last sample inside that window. Or a
+  metric is the `ratio` of two such metrics in the same trial, times an optional `factor`, such as
+  a loss percentage from the lost and sent counters, or a cold window's slowest round trip over
+  the steady window's median.
 - **`criteria`** are structured, never an expression string, so a caller composes one without
   writing a parser and a bad one is caught by type. Each has an `id`, an `op` (`lt`, `le`, `gt`,
   `ge`, `within` or `outside`) and two operands, `lhs` and `rhs`. An operand is one of:
@@ -817,6 +820,21 @@ campaign:
   `profiles`, named overrides such as `quick` and `repro`. An arm or a sweep sets only declared
   parameters, within their bounds. `campaign` replaces `method` for an experiment that declares
   it, and an experiment may not declare both.
+- **`windows`** split a trial's measure phase into named windows that run one after another, for
+  a protocol that measures twice in one trial: exp-005 probes a short cold burst the moment the
+  zone is up, then a steady window on the same zone. Each window has an `id`, a `duration_s`,
+  and an optional `set` of parameter values for that window only. A window may set only a
+  parameter that binds a measurement's field (`measurements[<id>].…`), since the rest of the
+  trial is already up. The measure phase lasts the windows' sum, so a campaign with windows has
+  no `duration_s`, and a profile does not change it. Every series metric then names its window.
+
+  ```yaml
+  campaign:
+    repetitions: 20
+    windows:
+      - { id: cold, duration_s: 3, set: { probe_pps: 20 } }
+      - { id: steady, duration_s: 60 }
+  ```
 
 **Trials.** `CampaignService.Plan` expands a campaign into the trials it runs:
 - **Points.** Every point of the `sweep` is a trial, and a sweep over several parameters is
@@ -827,23 +845,28 @@ campaign:
   before the next.
 - **Provisioning.** Each trial is provisioned and torn down on its own, as exp-001's campaign
   always has been, so a trial cannot inherit another's state.
-- **Profiles.** A profile overrides the repetitions, warmup and duration.
+- **Profiles.** A profile overrides the repetitions, warmup and duration (but not the windows').
 - **No campaign.** An experiment without one is a single point at its defaults, with its
   `method`'s repetitions and windows.
 - **What a trial carries.** An id (`r<repetition>-<point>`, where the point is the arm's name or
   the parameters off their defaults, such as `load_mbps=100`), its arm, every parameter's value,
-  and its windows. The plan also gives the estimated wall time.
+  its warmup and measure durations, and its measure windows with each window's values. The plan
+  also gives the estimated wall time.
 - **Checked per point.** `Plan` builds each distinct point's document with its values written
   to the fields they bind, in memory: the package is never written, so its digest and lock hold
   for the whole campaign. A value the parameter allows but the document cannot run, such as a
-  probe rate of 0, is a typed problem naming the point.
+  probe rate of 0, is a typed problem naming the point. A trial with windows is checked window by
+  window, with each window's values, and a problem names the window.
 
 **Running a campaign.** `CampaignService.Start` runs the trials serially as one `campaign.run`
 job.
 - **Each trial, in five phases:**
   1. *provision:* `experiment up` with the trial's values bound, in memory, as in `Plan`;
   2. *warmup:* the traffic profiles start for the trial's windows, then the warmup passes;
-  3. *measure:* the measurements run for the trial's duration;
+  3. *measure:* the measurements run for the trial's duration. With `windows`, each window starts
+     the measurements with its own values, runs them for its duration and stops them, so the next
+     window's senders start from nothing; each window has its own `measure` phase record, which
+     names the window;
   4. *cooldown:* measurements and traffic stop;
   5. *teardown:* the telemetry service stops, the trial is archived, and `experiment down` runs.
 - **Stages and markers:** every step is a stage of the campaign job, so it shows as a child job.
@@ -1644,7 +1667,7 @@ archive. Each record names the entity it is about (§12) and its shape in `recor
 |---|---|
 | `sample` | `ts_ns`, `entity`, `metric`, `labels` (a map), `value` |
 | `gap` | `entity`, optional `metric`, `from_ns`, `to_ns`, `reason` (a required target that did not answer) |
-| `phase` | `ts_ns`, optional `trial`, `phase` (provision, warmup, measure, cooldown, teardown) |
+| `phase` | `ts_ns`, optional `trial`, `phase` (provision, warmup, measure, cooldown, teardown), and `window` on a `measure` phase of a campaign with windows |
 | `log` | `ts_ns`, `entity`, `stream`, `line` (one line of one of the entity's log files) |
 
 Times are nanoseconds since the Unix epoch, taken in user space. A renderer draws a break at a
@@ -1771,7 +1794,7 @@ scrape reads the kernel's counters as they are then.
 | `vxedge_node_cpu_seconds_total`, `vxedge_node_memory_bytes` | a node | A container node's cgroup (`cpu.stat`, `memory.current`), or a VM's or capsule's own VMM or runner process (`/proc`: CPU time of all its threads, resident memory). `source` says which. A node nothing on the host runs has none. |
 | `vxedge_slice_sent_bytes_total`, `vxedge_slice_sent_packets_total`, `vxedge_slice_dropped_packets_total`, `vxedge_slice_overlimits_total`, `vxedge_slice_backlog_bytes`, `vxedge_slice_backlog_packets` | a slice | The slice's HTB class on the gateway uplink. The class belongs to the gateway, so every vehicle whose links use the slice reports the same queue. |
 | `vxedge_process_cpu_seconds_total`, `vxedge_process_memory_bytes` | `host` | The daemon's own process (`process="vxedged"`): the observer's cost. |
-| `vxprobe_sent_total`, `vxprobe_received_total`, `vxprobe_lost_total`, `vxprobe_rtt_seconds` (`quantile`), `vxprobe_rtt_seconds_mean`, `vxprobe_rtt_seconds_stddev`, `vxprobe_rtt_distribution_seconds_bucket` (`le`), `_sum`, `_count` | a measurement | A running measurement's sender, read on `127.0.0.1` inside the sender's own network namespace. The distribution's buckets are cumulative from the start of the run (10 µs to 10 s, 1, 2 and 5 per decade), so the difference between two samples is the latency distribution of the round trips between them. |
+| `vxprobe_sent_total`, `vxprobe_received_total`, `vxprobe_lost_total`, `vxprobe_rtt_seconds` (`quantile`), `vxprobe_rtt_seconds_max` (vxagents 0.2.1), `vxprobe_rtt_seconds_mean`, `vxprobe_rtt_seconds_stddev`, `vxprobe_rtt_distribution_seconds_bucket` (`le`), `_sum`, `_count` | a measurement | A running measurement's sender, read on `127.0.0.1` inside the sender's own network namespace. The distribution's buckets are cumulative from the start of the run (10 µs to 10 s, 1, 2 and 5 per decade), so the difference between two samples is the latency distribution of the round trips between them. |
 
 ## 13: Reproducibility, CI/CD, artifact publication (registries)
 
