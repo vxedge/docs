@@ -16,6 +16,11 @@ All notable changes to this repo are documented here. Format follows
   (`scripts/verdict-parity.sh --fetch`, with exp-010's H2 checked by `notebooks/analyze_exp010.py`),
   and links the retired analysis notebooks at the vxperiments `v0.2.1` tag. No FACTS key or value
   changes.
+- `ARCHITECTURE.md` §6.0, §6.0.3, §6.0.7, §6.0.8, §11 and §13: one archive format and one
+  descriptor (decision X-30). `vxarchive/2` is the only archive vxtelemetry writes and the only one
+  vxedge and vxtelemetry read; a `vxarchive/1` archive is refused with the current format named. A
+  legacy `<name>.vxp` descriptor is refused with the steps to migrate, and the archive's workspace
+  copy is `package/`.
 - `FACTS.md` `archives.doi`: the latest archive version is 2026-11-v2 (10.5281/zenodo.24192950), the
   frozen campaigns in `vxarchive/2` plus the exp-003 release rerun of 2026-11-13.
 - `ARCHITECTURE.md` §6.0.3: a check tool step's `samples` read its output lines as series on
