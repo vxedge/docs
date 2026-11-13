@@ -117,7 +117,9 @@ its socket owned by root with mode 755, hence the `chown` for a non-root `vxedge
 
 The `quick` numbers are pipeline validation only and are never reported. The full campaign is
 `vxedge campaign start --profile repro`: 5 repetitions x 5 load levels, 60k samples per point. Keep the machine
-otherwise idle and prefer the `performance` CPU governor. A campaign writes its archives, `campaign.json` and
+otherwise idle and prefer the `performance` CPU governor. Run it from a clone outside your home directory, for
+example under `/var/tmp`: the campaign writes its archives into the package folder, and file indexers or sync
+clients watching your home directory can load the host while trials run (`campaign start` warns about it). A campaign writes its archives, `campaign.json` and
 `verdict.json` under `results/<campaign id>/` in the package folder; `vxedge campaign verdict <campaign id>`
 judges it again, and `vxedge campaign compare <campaign id> exp-001 --reference-workspace ../..` compares it
 with the frozen campaign (the package's README says how). The raw archives of the published campaigns are on Zenodo:
