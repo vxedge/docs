@@ -8,6 +8,9 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §9 lists the guest bundle's reflector declaration, `org.vxedge.reflector: udp/<port>`, beside
+  its other `meta.json` keys, and names the six probe guests that declare `udp/9800`. §6.0.3 still says how a
+  measurement uses it.
 - `FACTS.md` Releases: vxedge 0.26.0, vxtelemetry 0.8.0 and vxmcp 0.5.0 (one archive format and one
   descriptor, X-30). `USER-GUIDE.md` says a legacy `<id>.vxp` descriptor is refused, and
   `GETTING-STARTED.md` §4 says to run the `repro` campaign from outside the home directory.
