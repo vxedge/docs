@@ -853,7 +853,14 @@ schedule, not the Linux qdisc that renders it.
 followers' access ports:
 
 - **The gateway is the grandmaster,** with one master port per follower's access port, in one
-  `ptp4l`.
+  `ptp4l`. It runs as root from the linuxptp image: vxedged keeps a rootless container of that
+  image, `vxgptp-<bridge>`, holding the image's file system, and starts `ptp4l` in it with
+  `sudo -n nsenter --mount --pid`, in the bridge's network namespace. That is the passwordless
+  `nsenter` the 5G pods already need, so Podman itself never runs as root, and removing the
+  container ends the grandmaster.
+- **Host.** `Plan`, `up` and `GatewayService.Up` refuse with
+  `ERROR_REASON_HOST_REQUIREMENT_UNMET` on a host where sudo does not run `nsenter` without a
+  password and vxedged is not root, and `HostService.Capabilities` reports `gptp`.
 - **Frames do not cross the bridge.** gPTP frames go to `01:80:C2:00:00:0E`, a link-local
   address a Linux bridge passes to the receiving port and does not forward. Each follower
   therefore hears the gateway only, as each port of a time-aware bridge would.
@@ -861,8 +868,14 @@ followers' access ports:
   refused, because the OVS data path takes every frame on its ports and has not been tested
   for gPTP.
 - **Followers.** A follower is a `container` device. Its `ptp4l` joins the device's container
-  group, as a placed service does (§6.0.1). A VM device is refused: its guest runs its own
-  follower, and vxedge has no way into it.
+  group, as a placed service does (§6.0.1), in a `time-sync` stage after compute, which reports
+  `time-sync.up` and `time-sync.down` events and lists each follower in status. Refused with
+  `ERROR_REASON_WORKSPACE_INVALID`: no followers or the same one twice, an unknown device, a VM
+  device (its guest runs its own follower, and vxedge has no way into it), a device without a
+  container image or an access port, and a service named `gptp` on a follower.
+- **Names.** Every `ptp4l`'s management socket, pidfile and log lives under the run's runtime
+  directory, never at linuxptp's defaults (`/var/run/ptp4l`), so two runs on one host cannot
+  collide.
 - **One image.** The gateway's `ptp4l` and every follower's run the same vxparts `linuxptp` part,
   pinned by digest. A package that uses `time_sync` lists it in the lock's `images`, and the
   archive's `image_digests` records it.
@@ -871,8 +884,13 @@ followers' access ports:
   time-sync path, not clock discipline.
 - **Offsets are telemetry.** vxedged's exporter (§12, host-side measurements) serves
   `vxedge_gptp_offset_seconds` and `vxedge_gptp_path_delay_seconds` for each follower, with the
-  follower as entity, read from that follower's `ptp4l`. They land in the run's samples beside
-  the latency they help explain. A follower whose `ptp4l` does not answer leaves a `gap`.
+  follower as entity, read from that follower's `ptp4l` over its management socket: the offset
+  is `CURRENT_DATA_SET.offsetFromMaster`, and the peer delay `PORT_DATA_SET.peerMeanPathDelay`,
+  since with peer-to-peer delay the current data set's `meanPathDelay` stays 0. They land in the
+  run's samples beside the latency they help explain. A follower whose `ptp4l` does not answer,
+  or that follows no grandmaster, leaves a `gap`.
+- **Run record.** `Run.time_sync` and the archive's `metadata.json` carry the time sync: its
+  kind, its followers, software timestamping and free-running followers.
 - **Profile.** linuxptp's generic 802.1AS settings, with best-master election, which the
   gateway wins on `priority1`, and `neighborPropDelayThresh` at 100000 ns instead of the
   standard's 800 ns. Software timestamps on a veth put the peer delay close to 800 ns, and a
