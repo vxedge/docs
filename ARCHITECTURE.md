@@ -729,7 +729,7 @@ network:
     - { id: adas, mode: vlan, vlan: 101 }
     - { id: infotainment, mode: vlan, vlan: 103 }
   shaping:
-    kind: taprio                       # the only kind; absent means the HTB tree
+    kind: gate-schedule                # the only kind; absent means the HTB tree
     windows:                           # one cycle, repeated; the cycle is the sum of the windows
       - { id: adas, open: [adas], duration_us: 10000 }
       - { id: rest, open: [infotainment, default], duration_us: 90000 }
@@ -739,7 +739,8 @@ network:
 ```
 
 `shaping` replaces the HTB tree with an IEEE 802.1Qbv gate schedule (`tc` `taprio`) on the same
-port and in the same direction: the uplink, for frames leaving the bridge.
+port and in the same direction: the uplink, for frames leaving the bridge. `kind` names the
+schedule, not the Linux qdisc that renders it.
 
 - **One class per slice.** Each slice is one traffic class. `default` is one more, for frames
   that match no slice, as HTB's default class is today. An 802.1Q port has 8 traffic classes, so
@@ -1719,7 +1720,7 @@ templating):
   shaping mode, an IEEE 802.1Qbv gate schedule (`taprio`) in place of the HTB tree on the uplink,
   with gPTP time sync (`linuxptp`, IEEE 802.1AS) from the gateway to the devices that follow it
   (`network.shaping`, `network.time_sync`, §6.0.3). It enables HTB-versus-TSN isolation
-  comparisons. Under `taprio` the uplink has no line rate, so the comparison is in time, not
+  comparisons. Under `shaping` the uplink has no line rate, so the comparison is in time, not
   bandwidth (§6.0.3).
 - **Legacy bus edges (`type: can`, phase 3):** SocketCAN/vcan buses per zone, exposed to guests
   via QEMU CAN controllers and tunneled across the backbone with cannelloni; CAN frames map to
