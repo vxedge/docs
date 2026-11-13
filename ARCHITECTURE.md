@@ -742,11 +742,13 @@ network:
 port and in the same direction: the uplink, for frames leaving the bridge. `kind` names the
 schedule, not the Linux qdisc that renders it.
 
-- **One class per slice.** Each slice is one traffic class. `default` is one more, for frames
-  that match no slice, as HTB's default class is today. An 802.1Q port has 8 traffic classes, so
-  a schedule takes at most 7 slices.
+- **One class per slice.** Each `vlan` slice is one traffic class. `default` is one more, for
+  frames that match no slice, as HTB's default class is today. An 802.1Q port has 8 traffic
+  classes, so a schedule takes at most 7 slices. An `s-nssai` slice has no VLAN on the uplink, so
+  it is not a class and does not count.
 - **Windows.** Each window has an `id`, unique in the schedule, and opens the gates of the classes
-  it lists for `duration_us`, a positive whole number of microseconds. The windows run in order
+  it lists for `duration_us`, a whole number of microseconds from 1 to 4294967 (the kernel holds
+  an interval in 32-bit nanoseconds). The windows run in order
   and the cycle is their sum. The schedule starts on the TAI epoch, so its phase is the same in
   every run. A parameter reaches a window by id path, `binds:
   network.shaping.windows[adas].duration_us`. The smallest window tested is 10 ms; a shorter one
@@ -755,23 +757,28 @@ schedule, not the Linux qdisc that renders it.
   TSN one reads the HTB one through `references`, as exp-010 reads exp-001.
 - **What validation refuses**, with `ERROR_REASON_WORKSPACE_INVALID`:
   - a class that no window opens, since it could never send;
-  - an unknown slice id in `open`, or two windows with the same `id`;
-  - more than 7 slices;
+  - an unknown slice id in `open`, an `s-nssai` slice in `open`, or two windows with the same
+    `id`;
+  - more than 7 slices, or a slice named `default`;
   - a slice `qos` or `network.defaults.bandwidth` beside `shaping`. They are HTB's parameters,
     so they are refused rather than ignored;
   - `shaping` with `network.data_plane: ovs`, which has not been tested.
-- **Host.** `Plan` and `up` refuse with `ERROR_REASON_HOST_REQUIREMENT_UNMET` on a host whose
+- **Host.** `Plan`, `up` and `GatewayService.Up` refuse with `ERROR_REASON_HOST_REQUIREMENT_UNMET` on a host whose
   kernel has no `taprio`, and `HostService.Capabilities` reports whether it has. A daemon that
   predates these keys refuses them, as it refuses any unknown manifest key, so a package that uses them sets
   `requires.vxedge` to the first release that reads them, as `requires.simulator` does.
 - **Rendering.**
   - The planner creates the uplink with one transmit queue per class.
   - A `clsact` egress filter per slice sets a frame's priority from its VLAN tag
-    (`flower vlan_id <vlan> action skbedit priority <p>`), the match the HTB filters use.
+    (`flower vlan_id <vlan> action skbedit priority <p>`), the match the HTB filters use. A
+    `matchall` filter after them sets priority 0, `default`'s, on every other frame, whatever
+    priority it arrived with.
   - `taprio` maps each priority to its slice's class, in software mode, timed by the kernel's
     TAI clock.
   - The `clsact` qdisc is created **before** `taprio`. Installed the other way round, the gates
     held no traffic when tested.
+  - A running gateway is not switched between the HTB tree and a gate schedule: `up` refuses and
+    asks for `down` first, since the uplink's queue count is fixed when it is created.
 - **Slice telemetry.** The `vxedge_slice_*` series (§12) are read from the slice's `taprio` class
   instead of its HTB class. `vxedge_slice_overlimits_total` has no meaning without a rate and is
   not served.
