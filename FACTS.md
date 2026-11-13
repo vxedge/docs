@@ -230,6 +230,8 @@ Source: [`vxperiments/results/exp-003/exp-003-summary.md`](https://github.com/vx
 |---|---|---|
 | `exp005.confirmed` | 20 of 20 | `exp-005`: cold-start first-packet effect, repetitions confirming it |
 | `exp014.verdict` | holds | `exp-014`: star vs daisy-chained zones, hop-count effect |
+| `exp014.ring` | holds | `exp-014` 0.3.0: a ring harness bounds the farthest zone at two hops; its front-right sits 60.0 µs below the chain's rear-left at p50, live on vxedge 0.27.0. [`exp-014-repro-2026-11-13`](https://github.com/vxedge/vxperiments/blob/main/results/exp-014-repro-2026-11-13/exp-014-summary.md) |
+| `exp014.hop_p50` | +60 µs | `exp-014`: p50 added per daisy-chain hop in the 2026-11-13 live run (30 µs / 5 µs netem per hop, a stated assumption). [`exp-014-repro-2026-11-13`](https://github.com/vxedge/vxperiments/blob/main/results/exp-014-repro-2026-11-13/exp-014-summary.md) |
 | `exp016.slice_publish` | +8 µs | `exp-016`: kuksa-databroker 0.7.1 publish-to-subscriber p50 across the broker's slice, minus the same on the broker's device; out and back, never one-way. [`broker-slice-main-2026-11-04`](https://github.com/vxedge/vxperiments/tree/main/results/broker-slice-main-2026-11-04) |
 | `exp016.slice_actuate` | +11 µs | `exp-016`: actuate-to-provider p50, the same difference. [`broker-slice-main-2026-11-04`](https://github.com/vxedge/vxperiments/tree/main/results/broker-slice-main-2026-11-04) |
 | `exp016.load` | +1 µs | `exp-016`: 600 mbit/s on another slice, publish and actuate p50, loaded minus idle, inside the spread between repetitions. [`broker-slice-main-2026-11-04`](https://github.com/vxedge/vxperiments/tree/main/results/broker-slice-main-2026-11-04) |
