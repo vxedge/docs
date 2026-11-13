@@ -9,6 +9,17 @@ also holds the full per-load and per-arm tables. This page explains the numbers;
 they are quoted from. The raw per-run archives behind the summaries are a dataset on Zenodo:
 [10.5281/zenodo.23804197](https://doi.org/10.5281/zenodo.23804197).
 
+**Reproduce.** Each experiment is a `vxp/1` package in
+[`vxperiments/experiments/`](https://github.com/vxedge/vxperiments/tree/main/experiments), with its
+campaign and acceptance criteria in the package. `vxedge campaign start --profile repro`, from the
+package's folder, runs the published protocol ([`GETTING-STARTED.md`](GETTING-STARTED.md) §4).
+[`scripts/verdict-parity.sh --fetch`](https://github.com/vxedge/vxperiments/blob/main/scripts/verdict-parity.sh)
+in vxperiments downloads the published archives and requires each package's criteria to give the
+published verdict on them. exp-010's archives hold probe summaries only, so its H2 verdict is checked by
+[`notebooks/analyze_exp010.py`](https://github.com/vxedge/vxperiments/blob/main/notebooks/analyze_exp010.py)
+instead. The verdicts were first computed by analysis notebooks that the packages replaced; they are kept
+at the [vxperiments v0.2.1 tag](https://github.com/vxedge/vxperiments/tree/v0.2.1/notebooks).
+
 ## Summary
 
 | Hypothesis | Experiment | Verdict | Headline number |
@@ -20,7 +31,7 @@ they are quoted from. The raw per-run archives behind the summaries are a datase
 
 Every campaign above is 5 repetitions per arm or load point, 1000 pps × 60 s per point
 (60 000 probes), with a 10 s warmup discarded. Each result has been reproduced by an independent
-second campaign (`--repro`) that reached the same verdict.
+second campaign (the `repro` protocol) that reached the same verdict.
 
 ## H1: isolation (`exp-001`)
 

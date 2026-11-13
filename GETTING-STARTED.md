@@ -49,7 +49,7 @@ done
 | `vxparts` | Unified loadable registry of zone (virtual-ECU) and central-compute images, published via OCI/ORAS |
 | `vxota` / `vxtelemetry` | OTA and telemetry service code |
 | `vxagents` | Rust measurement agents (latency probes, traffic gen, pcap) |
-| `vxperiments` | Experiment + vehicle manifests, notebooks, results |
+| `vxperiments` | Experiment packages, vehicle manifests, frozen results |
 | `vxmodels` | SysML v2 system models + `vxmodel` manifest renderer, track M (`ARCHITECTURE.md` §6.3) |
 | `vxmcp` | MCP (Model Context Protocol) server over vxAPI, for agent tooling |
 
@@ -68,8 +68,9 @@ gh attestation verify vxedge-*-x86_64-unknown-linux-gnu.tar.gz -R vxedge/vxedge 
 tar xzf vxedge-*-x86_64-unknown-linux-gnu.tar.gz                                     # vxedge, vxedged, LICENSE, NOTICE
 ```
 
-The binaries are built on Ubuntu 24.04 (glibc 2.39), so they run on 24.04 and newer. The experiment runner
-below uses the binaries built from source in the next step, because it also needs `vxagents` and `vxtelemetry`.
+The binaries are built on Ubuntu 24.04 (glibc 2.39), so they run on 24.04 and newer. The campaign in §4 also
+runs `vxprobe` and `vxtraffic` (`vxagents`) and `vxtelemetry`: download those releases the same way, or build
+them from source below. `vxedged` finds them on its `PATH`.
 
 ### Or build everything from source
 
@@ -94,41 +95,43 @@ manifest and then fails with an actionable message (by design).
 
 ## 4. Run your first experiment (exp-001)
 
-The flagship walkthrough: a full slice-isolation measurement, one command per step.
+The flagship walkthrough: the H1 slice-isolation campaign, run from its package. Every experiment in
+`vxperiments` is a `vxp/1` package, and every campaign runs the same way.
+
+A campaign runs through `vxedged`, which needs CAP_NET_ADMIN (§3) and finds `vxprobe`, `vxtraffic` and
+`vxtelemetry` on its `PATH`. From the workspace root, with `vxedge`, `vxedged` and those three on your `PATH`:
 
 ```bash
+sudo -v                                                 # so the daemon below starts without a prompt
+sudo env "PATH=$PATH" vxedged --listen unix:///tmp/vx.sock --runtime-dir /tmp/vxrt &
+sudo chown $USER /tmp/vx.sock                           # once the daemon is listening
+export VXEDGE_ENDPOINT=unix:///tmp/vx.sock
 cd vxperiments/experiments/exp-001-ws
-sudo -E env "PATH=$PATH" ./scripts/run.sh --quick                              # ~1 min pipeline validation
-python3 ../../notebooks/analyze_exp001.py ../../results/exp-001-quick          # table + H1 verdict
+vxedge experiment validate                              # every check, no daemon
+vxedge campaign plan --profile quick                    # the trials, checked; touches nothing
+vxedge campaign start --profile quick                   # pipeline check: one archive per trial, then the H1 verdict
 ```
 
-`sudo -E` is ignored by sudo-rs, the default on Ubuntu 26 (it prints a notice). That is harmless: the explicit
-`env "PATH=$PATH"` is what carries your toolchain into the root process, so the command works the same either way.
+The explicit `env "PATH=$PATH"` is what carries your toolchain into the root process. The root daemon creates
+its socket owned by root with mode 755, hence the `chown` for a non-root `vxedge` client.
 
-After pulling new commits, rebuild all three binaries before a run (`cargo build --workspace` in `vxedge`,
-`vxagents` and `vxtelemetry`, as your own user, not root). The runner refuses to measure with a binary older
-than its source and tells you the exact command, including a `touch` of the rebuilt binaries.
+The `quick` numbers are pipeline validation only and are never reported. The full campaign is
+`vxedge campaign start --profile repro`: 5 repetitions x 5 load levels, 60k samples per point. Keep the machine
+otherwise idle and prefer the `performance` CPU governor. A campaign writes its archives, `campaign.json` and
+`verdict.json` under `results/<campaign id>/` in the package folder; `vxedge campaign verdict <campaign id>`
+judges it again, and `vxedge campaign compare <campaign id> exp-001 --reference-workspace ../..` compares it
+with the frozen campaign (the package's README says how). The raw archives of the published campaigns are on Zenodo:
+[10.5281/zenodo.23804197](https://doi.org/10.5281/zenodo.23804197), and `scripts/verdict-parity.sh --fetch` in
+`vxperiments` re-judges them with each package's criteria. Reference result and methodology: RESULTS.md and
+the `experiment-methodology` skill.
 
 Zone bundles for a bare vehicle are built on your own host, not pulled from a registry, so no registry
 login is needed. For `vx-vehicle-01`, from the workspace root:
 `vxparts/parts/zone/linux/stack/probe-bundle/build.sh "$PWD/vxperiments/vehicles/vx-vehicle-01/bundle"`
 (`bundle/` is git-ignored). The bundle embeds your host kernel, so its digest differs per host, and
-`vehicle up` stops before provisioning anything if it is missing. Two host details to know:
-the root daemon creates its socket owned by root with mode 755, so a non-root `vxedge` client needs
-`sudo chown $USER` on the socket (or run it with `sudo`); and on Ubuntu `/boot/vmlinuz-*` is mode 600,
+`vehicle up` stops before provisioning anything if it is missing. On Ubuntu `/boot/vmlinuz-*` is mode 600,
 so `build.sh` fails until the kernel image is readable (copy it somewhere readable and pass `KERNEL=`).
-The `exp-001` runner needs neither the bundle nor a login.
-
-Results land in `vxperiments/results/`. Quick runs write to `results/exp-001-quick/` (disposable);
-the frozen campaign owns `results/exp-001/`, and reruns use `--repro` (date-suffixed dir); a dir holding a
-frozen campaign's archives is never overwritten in place. The raw archives of the published campaigns
-are on Zenodo: [10.5281/zenodo.23804197](https://doi.org/10.5281/zenodo.23804197).
-
-The `--quick` numbers are pipeline validation only (marked NOT reportable). The full
-campaign is `./scripts/run.sh --repro` (it never overwrites the frozen `results/exp-001/`): ~35 minutes, 5 repetitions x 5 load
-levels, 60k samples per point; keep the machine otherwise idle and prefer the
-`performance` CPU governor. Reference result and methodology: RESULTS.md and the
-`experiment-methodology` skill.
+The exp-001 package needs neither the bundle nor a login: its zones are host processes.
 
 ## 5. Zones and VM guest bundles
 
@@ -174,9 +177,6 @@ consistency. Experiment manifests live in `vxperiments/experiments/`, vehicle ma
   (`--listen`/`--endpoint unix:///tmp/vxedge.sock`) or set `VXEDGE_ENDPOINT`.
 - **A verb prints "not wired to the daemon yet (scaffold)"**: intentionally unimplemented;
   USER-GUIDE.md §2 lists each verb's state. Check it before assuming a bug.
-- **An experiment runner refuses with "older than source file …"** (the staleness gate):
-  rebuild as your user (`cargo build --workspace && touch <binary>`; cargo doesn't relink
-  unchanged binaries, so mtime alone can look stale).
 - **`insufficient privileges … CAP_NET_ADMIN`**: run the daemon under sudo or setcap it
   (see §3); provisioning refuses to half-apply without privileges.
 - **Bundle build: "vmlinuz not readable"**: Ubuntu ships kernels 0600;

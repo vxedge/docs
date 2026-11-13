@@ -21,10 +21,10 @@ listed per-verb below; everything else fails loudly rather than pretending.
   can be renamed or reorganized without breaking anything; a whole workspace can also be one
   file of `---`-separated documents. The CLI/daemon keep no other configuration; every result
   archive records the workspace's SHA-256.
-- **A workspace is a sandbox.** It owns its own `scripts/run.sh` (the campaign: repetitions,
-  warmup, measurement window), `parts/` (its loadables), `assets/` (scenario files), `tools/`
-  (its own analysis), and `results/` (one archive per run). It is a folder that can be zipped,
-  sent, unzipped and run standalone, or packed into one `.vxp` file with `vxedge pkg pack`.
+- **A workspace is a sandbox.** It owns its campaign (the experiment's `campaign` block:
+  repetitions, warmup, measurement window, sweep, arms and profiles), `parts/` (its loadables),
+  `assets/` (scenario files), `tools/` (its own helpers), and `results/` (one archive per
+  trial). It is a folder that can be zipped, sent, unzipped and run standalone, or packed into one `.vxp` file with `vxedge pkg pack`.
   `vxedge experiment new <id> [--template minimal|slicing]` scaffolds one, with its `vxp.lock`; `vxedge experiment validate` runs every cross-file check and every model
   invariant before anything is provisioned. Full schema: ARCHITECTURE.md §6.0.
 - **Structure and software are separate files.** One `vehicle.yaml` carries many `baseline`
@@ -105,20 +105,24 @@ vxedge --endpoint unix:///tmp/vx.sock down --manifest exp.yaml
 
 ### b) A measurement campaign (the exp-001 pattern)
 
-Campaigns are orchestrated by a runner script that encodes the methodology (warmup outside
-the probe window, ≥5 repetitions, environment metadata, archive per run):
+A campaign is declared in the experiment (`campaign`: repetitions, warmup outside the probe
+window, sweep or arms, profiles) and run by `vxedged`, one archive per trial. Every experiment in
+`vxperiments` is a package run this way:
 
 ```bash
 cd vxperiments/experiments/exp-001-ws
-sudo -E env "PATH=$PATH" ./scripts/run.sh --quick   # ~1 min pipeline validation -> ../../results/exp-001-quick/
-sudo -E env "PATH=$PATH" ./scripts/run.sh --repro   # full rerun (~35 min, idle host) -> ../../results/exp-001-repro-<date>/
-python3 ../../notebooks/analyze_exp001.py ../../results/exp-001   # archives -> table + verdict
+vxedge campaign plan --profile repro      # the 25 trials, checked; touches nothing
+vxedge campaign start --profile quick     # pipeline validation -> results/<campaign id>/
+vxedge campaign start --profile repro     # the published protocol, on an idle host
+vxedge campaign verdict <campaign id>     # the H1 criteria over the campaign's archives
 ```
 
-A dir already holding a campaign's archives is never overwritten in place: full runs
-refuse it, repro checks and quick runs get their own dirs (`scripts/lib/results_dir.sh`).
+Each campaign writes to its own `results/<campaign id>/` in the workspace.
+`vxedge results verdict --experiment . <archives>` judges archives offline, with no daemon, and
+`scripts/verdict-parity.sh --fetch` in `vxperiments` re-judges every published dataset with its
+package's criteria.
 
-Numbers from `--quick` runs are pipeline validation only and are marked NOT reportable.
+Numbers from `quick` campaigns are pipeline validation only and are never reported.
 Reference result (2026-08-03 corrected campaign, superseding the original 2026-07-10 run;
 see RESULTS.md's Phase 1 row for why): ADAS slice p99 held at 0.91x baseline under 1.2x
 offered overload from the infotainment slice, zero loss (see RESULTS.md).

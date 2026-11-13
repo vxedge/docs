@@ -8,6 +8,14 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- Reproduce instructions follow vxperiments' package-only layout (X9.5): `GETTING-STARTED.md` §4
+  and `USER-GUIDE.md` §b run exp-001 from its package with `vxedge campaign plan|start --profile
+  quick|repro`, in place of the removed `scripts/run.sh` and `notebooks/analyze_exp001.py`, and the
+  runner's staleness-gate troubleshooting entry is gone. `RESULTS.md` says how to reproduce a
+  result (the packages and `vxedge campaign`) and re-judge the published archives
+  (`scripts/verdict-parity.sh --fetch`, with exp-010's H2 checked by `notebooks/analyze_exp010.py`),
+  and links the retired analysis notebooks at the vxperiments `v0.2.1` tag. No FACTS key or value
+  changes.
 - `FACTS.md` `archives.doi`: the latest archive version is 2026-11-v2 (10.5281/zenodo.24192950), the
   frozen campaigns in `vxarchive/2` plus the exp-003 release rerun of 2026-11-13.
 - `ARCHITECTURE.md` §6.0.3: a check tool step's `samples` read its output lines as series on
