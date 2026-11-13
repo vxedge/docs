@@ -413,11 +413,10 @@ Files exist only when the experiment needs them. `vxp.yaml` is the descriptor, n
 the glob skips it.
 
 **Descriptor name.** The descriptor is `vxp.yaml` (§6.0.3), a fixed name as `Cargo.toml` is, and
-`.vxp` names the packed, shareable file (§6.0.7). Through vxedge 0.5.x the descriptor is a
-`<name>.vxp` YAML file, found by globbing for exactly one `*.vxp`. vxedge 0.6.x and 0.7.x read
-both names, and 0.8.0 reads only `vxp.yaml`. A folder holding both is refused. A packed `.vxp`
-found where a legacy descriptor is looked for is refused as such: a file whose bytes are a tar
-archive is never parsed as YAML.
+`.vxp` names the packed, shareable file (§6.0.7). A folder whose descriptor is a legacy
+`<name>.vxp` YAML file, the form vxedge 0.5.x read, is refused with the steps to migrate it, and a
+folder holding both names is refused. A packed `.vxp` found in a source folder is refused as such: a
+file whose bytes are a tar archive is never parsed as YAML.
 
 **A file may hold several documents**, `---`-separated, and a whole workspace may be one file.
 That follows from every reference being by id: the file boundary carries no meaning, so it is
@@ -846,9 +845,7 @@ campaign:
 - **Each criterion evaluates to `pass`, `fail` or `inconclusive`.** It is `inconclusive` when an
   operand has fewer than `min_samples` trial values, a selected trial has no value or incomplete
   telemetry (a `gap` on the metric's entity while the trial measured), a ratio divides by zero,
-  or a guard does not pass. A `vxarchive/1` archive names no entities and records no gaps or
-  phases: its series is matched by name and labels and refused when two scrape targets served
-  it, and its count of failed scrapes is noted on the value, since it cannot be placed in time.
+  or a guard does not pass. An archive that is not `vxarchive/2` is refused, not read (§11).
   `inconclusive` is
   never reported as a pass. A group is `pass` only when its rule holds over conclusive members,
   and `inconclusive` when the outcome depends on an inconclusive one. A one-line text rendering of
@@ -1236,7 +1233,7 @@ criteria:
   an offline verdict reads the same values as the daemon's.
 
 The descriptor holds packaging rather than content, so a version bump never touches an
-experiment file. **`vxp/1`** (ships in vxedge 0.6.0; vxedge 0.5.x reads only the legacy form below):
+experiment file. **`vxp/1`** (ships in vxedge 0.6.0):
 
 ```yaml
 schema: vxp/1                       # discriminator, required
@@ -1290,11 +1287,11 @@ Both are checked by `pkg validate`, `experiment validate`, `manifest validate`,
 `WorkspaceService.Plan` and `up`, and a malformed descriptor fails validation.
 
 **Legacy descriptor.** A `vxp.yaml` without `schema` is refused: the file name already declares
-the new format. A legacy `<name>.vxp` has no `schema` and is read exactly as vxedge 0.5.x reads
-it: `id`, `version`, `entry` (optional) and `requires: { gpu }`, unknown
-keys refused. Its whole `id` must equal the `kind: experiment` id. It has no lock and no package
-digest, and `pkg lock` and `pkg pack` refuse it with the reason, so a legacy workspace still runs
-but cannot be published until it is migrated.
+the format. A legacy `<name>.vxp` YAML descriptor is not read: every verb that reads a workspace
+(`experiment` and `pkg` verbs, `Plan`, `up`, `PackageService.Inspect`) refuses it with
+`ERROR_REASON_WORKSPACE_INVALID` and the steps to migrate: rename it to `vxp.yaml`, add
+`schema: vxp/1`, make `id` `namespace/name`, give it a `version` and an `entry`, and run
+`vxedge pkg lock`. `vxtelemetry collect` refuses it too.
 
 #### 6.0.4 Requirements vs. allocation
 
@@ -1395,8 +1392,8 @@ the same run) skips the check while authoring; the run record
 and the archive record that it ran unlocked (§13), so an unlocked result is never mistaken for a
 locked one. Locked or not, `up` refuses a `vxp/1` package that cannot be packed (a symbolic or
 hard link, a special file, a path ustar cannot hold) with the same error `pkg pack` gives, since
-a run of a `vxp/1` package always records its package digest. Legacy descriptors and inline
-manifests are not lock-checked. `vendored` records where a copied document came from, so CI can flag
+a run of a `vxp/1` package always records its package digest. Inline manifests are not
+lock-checked. `vendored` records where a copied document came from, so CI can flag
 drift from its source.
 
 **Vendoring** (decision X-5; vxedge 0.8.0). `pkg vendor <dir>` copies the vxedge documents
@@ -1461,7 +1458,7 @@ Transfer may compress; the digest is always over the tar. Because the packed byt
 function of the source, the digest is computed for every run of a `vxp/1` package, from a source
 folder as well as from a packed file, without writing one. As with the workspace identity,
 `vxedge-core` and `vxtelemetry` compute it independently and pin the same packed-bytes test vector;
-`vxtelemetry` computes it from the archive's `workspace/`, which holds exactly the packed entries,
+`vxtelemetry` computes it from the archive's `package/`, which holds exactly the packed entries,
 so `vxtelemetry verify` checks the package digest as well as the identity. Published parts are
 referenced by digest, never embedded. Air-gapped transfer of published parts travels beside the
 package, never inside it, so the package digest does not depend on how the package was moved.
@@ -1529,8 +1526,8 @@ from a file the operator owns, and names whether signatures are required and whi
 allowed: a GitHub repository and workflow for attestations, or a public key for key-pair
 signatures. Without a policy, any package runs, as today. With `require-signed`, `up`, `Plan` and
 `PackageService.Pull` (before fetching anything) refuse a package whose digest has no verification record from an allowed
-signer with `ERROR_REASON_SIGNATURE_INVALID`, before anything is provisioned; a legacy descriptor
-or an inline manifest has no package digest to verify, so it is refused too. An authoring host,
+signer with `ERROR_REASON_SIGNATURE_INVALID`, before anything is provisioned; an inline manifest
+has no package digest to verify, so it is refused too. An authoring host,
 where packages are built and changed, runs without the requirement.
 
 **Offline transfer.** `pkg pack --offline` writes, beside the packed file, an OCI image layout
@@ -1943,12 +1940,12 @@ to, so a restarted ingest resumes, and a file that shrinks is read again from it
 `LogService.Follow` tails `logs.jsonl` as `StreamRecords` tails `records.jsonl`: `seq` is the line
 number, `after` resumes, and `entity_prefix` and `streams` narrow it.
 
-**Archive v2** (`vxarchive/2`, from `vxtelemetry collect --archive-version 2`; v1 stays the
-default) is one zip per run whose large record files are zstd-compressed members:
+**Archive** (`vxarchive/2`, the only format `vxtelemetry collect` writes and the only one vxedge
+and vxtelemetry read) is one zip per run whose large record files are zstd-compressed members:
 
 ```
 index.json                  schema vxarchive/2; every other member with its size and sha256
-metadata.json               as v1, plus `archive: vxarchive/2`
+metadata.json               the run metadata (§13), with `archive: vxarchive/2`
 package/                    the workspace's identity inputs
 entities.json               the entity paths records name
 metrics/samples.jsonl.zst   sample and gap records
@@ -1959,9 +1956,10 @@ events.jsonl                vxAPI events, when the run recorded them
 
 Python's standard library reads it from 3.14 (`zipfile`, `compression.zstd`). `vxtelemetry verify`
 checks every member against the index, the identity over `package/` and the package digest, so a
-changed, added or missing member fails it. `vxtelemetry records <archive>` prints the records of a
-v1 or v2 archive as JSON Lines, and reads a v1 archive's samples as `sample` records; with
-`--logs` it prints a v2 archive's `log` records, entity by entity.
+changed, added or missing member fails it. `vxtelemetry records <archive>` prints an archive's
+records as JSON Lines; with `--logs` it prints its `log` records, entity by entity. A `vxarchive/1`
+archive (no `index.json`) is refused by `verify`, `records` and every vxedge verdict, with the
+current format named: the frozen result sets are republished in `vxarchive/2` (Zenodo 2026-11-v2).
 
 ---
 
@@ -2100,8 +2098,7 @@ scrape reads the kernel's counters as they are then.
   identity asks whether repetitions ran from the same input, and is what a running vehicle is
   checked against. The package digest names what was shared, and is what a reproducibility claim
   cites and what anyone can check with `sha256sum`. Results computed under different identity
-  algorithms are compared by package digest, never by identity equality. A legacy workspace
-  (§6.0.3) records no package digest.
+  algorithms are compared by package digest, never by identity equality.
 
 - **Kernel, beside the identity** (every run; recorded since vxedge 0.7.0 and vxtelemetry 0.4.0). The kernel a run
   ran on is part of what ran, and `kernel.preempt_rt: preferred` (§6.0) makes it a variable:
@@ -2146,20 +2143,20 @@ scrape reads the kernel's counters as they are then.
     version (and, for a `vxp/1` package, its digest and whether it ran locked), the `vxtelemetry` version, the tool binaries the daemon runs (above), the ingest statistics, and, when the campaign opts in,
     the content-addressed digests of the container images it ran against (`host-process` for a
     local host-process part).
-  - The archive carries **every file the workspace identity covers** under `workspace/`: the
+  - The archive carries **every file the workspace identity covers** under `package/`: the
     documents, `parts/`, `assets/`, `scripts/` and `tools/`, and nothing the identity excludes.
-    It is enough to re-run from, and it verifies itself: re-hashing `workspace/` (`package/` in
-    archive v2) under the recorded `workspace_identity_algorithm` reproduces `workspace_sha256`
+    It is enough to re-run from, and it verifies itself: re-hashing `package/` under the
+    recorded `workspace_identity_algorithm` reproduces `workspace_sha256`
     (`vxtelemetry verify <archive>`). Every entry counts, so a file added to an archive is a
     mismatch.
   - `verify` reports the identity as **checked**, **mismatch** or **not checkable** with the
-    reason, and never assumes an algorithm. For archive v2, the index check (every member
+    reason, and never assumes an algorithm. The index check (every member
     against `index.json`) is the integrity result. An archive that records no algorithm was
     written before identity algorithms were recorded, when archives carried only the documents;
     one that records only `manifest_sha256` was written before workspace identities. Neither can
     be re-hashed to its identity. Exit codes: 0 every check passed; 1 the index, the identity or
     the package digest does not match; 3 nothing failed but the identity is not checkable (from
-    vxtelemetry 0.7.1). A v1 archive that records no algorithm is refused with that reason.
+    vxtelemetry 0.7.1).
   - Registry uploads optional; ensures compliance with reproducible research principles.
 
 ---
