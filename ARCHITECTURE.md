@@ -254,6 +254,20 @@ which stay for people. All of this is additive to `vxedge.v1`:
   and ends when the gateway goes down. A read-only `RunService` (`Get`, `List`) reports runs. Resource
   verbs take an optional `RunRef`; empty means the only run, and a mismatch is refused. The host still
   runs one at a time, so `List` returns zero or one.
+- **Several runs (Track F). Specified 2026-11-13, not implemented in vxedge yet.** The host runs
+  several runs at once, each in its own instance slot (§6.0.5), and `List` returns every run. Which
+  run a verb acts on:
+  - A verb that names a run acts on it. A named run that is not up is refused with
+    `ERROR_REASON_NO_ACTIVE_RUN` when nothing is up, and with `ERROR_REASON_RUN_MISMATCH` otherwise.
+  - A verb that names no run acts on the run of the workspace it names, and with no workspace
+    either, on the only run on the host. `VehicleDownRequest` and `VehicleStatusRequest` gain a
+    `RunRef run`, so each run of a workspace that runs twice can be addressed.
+  - When that rule matches no run, the verb is refused with `ERROR_REASON_NO_ACTIVE_RUN`. When it
+    matches more than one, including a bare `up` of a workspace that has two runs, it is refused
+    with a new reason, `ERROR_REASON_RUN_AMBIGUOUS`, whose error lists the runs. Nothing is chosen
+    silently.
+  - `ERROR_REASON_WRONG_WORKSPACE` no longer refuses another workspace's `up` while a run is up:
+    that `up` starts a run in another slot. It is kept for a verb whose run and workspace disagree.
 - **Typed status.** `NodeStatus` carries the zone, role, backend, port, peer, VLAN and payload
   (kind, reference, digest) that `detail` holds as text today. `RESOURCE_STATE_UNPROVISIONED` marks a
   declared device nothing provisions. `observed_unix_ms` says when a status was read, and
@@ -1480,6 +1494,49 @@ A name now depends on its own device and nothing else: not declaration order, no
 how many other devices exist. Two ids that shorten to one name are refused with both named.
 `vxedge zone list` prints each device's `port=` and `peer=`, so the mapping is always
 answerable without recomputing a hash.
+
+**Instance slots (Track F). Specified 2026-11-13, not implemented in vxedge yet.** Several runs
+share one host, so a name also carries its run's **instance slot** `<s>`: one character from `0`–`9`
+then `a`–`z`, so a host holds at most 36 runs. Every host object a run creates carries its slot:
+
+| Object | Name |
+|---|---|
+| Bridge, uplink, uplink peer | `vxbr<s>`, `vxup<s>`, `vxup<s>p` |
+| Access port, veth peer, ingress IFB | `vz<s>-<stem>`, `vp<s>-<stem>`, `vi<s>-<stem>` |
+| WireGuard and VXLAN tunnels | `vxwg<s>-<stem>`, `vxln<s>-<stem>` |
+| Node netns, container group, VM domain, pidfile, VMM socket | `vx<s>-<node>` |
+| 5G pods | `vx5g<s>`, `vx5g<s>-ran` |
+| Run record | `<runtime-dir>/runs/<s>/` |
+
+The peer and IFB prefixes shrink to two letters, so a stem keeps today's 11 characters and stays
+the same: `node-cont-01` in slot `0` has `vz0-node-c-32cc` and `vp0-node-c-32cc`. `vxedge zone
+list` prints the run's slot beside each `port=` and `peer=`.
+
+- **Choosing a slot.** Every verb that starts a run (`VehicleService.Up`, `GatewayService.Up`,
+  experiment `up`) takes an optional `instance`. Without it, a workspace with no run takes the
+  lowest free slot, and a repeated `up` keeps its run's slot. With it, the run takes that slot,
+  so the same workspace can run twice and a script knows its names before it starts. A campaign
+  takes its `instance`, or the lowest free slot at start, and keeps that slot for every trial.
+  `Run.instance` reports the slot.
+- **A run sees only its own slot.** `down` removes only its own slot's objects, and a daemon
+  restart restores every run it holds a record for. Another slot's objects are not foreign
+  workload (`ERROR_REASON_FOREIGN_WORKLOAD`), and objects that carry no slot still are.
+- **Host-wide resources.** Some things a manifest names exist once per host, whatever the slot:
+  - a `mode: s-nssai` slice, whose 5G attach subnets and UE routes live in the host's tables;
+  - host-side addresses: a traffic or measurement far side (`vxup<s>p.<vlan>`) and an address on
+    a host-side peer sit in the host's routing table, so their subnets must not overlap another
+    run's;
+  - a WireGuard `listen_port`;
+  - a VXLAN `vni` and `dstport` pair;
+  - an adopted `host_interface`, such as the Cuttlefish tap.
+
+  The first run to declare one of these holds it, and a second run that declares it is refused with
+  a new reason, `ERROR_REASON_HELD_BY_RUN`, naming the run that holds it. So is a slot that another
+  run holds. `ERROR_REASON_BUSY` keeps its meaning: another lifecycle operation is running. A later
+  step moves each run's host-side ends into a namespace of its own, so that two copies of one
+  measuring experiment can run at once.
+- **CPU pins are not arbitrated between runs.** Two runs that pin the same CPU share it, and a
+  timed run takes the host on its own.
 
 #### 6.0.6 Migration status
 

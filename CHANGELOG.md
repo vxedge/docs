@@ -19,6 +19,19 @@ All notable changes to this repo are documented here. Format follows
   refused in `open`, a slice named `default` is refused, `duration_us` runs from 1 to 4294967, a `matchall`
   filter sends every unclassified frame to `default`, `GatewayService.Up` makes the host check too, and a
   running gateway is not switched between HTB and a gate schedule without `down`.
+- `ARCHITECTURE.md` §5.2 and §6.0.5 specify several runs on one host (Track F), which is not implemented yet:
+  - every run holds an instance slot (`0`–`9`, `a`–`z`), and every host object it creates carries it:
+    `vxbr<s>`, `vz<s>-<stem>`, `vp<s>-<stem>`, `vi<s>-<stem>`, `vx<s>-<node>`, `vx5g<s>`. Stems keep their
+    11 characters;
+  - verbs that start a run take an optional `instance`; without it a new run takes the lowest free slot, a
+    campaign keeps one slot for every trial, and `Run.instance` reports it;
+  - a verb that names no run acts on its workspace's run, or on the only run, and is refused with the new
+    `ERROR_REASON_RUN_AMBIGUOUS` when more than one matches. `VehicleDownRequest` and `VehicleStatusRequest`
+    gain a `RunRef`;
+  - `down`, daemon restart and the foreign-workload check work per slot;
+  - an `s-nssai` slice, overlapping host-side addresses, a WireGuard listen port, a VXLAN VNI and port pair,
+    and an adopted host interface are held by one run per host. A second run declaring one, or asking for a
+    held slot, is refused with the new `ERROR_REASON_HELD_BY_RUN`.
 
 ### Changed
 
