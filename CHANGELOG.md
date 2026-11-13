@@ -6,6 +6,16 @@ All notable changes to this repo are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- `ARCHITECTURE.md` §6.0.3 and §7 specify the TSN variant of the gateway, which is not implemented yet:
+  - `network.shaping` (`kind: gate-schedule`) puts an IEEE 802.1Qbv gate schedule on the uplink in place of
+    the HTB tree, with one class per slice, classified by VLAN;
+  - `network.time_sync` (`kind: gptp`) makes the gateway the 802.1AS grandmaster for the listed
+    container devices, whose offset and peer delay vxedged's exporter serves as samples.
+  The §7 TSN bullet points to them and states that under `shaping` the uplink has no line rate. It no longer
+  names `cbs`: `gate-schedule`, rendered by `tc` `taprio`, is the only shaping kind specified.
+
 ### Changed
 
 - `ARCHITECTURE.md` §9 lists the guest bundle's reflector declaration, `org.vxedge.reflector: udp/<port>`, beside
