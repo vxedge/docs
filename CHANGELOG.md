@@ -12,7 +12,7 @@ All notable changes to this repo are documented here. Format follows
   - `network.shaping` (`kind: taprio`) puts an IEEE 802.1Qbv gate schedule on the uplink in place of
     the HTB tree, with one class per slice, classified by VLAN;
   - `network.time_sync` (`kind: gptp`) makes the gateway the 802.1AS grandmaster for the listed
-    container devices.
+    container devices, whose offset and peer delay vxedged's exporter serves as samples.
   The §7 TSN bullet points to them and states that under `taprio` the uplink has no line rate.
 
 ### Changed

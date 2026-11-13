@@ -782,6 +782,10 @@ followers' access ports:
 - **Container followers measure, they do not steer.** They share the host's clock, so they run
   free and report their offset from the grandmaster and the peer delay. That measures the
   time-sync path, not clock discipline.
+- **Offsets are telemetry.** vxedged's exporter (§12, host-side measurements) serves
+  `vxedge_gptp_offset_ns` and `vxedge_gptp_path_delay_ns` for each follower, with the follower
+  as entity, read from that follower's `ptp4l`. They land in the run's samples beside the
+  latency they help explain. A follower whose `ptp4l` does not answer leaves a `gap`.
 - **Profile.** The 802.1AS settings, with `neighborPropDelayThresh` raised above the standard's
   800 ns. Software timestamps on a veth put the peer delay close to that limit, and a follower
   dropped out at the default.
