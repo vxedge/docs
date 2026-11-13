@@ -15,6 +15,10 @@ All notable changes to this repo are documented here. Format follows
     container devices, whose offset and peer delay vxedged's exporter serves as samples.
   The §7 TSN bullet points to them and states that under `shaping` the uplink has no line rate. It no longer
   names `cbs`: `gate-schedule`, rendered by `tc` `taprio`, is the only shaping kind specified.
+  `network.shaping` also states the choices made while building it: `s-nssai` slices are not classes and are
+  refused in `open`, a slice named `default` is refused, `duration_us` runs from 1 to 4294967, a `matchall`
+  filter sends every unclassified frame to `default`, `GatewayService.Up` makes the host check too, and a
+  running gateway is not switched between HTB and a gate schedule without `down`.
 
 ### Changed
 
