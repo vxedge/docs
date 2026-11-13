@@ -22,6 +22,7 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `TESTBED-SETUP.md` Tier 2 lists the `sch_taprio` kernel module that `network.shaping` needs.
 - `ARCHITECTURE.md` §9 lists the guest bundle's reflector declaration, `org.vxedge.reflector: udp/<port>`, beside
   its other `meta.json` keys, and names the six probe guests that declare `udp/9800`. §6.0.3 still says how a
   measurement uses it.
