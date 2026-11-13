@@ -162,6 +162,8 @@ Source: [`vxperiments/results/exp-001/exp-001-summary.md`](https://github.com/vx
 | `h2.repro_ratio` | 1.00× | S-NSSAI p99 growth in the 2026-10-30 second campaign |
 | `h2.repro_floor` | 339–356 µs | S-NSSAI p99 across all loads in the 2026-10-30 second campaign |
 | `h2.repro_inside` | 3 of 15 | metric × load pairs of the 2026-10-30 second campaign inside the first campaign's IQR; the verdict held |
+| `h2.live_ratio` | 0.97× | S-NSSAI p99 growth in the 2026-11-13 live run of the exp-010 package (vxedge 0.27.0, 5G images pinned by digest, judged by `campaign verdict` against a 1.006× bound); the verdict held, [`exp-010-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-010-repro-2026-11-13/exp-010-summary.md) |
+| `h2.live_floor` | 291–320 µs | S-NSSAI p99 across all loads in the 2026-11-13 live run |
 
 Per load level, S-NSSAI path.
 Source: [`vxperiments/results/exp-010/exp-010-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-010/exp-010-summary.md).
