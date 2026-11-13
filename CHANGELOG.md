@@ -8,6 +8,14 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- Reproduce instructions follow vxperiments' package-only layout (X9.5): `GETTING-STARTED.md` §4
+  and `USER-GUIDE.md` §b run exp-001 from its package with `vxedge campaign plan|start --profile
+  quick|repro`, in place of the removed `scripts/run.sh` and `notebooks/analyze_exp001.py`, and the
+  runner's staleness-gate troubleshooting entry is gone. `RESULTS.md` says how to reproduce a
+  result (the packages and `vxedge campaign`) and re-judge the published archives
+  (`scripts/verdict-parity.sh --fetch`, with exp-010's H2 checked by `notebooks/analyze_exp010.py`),
+  and links the retired analysis notebooks at the vxperiments `v0.2.1` tag. No FACTS key or value
+  changes.
 - `ARCHITECTURE.md` §6.0, §6.0.3, §6.0.7, §6.0.8, §11 and §13: one archive format and one
   descriptor (decision X-30). `vxarchive/2` is the only archive vxtelemetry writes and the only one
   vxedge and vxtelemetry read; a `vxarchive/1` archive is refused with the current format named. A
