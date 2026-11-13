@@ -659,8 +659,8 @@ variables, strings only. `cap_add` adds Linux capabilities to the payload contai
 service discovery); anything else is refused. Every target in the entry starts the same way, so
 two roles of one part, a publisher and a subscriber, are two entries. `run` is part of the
 baseline document, so it counts toward the workspace identity and the package digest, and a
-changed argument is a changed input. The archive records it with the rest of the documents. **Specified
-2026-11-13, not implemented in vxedge yet.**
+changed argument is a changed input. The archive records it with the rest of the documents. **Ships
+in vxedge 0.29.0.**
 
 `target_ids` declared once for many components is deliberate: repeating a shared part
 per-component is how fleet baselines silently drift when one copy is bumped and the others are
