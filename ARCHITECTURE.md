@@ -775,8 +775,8 @@ loose pattern.
 
 `network.shaping` and `network.time_sync` add a time-aware gateway, the TSN variant of §7. Both
 are optional, and an experiment without them keeps the HTB tree it has today. **`shaping`
-ships in vxedge 0.28.0, and vxtelemetry 0.9.0 records its kind in each archive. `time_sync` is
-specified, not implemented yet: vxedge still refuses it as an unknown key.**
+ships in vxedge 0.28.0, and vxtelemetry 0.9.0 records its kind in each archive. `time_sync`
+ships in vxedge 0.30.0, and vxtelemetry 0.10.0 records it in each archive.**
 
 ```yaml
 network:
@@ -1839,7 +1839,7 @@ templating):
   slicing trial, which vxedge reproduces openly in software). Optional radio-channel realism
   via **NVIDIA Sionna** (6G Developer Program); full **Aerial CUDA-Accelerated RAN** is a
   stretch goal requiring specific NVIDIA platforms.
-- **TSN variant (gate schedule shipped in vxedge 0.28.0; time sync planned):** time-aware
+- **TSN variant (gate schedule shipped in vxedge 0.28.0, gPTP time sync in 0.30.0):** time-aware
   scheduling as an alternative gateway
   shaping mode, an IEEE 802.1Qbv gate schedule (`taprio`) in place of the HTB tree on the uplink,
   with gPTP time sync (`linuxptp`, IEEE 802.1AS) from the gateway to the devices that follow it
