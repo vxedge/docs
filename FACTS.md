@@ -61,7 +61,7 @@ The latest tagged release of each code repository.
 
 | Key | Repository | Version | Released |
 |---|---|---|---|
-| `vxedge` | `vxedge` | 0.28.0 | 2026-11-13 |
+| `vxedge` | `vxedge` | 0.29.1 | 2026-11-13 |
 | `vxagents` | `vxagents` | 0.2.3 | 2026-11-12 |
 | `vxmcp` | `vxmcp` | 0.5.0 | 2026-11-13 |
 | `vxmodels` | `vxmodels` | 0.1.0 | 2026-10-29 |
@@ -230,6 +230,8 @@ Source: [`vxperiments/results/exp-003/exp-003-summary.md`](https://github.com/vx
 |---|---|---|
 | `exp005.confirmed` | 20 of 20 | `exp-005`: cold-start first-packet effect, repetitions confirming it |
 | `exp014.verdict` | holds | `exp-014`: star vs daisy-chained zones, hop-count effect |
+| `exp018.verdict` | holds | `exp-018`: DDS, SOME/IP and CAN-signal traffic on the infotainment slice keep the ADAS slice's p99 within 2x of idle, live on vxedge 0.29.0. [`exp-018-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-018-repro-2026-11-13/exp-018-summary.md) |
+| `exp018.p99` | 53.4–55.7 µs | `exp-018`: ADAS p99 under the three protocol loads, against 53.7 µs idle, device to device, no probe lost. [`exp-018-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-018-repro-2026-11-13/exp-018-summary.md) |
 | `exp014.ring` | holds | `exp-014` 0.3.0: a ring harness bounds the farthest zone at two hops; its front-right sits 60.0 µs below the chain's rear-left at p50, live on vxedge 0.27.0. [`exp-014-repro-2026-11-13`](https://github.com/vxedge/vxperiments/blob/main/results/exp-014-repro-2026-11-13/exp-014-summary.md) |
 | `exp014.hop_p50` | +60 µs | `exp-014`: p50 added per daisy-chain hop in the 2026-11-13 live run (30 µs / 5 µs netem per hop, a stated assumption). [`exp-014-repro-2026-11-13`](https://github.com/vxedge/vxperiments/blob/main/results/exp-014-repro-2026-11-13/exp-014-summary.md) |
 | `exp016.slice_publish` | +8 µs | `exp-016`: kuksa-databroker 0.7.1 publish-to-subscriber p50 across the broker's slice, minus the same on the broker's device; out and back, never one-way. [`broker-slice-main-2026-11-04`](https://github.com/vxedge/vxperiments/tree/main/results/broker-slice-main-2026-11-04) |
