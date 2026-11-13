@@ -661,6 +661,26 @@ block (`duration_s`, `repetitions`, `warmup_s`). It may also carry typed intent,
 `hypothesis`, `parameters`, `metrics`, `criteria` and `campaign` (below). It carries no
 `zones`/`compute` inline: structure is the vehicle's, and software is the baseline's.
 
+`baseline: <id>` selects the software. A workspace may hold several `kind: baseline` documents
+over one vehicle, and only the named one's parts run; with more than one, an experiment that
+names none is refused. Every baseline must give every function a part. An A/B arm that changes
+software is a string parameter that binds `baseline`, so the vehicle stays one unchanged
+document:
+
+```yaml
+parameters:
+  load: { type: string, default: bl-idle, binds: baseline, values: [bl-idle, bl-dds] }
+campaign:
+  arms:
+    idle: { load: bl-idle }
+    dds:  { load: bl-dds }
+```
+
+`pkg lock` pins the references of every baseline, so a pulled or offline package can run any
+arm, and `Plan` builds each arm's bound documents, so an unknown baseline is refused before a
+trial starts. Before vxedge 0.29.0 every baseline document was read, whatever the experiment
+named.
+
 `services` declared here run as host processes (§8). A service placed inside a slice belongs to
 the vehicle (§6.0.1).
 
