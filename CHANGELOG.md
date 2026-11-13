@@ -13,7 +13,8 @@ All notable changes to this repo are documented here. Format follows
     the HTB tree, with one class per slice, classified by VLAN;
   - `network.time_sync` (`kind: gptp`) makes the gateway the 802.1AS grandmaster for the listed
     container devices, whose offset and peer delay vxedged's exporter serves as samples.
-  The §7 TSN bullet points to them and states that under `taprio` the uplink has no line rate.
+  The §7 TSN bullet points to them and states that under `taprio` the uplink has no line rate. It no longer
+  names `cbs`: `taprio` is the only shaping kind specified.
 
 ### Changed
 

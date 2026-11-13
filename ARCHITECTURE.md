@@ -731,10 +731,10 @@ network:
   shaping:
     kind: taprio                       # the only kind; absent means the HTB tree
     windows:                           # one cycle, repeated; the cycle is the sum of the windows
-      - { open: [adas], duration_us: 200 }
-      - { open: [infotainment, default], duration_us: 800 }
+      - { id: adas, open: [adas], duration_us: 10000 }
+      - { id: rest, open: [infotainment, default], duration_us: 90000 }
   time_sync:
-    kind: gptp                         # IEEE 802.1AS profile, run by linuxptp
+    kind: gptp                         # IEEE 802.1AS, run by linuxptp
     followers: [zonefl, hpc1]          # devices that follow the gateway's clock
 ```
 
@@ -742,16 +742,27 @@ network:
 port and in the same direction: the uplink, for frames leaving the bridge.
 
 - **One class per slice.** Each slice is one traffic class. `default` is one more, for frames
-  that match no slice, as HTB's default class is today. `taprio` has 16 classes, so a schedule
-  takes at most 15 slices.
-- **Windows.** A window opens the gates of the classes it lists for `duration_us`, a positive
-  whole number of microseconds. The windows run in order and the cycle is their sum. The
-  schedule starts on the TAI epoch, so its phase is the same in every run.
-- **What validation refuses:**
+  that match no slice, as HTB's default class is today. An 802.1Q port has 8 traffic classes, so
+  a schedule takes at most 7 slices.
+- **Windows.** Each window has an `id`, unique in the schedule, and opens the gates of the classes
+  it lists for `duration_us`, a positive whole number of microseconds. The windows run in order
+  and the cycle is their sum. The schedule starts on the TAI epoch, so its phase is the same in
+  every run. A parameter reaches a window by id path, `binds:
+  network.shaping.windows[adas].duration_us`. The smallest window tested is 10 ms; a shorter one
+  is accepted, but software gates on a stock kernel have timer jitter, so its result says so.
+- **Comparing HTB with TSN** takes two experiments, since a parameter cannot switch a block on: the
+  TSN one reads the HTB one through `references`, as exp-010 reads exp-001.
+- **What validation refuses**, with `ERROR_REASON_WORKSPACE_INVALID`:
   - a class that no window opens, since it could never send;
-  - an unknown slice id in `open`;
+  - an unknown slice id in `open`, or two windows with the same `id`;
+  - more than 7 slices;
   - a slice `qos` or `network.defaults.bandwidth` beside `shaping`. They are HTB's parameters,
-    so they are refused rather than ignored.
+    so they are refused rather than ignored;
+  - `shaping` with `network.data_plane: ovs`, which has not been tested.
+- **Host.** `Plan` and `up` refuse with `ERROR_REASON_HOST_REQUIREMENT_UNMET` on a host whose
+  kernel has no `taprio`, and `HostService.Capabilities` reports whether it has. A daemon that
+  predates these keys refuses them, as it refuses any unknown manifest key, so a package that uses them sets
+  `requires.vxedge` to the first release that reads them, as `requires.simulator` does.
 - **Rendering.**
   - The planner creates the uplink with one transmit queue per class.
   - A `clsact` egress filter per slice sets a frame's priority from its VLAN tag
@@ -760,41 +771,58 @@ port and in the same direction: the uplink, for frames leaving the bridge.
     TAI clock.
   - The `clsact` qdisc is created **before** `taprio`. Installed the other way round, the gates
     held no traffic when tested.
-- **Fidelity: the uplink has no line rate under `taprio`.** HTB's root rate is what makes slices
-  contend for bandwidth. The veth uplink has no rate of its own, so a gate schedule
-  decides when a class may send, not how much fits in a window. A study that compares the two
-  modes states this beside its result.
+- **Slice telemetry.** The `vxedge_slice_*` series (§12) are read from the slice's `taprio` class
+  instead of its HTB class. `vxedge_slice_overlimits_total` has no meaning without a rate and is
+  not served.
+- **Fidelity.**
+  - *No line rate.* HTB's root rate is what makes slices contend for bandwidth. The veth uplink
+    has no rate of its own, so a gate schedule decides when a class may send, not how much fits
+    in a window.
+  - *Guard band.* Software `taprio` holds back a frame that would not fit before its gate closes,
+    computed from the port's reported speed, which on a veth is nominal.
+  - *Classification.* Frames are classed by VLAN id, where an 802.1Q bridge classes them by the
+    priority in the tag.
+  - The run record and the archive's `metadata.json` carry the shaping kind and, with
+    `time_sync`, software timestamping and free-running followers, so `Compare` and a verdict
+    show which mode each campaign ran in.
 
 `time_sync` makes the gateway the grandmaster of an IEEE 802.1AS (gPTP) domain over the
 followers' access ports:
 
-- **The gateway is the grandmaster.** It runs one `ptp4l` as a boundary clock, with one port per
-  follower's access port.
+- **The gateway is the grandmaster,** with one master port per follower's access port, in one
+  `ptp4l`.
 - **Frames do not cross the bridge.** gPTP frames go to `01:80:C2:00:00:0E`, a link-local
   address a Linux bridge passes to the receiving port and does not forward. Each follower
-  therefore hears the gateway only, as each port of a TSN switch would.
+  therefore hears the gateway only, as each port of a time-aware bridge would.
 - **Data plane.** `time_sync` needs `network.data_plane: kernel-bridge`. With `ovs` it is
-  refused, because the OVS data path takes every frame on its ports and has not been verified
+  refused, because the OVS data path takes every frame on its ports and has not been tested
   for gPTP.
 - **Followers.** A follower is a `container` device. Its `ptp4l` joins the device's container
   group, as a placed service does (§6.0.1). A VM device is refused: its guest runs its own
   follower, and vxedge has no way into it.
+- **One image.** The gateway's `ptp4l` and every follower's run the same vxparts `linuxptp` part,
+  pinned by digest. A package that uses `time_sync` lists it in the lock's `images`, and the
+  archive's `image_digests` records it.
 - **Container followers measure, they do not steer.** They share the host's clock, so they run
   free and report their offset from the grandmaster and the peer delay. That measures the
   time-sync path, not clock discipline.
 - **Offsets are telemetry.** vxedged's exporter (§12, host-side measurements) serves
-  `vxedge_gptp_offset_ns` and `vxedge_gptp_path_delay_ns` for each follower, with the follower
-  as entity, read from that follower's `ptp4l`. They land in the run's samples beside the
-  latency they help explain. A follower whose `ptp4l` does not answer leaves a `gap`.
-- **Profile.** The 802.1AS settings, with `neighborPropDelayThresh` raised above the standard's
-  800 ns. Software timestamps on a veth put the peer delay close to that limit, and a follower
-  dropped out at the default.
+  `vxedge_gptp_offset_seconds` and `vxedge_gptp_path_delay_seconds` for each follower, with the
+  follower as entity, read from that follower's `ptp4l`. They land in the run's samples beside
+  the latency they help explain. A follower whose `ptp4l` does not answer leaves a `gap`.
+- **Profile.** linuxptp's generic 802.1AS settings, with best-master election, which the
+  gateway wins on `priority1`, and `neighborPropDelayThresh` at 100000 ns instead of the
+  standard's 800 ns. Software timestamps on a veth put the peer delay close to 800 ns, and a
+  follower dropped out at that value. In-vehicle networks fix the roles instead of electing.
 
-**Verified on a veth pair and on a VLAN-aware Linux bridge between network namespaces**,
-outside vxedge, with linuxptp 4.2 and software timestamps:
+**Spiked on a veth pair and on a VLAN-aware Linux bridge between network namespaces**, outside
+vxedge, with linuxptp 4.2 and software timestamps:
 
-- a gateway `ptp4l` on two bridge ports held a follower in each namespace;
-- `taprio` on an uplink, classified by slice VLAN, held each class to its windows.
+- a gateway `ptp4l` on two bridge ports held a follower in each namespace, at a mean offset of
+  0.4 to 0.7 µs;
+- `taprio` on an uplink, classified by slice VLAN, held each class to its windows. With a 100 ms
+  cycle, frames of the class open 10 ms waited up to 88 ms, and frames of the class open 90 ms
+  up to 9.8 ms.
 
 **Typed intent.** A `kind: experiment` can say what it tests and how a result is judged, in
 fields a machine can check before any trial runs. Every block below is optional: an experiment
@@ -1687,12 +1715,12 @@ templating):
   slicing trial, which vxedge reproduces openly in software). Optional radio-channel realism
   via **NVIDIA Sionna** (6G Developer Program); full **Aerial CUDA-Accelerated RAN** is a
   stretch goal requiring specific NVIDIA platforms.
-- **TSN variant (specified, not implemented):** time-aware scheduling as an alternative gateway
+- **TSN variant (planned):** time-aware scheduling as an alternative gateway
   shaping mode, an IEEE 802.1Qbv gate schedule (`taprio`) in place of the HTB tree on the uplink,
   with gPTP time sync (`linuxptp`, IEEE 802.1AS) from the gateway to the devices that follow it
   (`network.shaping`, `network.time_sync`, §6.0.3). It enables HTB-versus-TSN isolation
-  comparisons matching production automotive Ethernet backbones. Under `taprio` the uplink has no
-  line rate, so the comparison is in time, not bandwidth (§6.0.3).
+  comparisons. Under `taprio` the uplink has no line rate, so the comparison is in time, not
+  bandwidth (§6.0.3).
 - **Legacy bus edges (`type: can`, phase 3):** SocketCAN/vcan buses per zone, exposed to guests
   via QEMU CAN controllers and tunneled across the backbone with cannelloni; CAN frames map to
   VSS signals via Kuksa feeders, the zonal-controller CAN-aggregation role that makes the
