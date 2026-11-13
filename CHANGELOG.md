@@ -32,6 +32,10 @@ All notable changes to this repo are documented here. Format follows
   - an `s-nssai` slice, overlapping host-side addresses, a WireGuard listen port, a VXLAN VNI and port pair,
     and an adopted host interface are held by one run per host. A second run declaring one, or asking for a
     held slot, is refused with the new `ERROR_REASON_HELD_BY_RUN`.
+  `network.time_sync` states how it was built: the grandmaster runs as root from the linuxptp image through
+  `sudo -n nsenter` into a rootless container, followers start in a `time-sync` stage, every `ptp4l` path lives
+  under the run's runtime directory, the peer delay is read from `PORT_DATA_SET.peerMeanPathDelay`, and the
+  host check and refusals are listed.
 
 ### Changed
 
