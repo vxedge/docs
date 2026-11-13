@@ -210,6 +210,9 @@ Source: [`vxperiments/results/exp-002b/exp-002b-summary.md`](https://github.com/
 | `h4.failed` | 0 | failed deliveries |
 | `h4.loss` | 0.0 % | packet loss in both arms |
 | `h4.repro_inside` | 3 of 6 | metric/arm pairs of the 2026-10-30 second campaign inside the first campaign's IQR; the verdict held |
+| `h4.probe_build` | debug | build profile of the vxprobe that measured the frozen campaign |
+| `h4.release_p50` | 35.3 µs | ADAS p50 in both arms of the 2026-11-13 rerun with release builds of vxprobe 0.2.3 and vxota 0.1.2, [`exp-003-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-003-repro-2026-11-13/exp-003-summary.md) |
+| `h4.release_delta` | +0.03 µs | 2026-11-13 release rerun: the burst's rise in median p50, against a 1.41 µs threshold; the verdict held |
 
 Per arm.
 Source: [`vxperiments/results/exp-003/exp-003-summary.md`](https://github.com/vxedge/vxperiments/blob/main/results/exp-003/exp-003-summary.md).
