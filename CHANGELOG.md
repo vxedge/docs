@@ -8,6 +8,8 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `FACTS.md` `archives.doi`: the latest archive version is 2026-11-v2 (10.5281/zenodo.24192950), the
+  frozen campaigns in `vxarchive/2` plus the exp-003 release rerun of 2026-11-13.
 - `ARCHITECTURE.md` §6.0.3: a check tool step's `samples` read its output lines as series on
   `checks/<step>`, which metrics and criteria aggregate like a probe's, and what `Plan` refuses
   in them (X9.15).
