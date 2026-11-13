@@ -606,6 +606,13 @@ parts:
     target_ids: hpc1
   - ref: localhost/vxedge/probe:1    # this host's Podman image store; no digest required
     target_ids: zonefr
+  - ref: ghcr.io/vxedge/parts/agent/load/app/dds-perf:0.1.0
+    digest: sha256:…
+    target_ids: hpc1
+    run:                             # optional; how a container payload is started
+      args: [pub, 1000Hz, size, 1k]  # replaces the image's command, not its entrypoint
+      env: { CYCLONEDDS_URI: "<peer list>" }
+      cap_add: [NET_ADMIN]           # NET_ADMIN only
 ```
 
 Each entry carries `ref`, `digest`, `target_ids`, and, only where the reference is silent
@@ -627,6 +634,19 @@ ambiguous, and there `kind` is how the author says so. A stated kind is validate
 baseline pointing an H3 libvirt arm at a container image is rejected with both halves named
 rather than silently accepted and failed at boot. A planned `vxedge manifest bom` (not built) will
 derive them for display, SBOM export and the RxSWIN roll-up.
+
+`run` says how a container payload starts, for a part whose image does nothing useful on its
+image defaults (a load generator needs its mode, a client the address of its server). It is valid
+only on a part a `container` device runs as its payload, a published or `localhost/` container
+image, and refused anywhere else with the entry named. `args` replaces the image's command
+(`CMD`) and keeps its entrypoint, as `podman run <image> <args>` does. `env` adds environment
+variables, strings only. `cap_add` adds Linux capabilities to the payload container, and accepts
+`NET_ADMIN` only, the one a load part needs for its own routes (a multicast route for SOME/IP
+service discovery); anything else is refused. Every target in the entry starts the same way, so
+two roles of one part, a publisher and a subscriber, are two entries. `run` is part of the
+baseline document, so it counts toward the workspace identity and the package digest, and a
+changed argument is a changed input. The archive records it with the rest of the documents. **Specified
+2026-11-13, not implemented in vxedge yet.**
 
 `target_ids` declared once for many components is deliberate: repeating a shared part
 per-component is how fleet baselines silently drift when one copy is bumped and the others are
