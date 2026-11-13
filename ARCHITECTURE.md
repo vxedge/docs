@@ -1809,6 +1809,11 @@ deliberately separate:
   functional evidence only, never timed. Status and `down` are `qemu-microvm`'s (pidfile, and the `vx.node=`
   marker on QEMU's command line). A bundle without its firmware, with no `meta.json`, or naming another board or
   arch is refused at `up`, naming what is supported.
+- **A guest's reflector:** a guest bundle may declare a UDP reflector its guest runs, `"org.vxedge.reflector":
+  "udp/<port>"` in `meta.json`, and a published bundle carries the same key as a manifest annotation. vxedge starts nothing for it; the
+  declaration is what lets a measurement aim at the guest (§6.0.3, "A guest as `to`"). The six vxparts probe
+  guests declare `udp/9800`: the Linux probe bundles for x86_64 and aarch64, the FreeRTOS and Zephyr probe
+  bundles, and the FreeRTOS and Zephyr `mps2` firmware.
 - **CPU pinning:** a device's `realtime.pinned_cpus` keeps the whole node on those CPUs, on every backend that
   can do so. `qemu-microvm`, `qemu-mcu`, `cloud-hypervisor` and `wasm-capsule` start their process under `taskset`, so every
   thread (vCPUs, virtio and VMM workers, the runtime's own) inherits the set. `libvirt` writes `<cputune>` with
