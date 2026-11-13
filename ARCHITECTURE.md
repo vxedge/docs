@@ -1378,7 +1378,10 @@ vendored:                           # documents copied from elsewhere (`pkg vend
 list its own digest. `parts` and `images` record each published reference as the documents pin
 it, read from the documents alone, so `pkg lock` stays offline (decision X-10): the digest already
 fixes the content, and the lock records no media type. A container image named by tag has no
-digest to record, and the entry carries only its `ref`. Local references (`./parts/…`,
+digest to record, and the entry carries only its `ref`. The 5G core, RAN and subscriber
+database are no document's reference: vxedged starts its own digest-pinned images for them
+(§15, containerization policy), and when any slice is `s-nssai` the lock lists those three
+under `images` too, as an archive's `image_digests` records them. Local references (`./parts/…`,
 `local/…`, `localhost/…`) are content in `files`, not references. Because the lock records the
 vxedge version that wrote it, re-locking under another version changes the lock and so the
 package digest; a package is packed from its committed lock, not re-locked per host. `vxp.yaml` and `vxp.lock` are inputs to the workspace identity, nothing
@@ -2212,7 +2215,8 @@ measurement and break comparability with frozen campaigns. Everything else runs
 containerized under **Podman** (daemonless/rootless; OCI images stay Docker-compatible;
 matches the automotive ecosystem, Ankaios, AGL, RH In-Vehicle): the 5G stack (Open5GS
 NFs + UERANSIM + MongoDB as one pod sharing a network namespace, so `FiveGPlan`'s loopback
-addressing is unchanged in or out of the pod, `vxedge/containers/fiveg/`), service images
+addressing is unchanged in or out of the pod; the vxparts parts `gw/5gc/os/open5gs` and
+`gw/ran/os/ueransim`, pinned by digest in vxedged), service images
 (vxota/vxtelemetry), the build/dev toolchain, and phase-2 workloads (CARLA/Autoware/
 DeepStream, already container-first per §10). Image digests are version pins recorded into
 results metadata (§13). Host keeps only: distro-standard kernel tooling, QEMU/libvirt, and
