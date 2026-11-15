@@ -39,6 +39,11 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- `ARCHITECTURE.md` §5.2 and §6.0.5 describe several runs on one host as built on vxedge `main` (Track F): every
+  verb's `RunRef`, the CLI's `--run` and `vxedge runs`, stages that name their slot, one lifecycle operation at
+  a time across the host, the run directory's contents, guests' `vx.slot=`, a campaign's hold on its slot and
+  its queued trials, the exporter's per-run pages, `CollectRequest.instance`, and the OTA host port as a
+  host-wide resource.
 - `TESTBED-SETUP.md` Tier 2 lists the `sch_taprio` kernel module that `network.shaping` needs.
 - `ARCHITECTURE.md` §9 lists the guest bundle's reflector declaration, `org.vxedge.reflector: udp/<port>`, beside
   its other `meta.json` keys, and names the six probe guests that declare `udp/9800`. §6.0.3 still says how a
