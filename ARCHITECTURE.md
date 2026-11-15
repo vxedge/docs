@@ -254,20 +254,28 @@ which stay for people. All of this is additive to `vxedge.v1`:
   and ends when the gateway goes down. A read-only `RunService` (`Get`, `List`) reports runs. Resource
   verbs take an optional `RunRef`; empty means the only run, and a mismatch is refused. The host still
   runs one at a time, so `List` returns zero or one.
-- **Several runs (Track F). Specified 2026-11-13, not implemented in vxedge yet.** The host runs
+- **Several runs (Track F). On vxedge `main` since 2026-11-16, not in a release yet.** The host runs
   several runs at once, each in its own instance slot (§6.0.5), and `List` returns every run. Which
   run a verb acts on:
   - A verb that names a run acts on it. A named run that is not up is refused with
     `ERROR_REASON_NO_ACTIVE_RUN` when nothing is up, and with `ERROR_REASON_RUN_MISMATCH` otherwise.
   - A verb that names no run acts on the run of the workspace it names, and with no workspace
-    either, on the only run on the host. `VehicleDownRequest` and `VehicleStatusRequest` gain a
-    `RunRef run`, so each run of a workspace that runs twice can be addressed.
-  - When that rule matches no run, the verb is refused with `ERROR_REASON_NO_ACTIVE_RUN`. When it
+    either, on the only run on the host. `VehicleDownRequest`, `VehicleStatusRequest`,
+    `GatewayDownRequest`, `GatewayStatusRequest`, `ExperimentDownRequest` and
+    `ExperimentStatusRequest` gain a `RunRef run`, so each run of a workspace that runs twice can be
+    addressed. The CLI takes `--run <run id>` on every verb, and `vxedge runs` lists the runs.
+  - When that rule matches no run, the verb is refused with `ERROR_REASON_NO_ACTIVE_RUN`, including
+    a verb whose workspace has no run while other runs are up: it never acts on another run. When it
     matches more than one, including a bare `up` of a workspace that has two runs, it is refused
     with a new reason, `ERROR_REASON_RUN_AMBIGUOUS`, whose error lists the runs. Nothing is chosen
     silently.
   - `ERROR_REASON_WRONG_WORKSPACE` no longer refuses another workspace's `up` while a run is up:
     that `up` starts a run in another slot. It is kept for a verb whose run and workspace disagree.
+  - The stages a composite verb (`experiment`, `vehicle`, a campaign's trial) sends name their slot,
+    so they never fall back to "the only run".
+  - Lifecycle operations still run one at a time across the host, and an interactive one is refused
+    as `ERROR_REASON_BUSY` while another runs. Runs coexist; their `up` and `down` do not overlap.
+    Concurrent runs are for functional work: a timed campaign still takes the host on its own.
 - **Typed status.** `NodeStatus` carries the zone, role, backend, port, peer, VLAN and payload
   (kind, reference, digest) that `detail` holds as text today. `RESOURCE_STATE_UNPROVISIONED` marks a
   declared device nothing provisions. `observed_unix_ms` says when a status was read, and
@@ -1513,7 +1521,7 @@ how many other devices exist. Two ids that shorten to one name are refused with 
 `vxedge zone list` prints each device's `port=` and `peer=`, so the mapping is always
 answerable without recomputing a hash.
 
-**Instance slots (Track F). Specified 2026-11-13, not implemented in vxedge yet.** Several runs
+**Instance slots (Track F). On vxedge `main` since 2026-11-16, not in a release yet.** Several runs
 share one host, so a name also carries its run's **instance slot** `<s>`: one character from `0`–`9`
 then `a`–`z`, so a host holds at most 36 runs. Every host object a run creates carries its slot:
 
@@ -1524,18 +1532,37 @@ then `a`–`z`, so a host holds at most 36 runs. Every host object a run creates
 | WireGuard and VXLAN tunnels | `vxwg<s>-<stem>`, `vxln<s>-<stem>` |
 | Node netns, container group, VM domain, pidfile, VMM socket | `vx<s>-<node>` |
 | 5G pods | `vx5g<s>`, `vx5g<s>-ran` |
-| Run record | `<runtime-dir>/runs/<s>/` |
+| Check step container | `vx<s>-check-<id>` |
+| Run directory | `<runtime-dir>/runs/<s>/` |
 
 The peer and IFB prefixes shrink to two letters, so a stem keeps today's 11 characters and stays
-the same: `node-cont-01` in slot `0` has `vz0-node-c-32cc` and `vp0-node-c-32cc`. `vxedge zone
-list` prints the run's slot beside each `port=` and `peer=`.
+the same: `node-cont-01` in slot `0` has `vz0-node-c-32cc` and `vp0-node-c-32cc`. A VM guest's
+command line carries `vx.slot=<s>` beside `vx.node=<id>`, and `vxcapsule` takes `--slot <s>`, so a
+guest is found by its node and its slot.
+
+A run's directory holds everything that is the run's own: its record, its manifest, its 5G and
+gPTP config, its check output, its measurement and traffic pidfiles, and its telemetry ingest with
+`collect.log` and `tools.json`. The daemon's socket, audit log and jobs stay at the root.
 
 - **Choosing a slot.** Every verb that starts a run (`VehicleService.Up`, `GatewayService.Up`,
   experiment `up`) takes an optional `instance`. Without it, a workspace with no run takes the
   lowest free slot, and a repeated `up` keeps its run's slot. With it, the run takes that slot,
   so the same workspace can run twice and a script knows its names before it starts. A campaign
   takes its `instance`, or the lowest free slot at start, and keeps that slot for every trial.
-  `Run.instance` reports the slot.
+  `Run.instance` reports the slot, and `campaign.json` records the campaign's.
+- **A campaign holds its slot.** From start to end, so another `up` between two trials skips it
+  and another caller's lifecycle verbs on it are refused with `ERROR_REASON_HELD_BY_RUN`; what its
+  workspace holds host-wide counts as held between trials too. The hold survives a daemon restart,
+  so a retry with the same request id resumes in the same slot, and is released at the end, on
+  failure and on cancel; a hold no retry can resume is released when the daemon starts. A campaign
+  takes no lifecycle claim of its own: each trial's `up` and `down` waits its turn for it, so
+  another run's `up` delays a trial instead of failing it.
+- **Telemetry per run.** The exporter serves each run its own page, `/runs/<s>/metrics`, and a
+  run's host entity scrapes `<addr>/runs/<s>`, so one run's series never reach another's archive;
+  `/metrics` serves the only run. `CollectRequest.instance` names the slot whose ingest to
+  archive (a campaign collects after its trial's run is down); empty means the workspace's live
+  run's, else the slot it last ran in. vxtelemetry records the slot as `metadata.json`'s
+  `instance`.
 - **A run sees only its own slot.** `down` removes only its own slot's objects, and a daemon
   restart restores every run it holds a record for. Another slot's objects are not foreign
   workload (`ERROR_REASON_FOREIGN_WORKLOAD`), and objects that carry no slot still are.
@@ -1546,7 +1573,8 @@ list` prints the run's slot beside each `port=` and `peer=`.
     run's;
   - a WireGuard `listen_port`;
   - a VXLAN `vni` and `dstport` pair;
-  - an adopted `host_interface`, such as the Cuttlefish tap.
+  - an adopted `host_interface`, such as the Cuttlefish tap;
+  - the listen port of a host-process OTA service.
 
   The first run to declare one of these holds it, and a second run that declares it is refused with
   a new reason, `ERROR_REASON_HELD_BY_RUN`, naming the run that holds it. So is a slot that another
