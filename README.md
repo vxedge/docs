@@ -7,7 +7,7 @@ Specification, results and user documentation for vxedge.
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23802762.svg)](https://doi.org/10.5281/zenodo.23802762)
 [![Release](https://img.shields.io/github/v/tag/vxedge/docs?label=release)](https://github.com/vxedge/docs/tags)
 
-vxedge is an open, all-software testbed for mapping 5G network slices onto zonal and central software-defined-vehicle (SDV) E/E architectures on a single machine. Every published number ships with the manifest and image digests that produced it.
+vxedge is a virtual zonal vehicle for OEM and Tier 1 engineers. Software updates, new functions and faults run as packaged experiments on one machine, and every result ships with its digests. 5G network slicing onto zonal and central software-defined-vehicle (SDV) E/E architectures is one family of its measured cases (H1, H2).
 
 **Pre-release (0.x):** the manifest schema and vxAPI may change between minor versions; published results are frozen.
 

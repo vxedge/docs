@@ -1,6 +1,6 @@
 # Testbed setup
 
-Target: the full vxedge testbed, control plane, vxgateway, virtual ECUs, AD workloads,
+Target: the full vxedge virtual vehicle, control plane, vxgateway, virtual ECUs, AD workloads,
 running flawlessly on a single machine. Requirements are tiered by phase so you only
 install what the work in front of you needs. `vxedge doctor --tier N` (delivered
 2026-07-13) verifies tiers 0–3 automatically with actionable fix hints; `--json` for CI.

@@ -37,9 +37,10 @@ vxedge is a research-grade orchestration and experiment platform that evaluates 
 
 ## 1: Executive summary
 
-vxedge is a reproducible, modular framework to define and run SDV experiments that combine zone
-virtual ECUs, central compute, a **software-defined virtual edge gateway** with 5G-style slicing,
-and services (OTA, telemetry). Manifests declare the whole system, up to and including a complete
+vxedge is a virtual vehicle with environmental parity, for packaged, measured SDV experiments: a
+reproducible, modular framework to define and run experiments that combine zone virtual ECUs,
+central compute, a **software-defined virtual edge gateway** with 5G-style slicing, and services
+(OTA, telemetry). Manifests declare the whole system, up to and including a complete
 **software-bootstrapped vehicle** (`vxedge vehicle up`). The Rust CLI orchestrates the lifecycle
 using a simple `up|down` model across all subsystems.
 
