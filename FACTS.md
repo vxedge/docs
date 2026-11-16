@@ -33,7 +33,7 @@ on modelled hardware), **planned**, **caveat** (works, with a stated limit on wh
 |---|---|---|
 | `project.name` | vxedge | — |
 | `project.summary` | A virtual vehicle with environmental parity, for packaged, measured SDV experiments. | The one-line description of vxedge; each README's first paragraph and the website quote it |
-| `project.description` | vxedge is a virtual zonal vehicle for OEM and Tier 1 engineers. Software updates, new functions and faults run as packaged experiments on one machine, and every result ships with its digests. | The short description of vxedge; [`README.md`](README.md) and the [`CITATION.cff`](CITATION.cff) abstract quote it |
+| `project.description` | vxedge is a virtual zonal vehicle for OEM and Tier 1 engineers. Software updates, new functions and faults run as packaged experiments on one machine, and every result ships with its digests. | The short description of vxedge; `README.md` and the [`CITATION.cff`](CITATION.cff) abstract quote it |
 | `project.version` | 0.2.3 | [`CITATION.cff`](CITATION.cff): the citable release that Zenodo archives, not a software version (see Releases) |
 | `project.released` | 2026-10-30 | [`CITATION.cff`](CITATION.cff) |
 | `project.doi` | 10.5281/zenodo.23802762 | [`CITATION.cff`](CITATION.cff): Zenodo concept DOI, resolves to the latest version (0.2.3 is 10.5281/zenodo.23802763) |
