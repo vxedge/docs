@@ -36,6 +36,17 @@ specification**, every other repo's AGENTS.md derives from it and must not contr
 
 ## Rules
 
+- **Branch names use the `vx/` prefix**, for example `vx/tsn-spec`. Never name a branch after a tool or
+  vendor. Delete a branch once its PR is merged.
+- **Merge only after formal checks.** Before a PR is merged: its CI is green on the PR head, and these ran
+  clean locally: `python3 scripts/facts.py check`, `scripts/check-wording.sh`, `scripts/test-check-wording.sh`,
+  `python3 scripts/check-links.py` and `python3 scripts/check-release.py`. Re-read the diff for claims beyond
+  `FACTS.md`, host details and personal or private material. A failing check blocks the merge; never skip,
+  weaken or disable one.
+- **vxedge is described by `project.summary` and `project.description` in `FACTS.md`.** Quote them; do not
+  write another description. `scripts/check-wording.sh` refuses the retired descriptions (vxedge named as a
+  slicing or all-software testbed). 5G slicing is one family of measured cases, and "testbed" alone stays
+  allowed in body text.
 - Any change to manifest schemas, vxAPI surface or CLI command shape MUST be made in
   `ARCHITECTURE.md` first, then propagated to affected repos' AGENTS.md.
 - When a phase gate is reached, update `FACTS.md`, `ROADMAP.md` and `RESULTS.md` here in one change set.

@@ -39,6 +39,13 @@ All notable changes to this repo are documented here. Format follows
 
 ### Changed
 
+- vxedge is described as a virtual vehicle with environmental parity, for packaged, measured SDV experiments;
+  5G slicing is one family of its measured cases. `FACTS.md` registers the wording as `project.summary` and
+  `project.description`. `README.md`, `GETTING-STARTED.md`, `USER-GUIDE.md`, `TESTBED-SETUP.md`,
+  `ARCHITECTURE.md` §1 and the `CITATION.cff` title, abstract and keywords use it. No identifier, schema,
+  result or DOI changes.
+- `scripts/check-wording.sh` refuses the retired descriptions in `*.md`, `*.cff` and `*.drawio`, and
+  `scripts/test-check-wording.sh` (in CI) checks that a planted one fails.
 - `ARCHITECTURE.md` §5.2 and §6.0.5 describe several runs on one host as built on vxedge `main` (Track F): every
   verb's `RunRef`, the CLI's `--run` and `vxedge runs`, stages that name their slot, one lifecycle operation at
   a time across the host, the run directory's contents, guests' `vx.slot=`, a campaign's hold on its slot and

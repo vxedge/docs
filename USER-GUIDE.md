@@ -1,6 +1,6 @@
 # User guide
 
-For SDV / automotive engineers using vxedge as a testbed. Onboarding lives in
+For SDV / automotive engineers running experiments on vxedge. Onboarding lives in
 [GETTING-STARTED.md](GETTING-STARTED.md); the full spec in [ARCHITECTURE.md](ARCHITECTURE.md);
 host requirements in [TESTBED-SETUP.md](TESTBED-SETUP.md); results in [RESULTS.md](RESULTS.md); phase
 status in [ROADMAP.md](ROADMAP.md); acronyms in [ACRONYMS.md](ACRONYMS.md).

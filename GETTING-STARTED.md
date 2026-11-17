@@ -1,7 +1,7 @@
 # Getting started
 
-vxedge is an all-software research platform for mapping 5G network slices onto zonal &
-central SDV (software-defined vehicle) E/E architectures: a virtual edge gateway
+vxedge is a virtual vehicle with environmental parity, for packaged, measured SDV
+(software-defined vehicle) experiments on one machine: a virtual edge gateway
 (`vxgateway`), QEMU/KVM virtual ECUs, containerized AD compute, and a Rust control plane
 (`vxedged`) driven entirely by YAML manifests. Read
 [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full picture; this page gets you from
