@@ -1580,6 +1580,17 @@ gPTP config, its check output, its measurement and traffic pidfiles, and its tel
   crosses it. `up` creates the namespace and moves the peer into it, and a repeated `up` or a daemon
   restart finds it there. `down` stops the namespace's processes first, then deletes the namespace.
 
+  Two things stay in the daemon's own namespace:
+  - an `s-nssai` slice's data-network side: the bridge's own 5G port and the routes to the UE
+    subnets. With one 5G vehicle per host, it cannot clash.
+  - a traffic address the host puts on a device's end (see "Host-wide resources").
+
+  The daemon needs to enter the namespace (`CAP_SYS_ADMIN`), as it already does for a container
+  node. A daemon that cannot is refused at `up` and `Plan` with `ERROR_REASON_HOST_REQUIREMENT_UNMET`
+  when the run has a far side. Processes in `vxh<s>` run as the daemon's user, never as root.
+  Registering the namespace may need `sudo -n ip netns add`, as a node namespace does. When that
+  sudo rule is missing, `up` fails with the same reason, naming the rule.
+
   A far side's address is therefore the run's alone. Two runs may use the same subnets, so two
   copies of one measuring experiment run at once. The host no longer reaches a far side directly:
   scripts enter the namespace with `ip netns exec vxh<s>`, and leak checks list `vxh` names
