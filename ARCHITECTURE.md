@@ -1608,8 +1608,9 @@ gPTP config, its check output, its measurement and traffic pidfiles, and its tel
 - **Host-wide resources.** Some things a manifest names exist once per host, whatever the slot:
   - a `mode: s-nssai` slice, whose 5G attach subnets and UE routes live in the host's tables;
   - a host-side traffic address: a traffic profile whose container device's zone is down puts that
-    end's address on the device's veth peer on the host, in the host's routing table, so its subnet
-    must not overlap another run's;
+    end's address on the device's veth peer on the host, in the host's routing table. `up` brings
+    zones up, so this is checked when the traffic starts: `TrafficService.Up` refuses the profile
+    with `ERROR_REASON_HELD_BY_RUN` when another interface on the host has an address in that /24;
   - a WireGuard `listen_port`;
   - a VXLAN `vni` and `dstport` pair;
   - an adopted `host_interface`, such as the Cuttlefish tap;
