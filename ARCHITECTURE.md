@@ -297,9 +297,10 @@ which stay for people. All of this is additive to `vxedge.v1`:
     - It is best effort: a run that fails does not stop the others. A run whose `down` cannot
       start, such as one whose workspace is gone or was passed inline, still gets a failed child job
       with the refusal's reason, and the parent fails with the first failure's reason.
-    - When a running campaign holds the slot of any run the call would take down, `all` included,
-      the whole call is refused before anything is touched, with `ERROR_REASON_HELD_BY_RUN` naming
-      every such slot and its campaign, as a single run's `down` is refused. Skipping those runs
+    - When a running campaign holds the slot of a named run, or with `all` any slot, even one
+      empty between two trials, the whole call is refused before anything is touched, with
+      `ERROR_REASON_HELD_BY_RUN` naming every such slot and its campaign, as a single run's `down`
+      is refused. Skipping those runs
       would leave the campaign to bring its next trial up after the call reports the host cleared.
       Cancel the campaign (`JobService.Cancel`) or wait for it to end.
   - Only the run a lifecycle operation acts on reads `RESOURCE_STATE_STAGING` in `Get`, `List` and
