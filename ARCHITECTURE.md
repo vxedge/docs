@@ -1593,9 +1593,11 @@ gPTP config, its check output, its measurement and traffic pidfiles, and its tel
   a container device whose zone was down put both of their addresses on the host, so their traffic
   went over loopback and never crossed the slice.
 
-  The daemon needs to enter the namespace (`CAP_SYS_ADMIN`), as it already does for a container
-  node. A daemon that cannot is refused at `up` and `Plan` with `ERROR_REASON_HOST_REQUIREMENT_UNMET`
-  when the run has a far side. Processes in `vxh<s>` run as the daemon's user, never as root.
+  Every `up` enters the namespace, so the daemon needs `CAP_SYS_ADMIN`, as a real `up` already
+  does (`GETTING-STARTED.md`). A daemon without it is refused at `up` and `Plan` with
+  `ERROR_REASON_HOST_REQUIREMENT_UNMET`, before anything is created. Processes in `vxh<s>` run as
+  the daemon's user, never as root, and a failed metrics read inside the namespace is reported, not
+  dropped.
   Registering the namespace may need `sudo -n ip netns add`, as a node namespace does. When that
   sudo rule is missing, `up` fails with the same reason, naming the rule.
 
