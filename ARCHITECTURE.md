@@ -1260,9 +1260,10 @@ measurements:
 - **A probe runs inside its node's network namespace.** `MeasurementService.Start` runs the host's
   `vxprobe` as the sender in the `from` node and as the reflector in the `to` node, for
   `duration_s` (the request's, else `method.duration_s`). For `to: internet` the reflector runs on
-  a VLAN subinterface of the uplink's peer for the slice, at the first host address of the
-  sender's subnet, so the probe crosses the slice's queue on the shared uplink.
-- **`from: host`.** The sender runs in the host's own namespace and reaches the `to` node over the
+  a VLAN subinterface of the uplink's peer for the slice, in the run's uplink-side namespace
+  `vxh<s>` (§6.0.5), at the first host address of the sender's subnet, so the probe crosses the
+  slice's queue on the shared uplink.
+- **`from: host`.** The sender runs on the uplink side, in the run's `vxh<s>`, and reaches the `to` node over the
   slice's VLAN, from the first host address of the `to` node's subnet: the far side a
   `to: internet` probe answers on, used the other way round. `to` is then a device.
 - **A guest as `to`.** A node that boots a guest (`qemu-microvm`, `libvirt`, `cloud-hypervisor`,
@@ -1529,6 +1530,7 @@ then `a`–`z`, so a host holds at most 36 runs. Every host object a run creates
 | Object | Name |
 |---|---|
 | Bridge, uplink, uplink peer | `vxbr<s>`, `vxup<s>`, `vxup<s>p` |
+| Uplink-side namespace (below) | `vxh<s>` |
 | Access port, veth peer, ingress IFB | `vz<s>-<stem>`, `vp<s>-<stem>`, `vi<s>-<stem>` |
 | WireGuard and VXLAN tunnels | `vxwg<s>-<stem>`, `vxln<s>-<stem>` |
 | Node netns, container group, VM domain, pidfile, VMM socket | `vx<s>-<node>` |
@@ -1567,11 +1569,26 @@ gPTP config, its check output, its measurement and traffic pidfiles, and its tel
 - **A run sees only its own slot.** `down` removes only its own slot's objects, and a daemon
   restart restores every run it holds a record for. Another slot's objects are not foreign
   workload (`ERROR_REASON_FOREIGN_WORKLOAD`), and objects that carry no slot still are.
+- **The uplink side is the run's own (Track F). Specified 2026-11-18, not implemented in vxedge
+  yet.** Each run's uplink side lives in a network namespace of its own, `vxh<s>`. It holds:
+  - the uplink peer `vxup<s>p` and its VLAN subinterfaces;
+  - every far side on them: a `to: internet` reflector, a `from: host` sender, and a traffic
+    profile's far side;
+  - the processes that run on those far sides, including the senders' metrics endpoints.
+
+  The uplink `vxup<s>` stays on the bridge, so a slice's queue still shapes everything that
+  crosses it. `up` creates the namespace and moves the peer into it, and a repeated `up` or a daemon
+  restart finds it there. `down` stops the namespace's processes first, then deletes the namespace.
+
+  A far side's address is therefore the run's alone. Two runs may use the same subnets, so two
+  copies of one measuring experiment run at once. The host no longer reaches a far side directly:
+  scripts enter the namespace with `ip netns exec vxh<s>`, and leak checks list `vxh` names
+  too.
 - **Host-wide resources.** Some things a manifest names exist once per host, whatever the slot:
   - a `mode: s-nssai` slice, whose 5G attach subnets and UE routes live in the host's tables;
-  - host-side addresses: a traffic or measurement far side (`vxup<s>p.<vlan>`) and an address on
-    a host-side peer sit in the host's routing table, so their subnets must not overlap another
-    run's;
+  - a host-side traffic address: a traffic profile whose device runs no generator of its own (a
+    VM's tap, or a device whose zone is down) puts that end's address on the host, in the host's
+    routing table, so its subnet must not overlap another run's;
   - a WireGuard `listen_port`;
   - a VXLAN `vni` and `dstport` pair;
   - an adopted `host_interface`, such as the Cuttlefish tap;
@@ -1579,9 +1596,8 @@ gPTP config, its check output, its measurement and traffic pidfiles, and its tel
 
   The first run to declare one of these holds it, and a second run that declares it is refused with
   a new reason, `ERROR_REASON_HELD_BY_RUN`, naming the run that holds it. So is a slot that another
-  run holds. `ERROR_REASON_BUSY` keeps its meaning: another lifecycle operation is running. A later
-  step moves each run's host-side ends into a namespace of its own, so that two copies of one
-  measuring experiment can run at once.
+  run holds. `ERROR_REASON_BUSY` keeps its meaning: another lifecycle operation is running. Far
+  sides are not on this list: they live in the run's `vxh<s>`.
 - **CPU pins are not arbitrated between runs.** Two runs that pin the same CPU share it, and a
   timed run takes the host on its own.
 
