@@ -1594,8 +1594,8 @@ gPTP config, its check output, its measurement and traffic pidfiles, and its tel
   went over loopback and never crossed the slice.
 
   Every `up` enters the namespace, so the daemon needs `CAP_SYS_ADMIN`, as a real `up` already
-  does (`GETTING-STARTED.md`). A daemon without it is refused at `up` and `Plan` with
-  `ERROR_REASON_HOST_REQUIREMENT_UNMET`, before anything is created. Processes in `vxh<s>` run as
+  does (`GETTING-STARTED.md`). Without it, `up` fails with `ERROR_REASON_HOST_REQUIREMENT_UNMET`
+  before it creates anything. Processes in `vxh<s>` run as
   the daemon's user, never as root, and a failed metrics read inside the namespace is reported, not
   dropped.
   Registering the namespace may need `sudo -n ip netns add`, as a node namespace does. When that
