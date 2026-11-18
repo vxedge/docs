@@ -253,9 +253,9 @@ which stay for people. All of this is additive to `vxedge.v1`:
 - **Runs.** A run is one provisioned workspace on the host, identified by a run id and its workspace
   identity (§13). It starts when the gateway comes up, survives a repeated `up` and a daemon restart,
   and ends when the gateway goes down. A read-only `RunService` (`Get`, `List`) reports runs. Resource
-  verbs take an optional `RunRef`; empty means the only run, and a mismatch is refused. The host still
-  runs one at a time, so `List` returns zero or one.
-- **Several runs (Track F). On vxedge `main` since 2026-11-16, not in a release yet.** The host runs
+  verbs take an optional `RunRef`; empty means the only run, and a mismatch is refused. Before vxedge
+  0.31.0 the host ran one at a time, so `List` returned zero or one.
+- **Several runs (Track F). Ships in vxedge 0.31.0, with vxtelemetry 0.11.0.** The host runs
   several runs at once, each in its own instance slot (§6.0.5), and `List` returns every run. Which
   run a verb acts on:
   - A verb that names a run acts on it. A named run that is not up is refused with
@@ -1522,7 +1522,7 @@ how many other devices exist. Two ids that shorten to one name are refused with 
 `vxedge zone list` prints each device's `port=` and `peer=`, so the mapping is always
 answerable without recomputing a hash.
 
-**Instance slots (Track F). On vxedge `main` since 2026-11-16, not in a release yet.** Several runs
+**Instance slots (Track F). Ships in vxedge 0.31.0.** Several runs
 share one host, so a name also carries its run's **instance slot** `<s>`: one character from `0`–`9`
 then `a`–`z`, so a host holds at most 36 runs. Every host object a run creates carries its slot:
 
