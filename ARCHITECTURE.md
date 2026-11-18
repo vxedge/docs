@@ -230,7 +230,7 @@ Source: [`diagrams/layers.py`](diagrams/layers.py).*
 | `EventService` | `Subscribe` (state transitions, audit events; resumable with `after_id`) |
 | `TelemetryService` | `Collect` (archive job), `StreamRecords` (live records, resumable with `after`), `StreamMetrics` (live samples) |
 | `LogService` | `Follow` (live log lines per entity and stream, resumable with `after`) |
-| `RunService` | `Get`, `List` |
+| `RunService` | `Get`, `List`, `Status` (every run's status in one call), `Down` (several runs, or every run, as one job) |
 | `WorkspaceService` | `Plan` |
 | `HostService` | `Capabilities` |
 
@@ -277,6 +277,36 @@ which stay for people. All of this is additive to `vxedge.v1`:
   - Lifecycle operations still run one at a time across the host, and an interactive one is refused
     as `ERROR_REASON_BUSY` while another runs. Runs coexist; their `up` and `down` do not overlap.
     Concurrent runs are for functional work: a timed campaign still takes the host on its own.
+- **The fleet view (Track F). Specified 2026-11-18, not implemented in vxedge yet.** `RunService`
+  gains two RPCs, so an agent reads and clears every run on the host in one call:
+  - **`Status`** (`RunStatusRequest { repeated RunRef runs }`) returns a `RunStatus` per run, every
+    run when `runs` is empty. A `RunStatus` holds the `Run`, its rollup `status`, its `components`,
+    its `gateway` and its typed `nodes`: what `VehicleStatus` or `ExperimentStatus` holds for that
+    run, read once. A status reports absence rather than refuse: a named run that is not up, and a
+    run whose status cannot be read, get an entry with `error_reason` (`ERROR_REASON_NO_ACTIVE_RUN`,
+    `ERROR_REASON_RUN_MISMATCH`, or the read's own reason) and `error_message`, and no status. The
+    call still answers for every other run, so a fleet poll does not break when one run goes down.
+  - **`Down`** (`RunDownRequest { repeated RunRef runs; bool all }`) takes the named runs down, or
+    every run with `all`. Exactly one of the two is set, or the call is refused with
+    `ERROR_REASON_INVALID_REQUEST`. `all` with nothing up succeeds and does nothing. A named run
+    that is not up is refused as any verb's is.
+    - It is one lifecycle operation, `run.down`, refused as `ERROR_REASON_BUSY` while another runs.
+      It takes the runs down one after another, each with its kind's `down` (`experiment.down`,
+      `vehicle.down`) from the workspace the run recorded, as a child job carrying the run's
+      `run_id`. `JobService.List` with the parent's id gives each run's outcome.
+    - It is best effort: a run that fails does not stop the others. A run whose `down` cannot
+      start, such as one whose workspace is gone or was passed inline, still gets a failed child job
+      with the refusal's reason, and the parent fails with the first failure's reason.
+    - When a running campaign holds the slot of a named run, or with `all` any slot, even one
+      empty between two trials, the whole call is refused before anything is touched, with
+      `ERROR_REASON_HELD_BY_RUN` naming every such slot and its campaign, as a single run's `down`
+      is refused. Skipping those runs
+      would leave the campaign to bring its next trial up after the call reports the host cleared.
+      Cancel the campaign (`JobService.Cancel`) or wait for it to end.
+  - Only the run a lifecycle operation acts on reads `RESOURCE_STATE_STAGING` in `Get`, `List` and
+    `Status`; the other runs are observed as usual. An operation that names no single run, such as
+    `run.down`, makes every run read `STAGING` while it runs.
+  - The CLI adds `vxedge runs status [RUN…]` and `vxedge runs down (--all | RUN…)`.
 - **Typed status.** `NodeStatus` carries the zone, role, backend, port, peer, VLAN and payload
   (kind, reference, digest) that `detail` holds as text today. `RESOURCE_STATE_UNPROVISIONED` marks a
   declared device nothing provisions. `observed_unix_ms` says when a status was read, and

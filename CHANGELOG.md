@@ -8,6 +8,10 @@ All notable changes to this repo are documented here. Format follows
 
 ### Added
 
+- `ARCHITECTURE.md` §5 specifies the fleet view, which is not implemented yet: `RunService.Status` returns every
+  run's status in one call, with a typed per-run error for a run that is not up or cannot be read, and
+  `RunService.Down` takes several runs, or every run, down as one job with a child job per run. A slot a running
+  campaign holds refuses the whole call. The CLI adds `vxedge runs status` and `vxedge runs down`.
 - `ARCHITECTURE.md` §6.0.5 specifies a run's uplink-side namespace, `vxh<s>`, which ships in vxedge 0.32.0.
   - It holds the uplink peer, its VLAN subinterfaces, the far sides on them and their processes, so two runs may
     use the same far-side subnets. A far side leaves the host-wide list.
