@@ -1583,7 +1583,15 @@ gPTP config, its check output, its measurement and traffic pidfiles, and its tel
   Two things stay in the daemon's own namespace:
   - an `s-nssai` slice's data-network side: the bridge's own 5G port and the routes to the UE
     subnets. With one 5G vehicle per host, it cannot clash.
-  - a traffic address the host puts on a device's end (see "Host-wide resources").
+  - a traffic address the host puts on a container device's veth peer while its zone is down (see
+    "Host-wide resources"). Its traffic leaves through that veth and crosses the bridge, the access
+    port and the uplink to the far side in `vxh<s>`.
+
+  A traffic profile whose end is a VM's tap is refused at `Plan` and `up` with
+  `ERROR_REASON_WORKSPACE_INVALID`. A tap is the bridge port itself, so an address on it would send
+  into the guest, and vxedge runs no generator inside a guest. Until this change, such a profile and
+  a container device whose zone was down put both of their addresses on the host, so their traffic
+  went over loopback and never crossed the slice.
 
   The daemon needs to enter the namespace (`CAP_SYS_ADMIN`), as it already does for a container
   node. A daemon that cannot is refused at `up` and `Plan` with `ERROR_REASON_HOST_REQUIREMENT_UNMET`
@@ -1597,9 +1605,9 @@ gPTP config, its check output, its measurement and traffic pidfiles, and its tel
   too.
 - **Host-wide resources.** Some things a manifest names exist once per host, whatever the slot:
   - a `mode: s-nssai` slice, whose 5G attach subnets and UE routes live in the host's tables;
-  - a host-side traffic address: a traffic profile whose device runs no generator of its own (a
-    VM's tap, or a device whose zone is down) puts that end's address on the host, in the host's
-    routing table, so its subnet must not overlap another run's;
+  - a host-side traffic address: a traffic profile whose container device's zone is down puts that
+    end's address on the device's veth peer on the host, in the host's routing table, so its subnet
+    must not overlap another run's;
   - a WireGuard `listen_port`;
   - a VXLAN `vni` and `dstport` pair;
   - an adopted `host_interface`, such as the Cuttlefish tap;
