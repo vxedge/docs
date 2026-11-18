@@ -304,7 +304,8 @@ which stay for people. All of this is additive to `vxedge.v1`:
       would leave the campaign to bring its next trial up after the call reports the host cleared.
       Cancel the campaign (`JobService.Cancel`) or wait for it to end.
   - Only the run a lifecycle operation acts on reads `RESOURCE_STATE_STAGING` in `Get`, `List` and
-    `Status`; the other runs are observed as usual.
+    `Status`; the other runs are observed as usual. An operation that names no single run, such as
+    `run.down`, makes every run read `STAGING` while it runs.
   - The CLI adds `vxedge runs status [RUN…]` and `vxedge runs down (--all | RUN…)`.
 - **Typed status.** `NodeStatus` carries the zone, role, backend, port, peer, VLAN and payload
   (kind, reference, digest) that `detail` holds as text today. `RESOURCE_STATE_UNPROVISIONED` marks a
