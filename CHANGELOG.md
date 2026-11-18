@@ -8,13 +8,14 @@ All notable changes to this repo are documented here. Format follows
 
 ### Added
 
-- `ARCHITECTURE.md` §6.0.5 specifies a run's uplink-side namespace, `vxh<s>`, which is not implemented yet.
+- `ARCHITECTURE.md` §6.0.5 specifies a run's uplink-side namespace, `vxh<s>`, which ships in vxedge 0.32.0.
   - It holds the uplink peer, its VLAN subinterfaces, the far sides on them and their processes, so two runs may
     use the same far-side subnets. A far side leaves the host-wide list.
   - A traffic profile whose end is a VM's tap is refused.
   - A container device whose zone is down keeps its traffic address on the host. That address is checked when its
     traffic starts.
   - §6.0.3's `to: internet` reflector and `from: host` sender run in that namespace.
+  - `experiment down` and `vehicle down` stop every running measurement and traffic profile before the nodes.
 - `ARCHITECTURE.md` §6.0.3 and §7 specify the TSN variant of the gateway, which is not implemented yet:
   - `network.shaping` (`kind: gate-schedule`) puts an IEEE 802.1Qbv gate schedule on the uplink in place of
     the HTB tree, with one class per slice, classified by VLAN;

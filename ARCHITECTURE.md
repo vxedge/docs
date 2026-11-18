@@ -1315,7 +1315,8 @@ measurements:
 
   A device that is not one of the vehicles' is a workspace error.
 - **`Stop`** ends a measurement's processes and removes a far-side interface no other measurement
-  or running profile uses. `experiment down` stops every running measurement before it takes the nodes down.
+  or running profile uses. `experiment down` and `vehicle down` stop every running measurement and
+  traffic profile before they take the nodes down.
 
 **Functional checks.** Some experiments are suites, not measurements: exp-015 and exp-017 judge
 whether a Kuksa databroker does what `kuksa.val.v2` documents, with a client that prints one JSON
@@ -1569,8 +1570,7 @@ gPTP config, its check output, its measurement and traffic pidfiles, and its tel
 - **A run sees only its own slot.** `down` removes only its own slot's objects, and a daemon
   restart restores every run it holds a record for. Another slot's objects are not foreign
   workload (`ERROR_REASON_FOREIGN_WORKLOAD`), and objects that carry no slot still are.
-- **The uplink side is the run's own (Track F). Specified 2026-11-18, not implemented in vxedge
-  yet.** Each run's uplink side lives in a network namespace of its own, `vxh<s>`. It holds:
+- **The uplink side is the run's own (Track F). Ships in vxedge 0.32.0.** Each run's uplink side lives in a network namespace of its own, `vxh<s>`. It holds:
   - the uplink peer `vxup<s>p` and its VLAN subinterfaces;
   - every far side on them: a `to: internet` reflector, a `from: host` sender, and a traffic
     profile's far side;
