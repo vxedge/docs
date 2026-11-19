@@ -2131,8 +2131,10 @@ deliberately separate:
   modem) and cannot boot on a bare VMM, as a production AAOS guest needs its hypervisor vendor's board support.
   vxedge does not rebuild that stack. The device's part is an adapter directory (`kind: attach`, local) whose
   `attach.yaml` declares the network `interface` the platform creates, `start`, `status` and `stop` commands,
-  and a `start_timeout_s`; the commands run through `sh -c` in that directory with `VX_NODE`, `VX_IP`,
-  `VX_INTERFACE` and `VX_RUNTIME_DIR` set. A command names its interpreter (`sh start.sh`), because a package
+  and a `start_timeout_s`; the commands run through `sh -c` in that directory with `VX_NODE`, `VX_SLOT`, `VX_IP`,
+  `VX_INTERFACE` and `VX_RUNTIME_DIR` set. `VX_SLOT` is the run's slot (§6.0.5): a platform whose guest carries the
+  `vx.node=` marker carries `vx.slot=` beside it, since the host scan reads a guest with no slot as no run's and
+  refuses every other run's `up` while it runs. A command names its interpreter (`sh start.sh`), because a package
   keeps no file modes and an adapter's scripts arrive without the execute bit. The device's link endpoint names the same interface as `host_interface`, so the gateway
   plan stays a pure function of the documents. The gateway **adopts** the interface instead of creating a port: it records its current master, enslaves it to the slice bridge with the
   slice VLAN, and returns it to that master at `down`. vxedge owns what the vehicle provides in production, the
