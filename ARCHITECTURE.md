@@ -255,6 +255,21 @@ which stay for people. All of this is additive to `vxedge.v1`:
   and ends when the gateway goes down. A read-only `RunService` (`Get`, `List`) reports runs. Resource
   verbs take an optional `RunRef`; empty means the only run, and a mismatch is refused. Before vxedge
   0.31.0 the host ran one at a time, so `List` returned zero or one.
+- **A run is read from its record (X0.8). Ships in vxedge 0.34.0.** `up` writes the manifest it
+  provisioned to the run's directory, `runs/<s>/manifest.yaml`, beside `active.json`, and fails
+  rather than run without it. For a bare vehicle that is the experiment synthesized from it, and
+  `active.json` records the vehicle's id. `down`, status, `RunService.Status` and `.Down`, and a
+  restarted daemon read the run from that record, never from its workspace again:
+  - A workspace edited since `up` comes down as what is running, not as the edited file. A moved
+    or deleted workspace, and an inline manifest, come down by run id or through `RunService.Down`.
+    `ERROR_REASON_WORKSPACE_CHANGED` is no longer returned.
+  - With no run named, the `manifest` on a `down` or status picks the run. It must still resolve,
+    and an inline one must declare that run's workspace, or the verb is refused with
+    `ERROR_REASON_WRONG_WORKSPACE`: a mistyped path never takes down the one run up.
+  - A run whose manifest was not recorded refuses its `down` with `ERROR_REASON_WORKSPACE_INVALID`.
+  - The experiment verbs refuse a bare vehicle's run, and the vehicle verbs an experiment's, with
+    `ERROR_REASON_WRONG_WORKSPACE`.
+  - `down` removes the manifest after `active.json` and leaves a campaign's `reserved.json` alone.
 - **Several runs (Track F). Ships in vxedge 0.31.0, with vxtelemetry 0.11.0.** The host runs
   several runs at once, each in its own instance slot (§6.0.5), and `List` returns every run. Which
   run a verb acts on:
@@ -277,7 +292,7 @@ which stay for people. All of this is additive to `vxedge.v1`:
   - Lifecycle operations still run one at a time across the host, and an interactive one is refused
     as `ERROR_REASON_BUSY` while another runs. Runs coexist; their `up` and `down` do not overlap.
     Concurrent runs are for functional work: a timed campaign still takes the host on its own.
-- **The fleet view (Track F). Specified 2026-11-18, not implemented in vxedge yet.** `RunService`
+- **The fleet view (Track F). Ships in vxedge 0.33.0, with vxmcp 0.7.0.** `RunService`
   gains two RPCs, so an agent reads and clears every run on the host in one call:
   - **`Status`** (`RunStatusRequest { repeated RunRef runs }`) returns a `RunStatus` per run, every
     run when `runs` is empty. A `RunStatus` holds the `Run`, its rollup `status`, its `components`,
@@ -292,10 +307,10 @@ which stay for people. All of this is additive to `vxedge.v1`:
     that is not up is refused as any verb's is.
     - It is one lifecycle operation, `run.down`, refused as `ERROR_REASON_BUSY` while another runs.
       It takes the runs down one after another, each with its kind's `down` (`experiment.down`,
-      `vehicle.down`) from the workspace the run recorded, as a child job carrying the run's
+      `vehicle.down`) from the manifest the run recorded, as a child job carrying the run's
       `run_id`. `JobService.List` with the parent's id gives each run's outcome.
     - It is best effort: a run that fails does not stop the others. A run whose `down` cannot
-      start, such as one whose workspace is gone or was passed inline, still gets a failed child job
+      start, such as one whose manifest was not recorded, still gets a failed child job
       with the refusal's reason, and the parent fails with the first failure's reason.
     - When a running campaign holds the slot of a named run, or with `all` any slot, even one
       empty between two trials, the whole call is refused before anything is touched, with
