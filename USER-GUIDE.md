@@ -106,9 +106,12 @@ the end of this section.
   node's `--vxid`, or `--run <run id>` when the host runs several.
 - Every tool that talks to the daemon finds it through `--endpoint`, or `VXEDGE_ENDPOINT`, and
   otherwise uses `unix:///run/vxedge.sock`.
+- A command that checks a file or folder, such as `manifest validate`, takes its path as an
+  argument, and defaults to the working directory.
 
 **Output.** With `--json`, stdout carries only JSON: one document, or one JSON object per line
-for a command that follows a job or a stream. Progress, warnings, errors and logs go to stderr.
+for a command that follows a job or a stream. Progress, warnings, errors and logs go to stderr. An error also prints
+`{"error": {"message": …, "reason": …}}` on stdout, so a caller reading JSON sees it.
 Without `--json`, the output is for people and may change between releases, so scripts use
 `--json`.
 
@@ -117,7 +120,7 @@ Without `--json`, the output is for people and may change between releases, so s
 | Code | Meaning |
 |---|---|
 | 0 | The command succeeded and, where it judges something, every criterion or check passed |
-| 1 | The command ran, and a criterion or check failed. The output says which |
+| 1 | The command ran, and a criterion or check failed or was inconclusive. The output says which |
 | 2 | Usage error: an unknown command or flag, or a missing or invalid argument |
 | 3 | The tool, the daemon or the host failed: the daemon is unreachable, a job failed for a host reason, a file cannot be read |
 
@@ -131,10 +134,11 @@ name and version and exits 0.
 **Where the tools differ today.** The main known differences:
 
 - `vxedge`:
-  - a verdict or comparison that fails still exits 0: `campaign verdict`, `campaign compare`,
+  - a verdict or comparison that fails or is inconclusive still exits 0: `campaign verdict`, `campaign compare`,
     `results verdict` and `results compare`. Read the `outcome` field of their `--json` output.
     `campaign start` exits 0 whenever every trial ran, whatever the verdict;
-  - every error exits 1, including an unreachable daemon and a failed job;
+  - every error exits 1, including an unreachable daemon and a failed job, and an error under
+    `--json` prints no JSON;
   - `zone` and `compute` `add`, `rm` and `image push` are listed in help but not built. They print
     a notice and exit 0, and will be removed;
   - several subcommands and flags have no description in help;
@@ -142,7 +146,8 @@ name and version and exits 0.
     without the `--manifest` they need today.
 - `vxedge` target naming: the gateway verbs `up` and `down`, and `vehicle`, `traffic`,
   `telemetry collect` and `manifest validate`, take `--manifest`; `ota`, `telemetry up` and
-  `down`, `nos-check` and `results` take `--experiment`.
+  `down`, `nos-check` and `results` take `--experiment`; `manifest validate` takes its path
+  through `--manifest`, not as an argument.
 - `vxedged` and `vxcapsule` have no `--version`. `vxmcp` has no `--help`, ignores unknown
   arguments, and exits 1 on every failure.
 - The measurement, OTA, telemetry, model and VHAL tools have no `--json` flag. `vxprobe`,
