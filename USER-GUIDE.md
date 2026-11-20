@@ -95,8 +95,8 @@ Global flags: `--endpoint` (default local Unix socket, or `VXEDGE_ENDPOINT`), `-
 ### The command-line contract
 
 Every vxedge command-line tool is meant to follow these rules, so a script or an agent can drive
-one the same way as another. Where a tool does not follow a rule yet, the list at the end of this
-section says so. Each of those is a bug with an issue.
+one the same way as another. Not every tool follows them yet: the main differences are listed at
+the end of this section.
 
 **Naming the target.**
 
@@ -109,7 +109,8 @@ section says so. Each of those is a bug with an issue.
 
 **Output.** With `--json`, stdout carries only JSON: one document, or one JSON object per line
 for a command that follows a job or a stream. Progress, warnings, errors and logs go to stderr.
-Without `--json`, the human-readable result goes to stdout and the rest to stderr.
+Without `--json`, the output is for people and may change between releases, so scripts use
+`--json`.
 
 **Exit codes.**
 
@@ -127,9 +128,9 @@ and 3 when vxedge or the host failed.
 real one. Help lists no command or flag that does not work yet. `--version` prints the tool's
 name and version and exits 0.
 
-**Where the tools differ today.**
+**Where the tools differ today.** The main known differences:
 
-- `vxedge` ([vxedge#215](https://github.com/vxedge/vxedge/issues/215)):
+- `vxedge`:
   - a verdict or comparison that fails still exits 0: `campaign verdict`, `campaign compare`,
     `results verdict` and `results compare`. Read the `outcome` field of their `--json` output.
     `campaign start` exits 0 whenever every trial ran, whatever the verdict;
@@ -139,21 +140,24 @@ name and version and exits 0.
   - several subcommands and flags have no description in help;
   - the `scripts/run.sh` that `experiment new` writes calls `traffic up` and `traffic down`
     without the `--manifest` they need today.
-- `vxedge` target naming ([vxedge#216](https://github.com/vxedge/vxedge/issues/216)): the gateway
-  verbs `up`, `down` and `status`, and `vehicle`, `traffic`, `telemetry collect` and
-  `manifest validate`, take `--manifest`; `ota`, `telemetry up` and `down`, `nos-check` and
-  `results` take `--experiment`.
-- `vxedged` has no `--version`. `vxmcp` has no `--help`, ignores unknown arguments, and exits 1 on
-  every failure ([vxmcp#59](https://github.com/vxedge/vxmcp/issues/59)).
+- `vxedge` target naming: the gateway verbs `up` and `down`, and `vehicle`, `traffic`,
+  `telemetry collect` and `manifest validate`, take `--manifest`; `ota`, `telemetry up` and
+  `down`, `nos-check` and `results` take `--experiment`.
+- `vxedged` and `vxcapsule` have no `--version`. `vxmcp` has no `--help`, ignores unknown
+  arguments, and exits 1 on every failure.
 - The measurement, OTA, telemetry, model and VHAL tools have no `--json` flag. `vxprobe`,
   `vxtraffic`, `vxota-probe` and `vxtelemetry` always print JSON, while `vxota` and `vxvhal` write
-  their logs to stdout. None of them exits 3 on a host failure, and `vxtelemetry verify` uses 3 for
-  an identity it cannot check
-  ([vxagents#28](https://github.com/vxedge/vxagents/issues/28),
-  [vxtelemetry#57](https://github.com/vxedge/vxtelemetry/issues/57),
-  [vxota#23](https://github.com/vxedge/vxota/issues/23),
-  [vxmodels#15](https://github.com/vxedge/vxmodels/issues/15),
-  [vxvhal#7](https://github.com/vxedge/vxvhal/issues/7)).
+  their logs to stdout. None of them exits 3 on a host failure, `vxtelemetry verify` uses 3 for an
+  identity it cannot check, and `vxmodel` exits 1 on a usage error.
+
+The work to close these is planned in [vxedge#215](https://github.com/vxedge/vxedge/issues/215)
+(`vxedge` exit codes and help), [vxedge#216](https://github.com/vxedge/vxedge/issues/216) (naming
+the target), and each tool's own issue:
+[vxagents#28](https://github.com/vxedge/vxagents/issues/28),
+[vxtelemetry#57](https://github.com/vxedge/vxtelemetry/issues/57),
+[vxota#23](https://github.com/vxedge/vxota/issues/23),
+[vxmodels#15](https://github.com/vxedge/vxmodels/issues/15) and
+[vxvhal#7](https://github.com/vxedge/vxvhal/issues/7).
 
 ## 3. Typical workflows
 
