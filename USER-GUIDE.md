@@ -86,9 +86,83 @@ All lifecycle verbs follow `up|down[|status]`; operations are idempotent.
 | `vxedge traffic up\|down --manifest …` | live | drives the declared profiles; kept separate from `experiment up` because load is time-bounded and a campaign sweeps it over a fixed topology. A profile whose source node's zone is up runs inside that node: the load or probe starts in the node's network namespace from its pinned address, to a target node or to the far side of the uplink. A profile whose source is not a node needs host-side traffic, `experiment up --stage gateway`, and is refused otherwise |
 | `vxedge measure start\|stop\|status` | live | runs the experiment's declared `measurements` (`rtt-probe`) in the workspace of the **current directory**, once the experiment is up: the daemon starts `vxprobe` inside each end's network namespace, or on the far side of the uplink for `to: internet`. `--id` (repeatable) selects measurements, and `--duration-s` overrides `method.duration_s`. Samples reach the ingest as `measurements/<id>`. A VM or attached end is refused by `Plan` with `ERROR_REASON_MEASUREMENT_INVALID` |
 | `vxedge campaign plan\|start\|status\|verdict\|compare` | live | the experiment's campaign in the workspace of the **current directory**: `plan` lists the trials (every sweep point and every arm) with their windows and any problem, `start` runs them one after another as a `campaign.run` job and follows it (`--profile`, `--request-id` to resume, `--unlocked`), `status [<campaign id>]` shows each trial's state, phase and archive and the recorded verdict, and `verdict <campaign id>` judges the experiment's criteria over the campaign's archives (`ResultService.Verdict`), criterion by criterion. `compare <campaign id> <reference id>` sets each metric's median at each point against the reference's median and IQR, and each criterion's outcome against the reference's (`ResultService.Compare`). A campaign needs the experiment's own telemetry service; its archives and `campaign.json` go to `results/<campaign id>/` |
-| Runs, planning, host capabilities, job list and cancel, traffic status | live in vxAPI, CLI planned | `RunService`, `WorkspaceService.Plan`, `HostService.Capabilities`, `JobService.List`/`Cancel` and `TrafficService.Status` have no CLI verb yet. Agents reach them through [`vxmcp`](https://github.com/vxedge/vxmcp) (`run_list`, `workspace_plan`, `host_capabilities`, `job_list`, `job_cancel`, `traffic_status`) |
+| `vxedge runs [status\|down]` | live | lists the runs on this host, each with its instance slot and run id; `runs status` and `runs down` (`--all`) act on several runs at once |
+| One run by id, planning, host capabilities, job list and cancel, traffic status | live in vxAPI, CLI planned | `RunService.Get`, `WorkspaceService.Plan`, `HostService.Capabilities`, `JobService.List`/`Cancel` and `TrafficService.Status` have no CLI verb yet. Agents reach them through [`vxmcp`](https://github.com/vxedge/vxmcp) (`run_get`, `workspace_plan`, `host_capabilities`, `job_list`, `job_cancel`, `traffic_status`) |
 
-Global flags: `--endpoint` (default local Unix socket), `--json`.
+Global flags: `--endpoint` (default local Unix socket, or `VXEDGE_ENDPOINT`), `--json`, `--chdir`,
+`--run`.
+
+### The command-line contract
+
+Every vxedge command-line tool is meant to follow these rules, so a script or an agent can drive
+one the same way as another. Not every tool follows them yet: the main differences are listed at
+the end of this section.
+
+**Naming the target.**
+
+- A command that acts on a workspace, an experiment or vehicle package, takes it from the working
+  directory. `--chdir <dir>` runs the command as if it were started in `<dir>`.
+- A command that acts on something the daemon already holds names it by id: a campaign id, a
+  node's `--vxid`, or `--run <run id>` when the host runs several.
+- Every tool that talks to the daemon finds it through `--endpoint`, or `VXEDGE_ENDPOINT`, and
+  otherwise uses `unix:///run/vxedge.sock`.
+- A command that checks a file or folder, such as `manifest validate`, takes its path as an
+  argument, and defaults to the working directory.
+
+**Output.** With `--json`, stdout carries only JSON: one document, or one JSON object per line
+for a command that follows a job or a stream. Progress, warnings, errors and logs go to stderr. An error also prints
+`{"error": {"message": …, "reason": …}}` on stdout, so a caller reading JSON sees it.
+Without `--json`, the output is for people and may change between releases, so scripts use
+`--json`.
+
+**Exit codes.**
+
+| Code | Meaning |
+|---|---|
+| 0 | The command succeeded and, where it judges something, every criterion or check passed |
+| 1 | The command ran, and a criterion or check failed or was inconclusive. The output says which |
+| 2 | Usage error: an unknown command or flag, or a missing or invalid argument |
+| 3 | The tool, the daemon or the host failed: the daemon is unreachable, a job failed for a host reason, a file cannot be read |
+
+`campaign start` follows the campaign to its end and exits 1 when the campaign's verdict failed,
+and 3 when vxedge or the host failed.
+
+**Help.** Every command, flag and argument has a description. A default shown in help is the
+real one. Help lists no command or flag that does not work yet. `--version` prints the tool's
+name and version and exits 0.
+
+**Where the tools differ today.** The main known differences:
+
+- `vxedge`:
+  - a verdict or comparison that fails or is inconclusive still exits 0: `campaign verdict`, `campaign compare`,
+    `results verdict` and `results compare`. Read the `outcome` field of their `--json` output.
+    `campaign start` exits 0 whenever every trial ran, whatever the verdict;
+  - every error exits 1, including an unreachable daemon and a failed job, and an error under
+    `--json` prints no JSON;
+  - `zone` and `compute` `add`, `rm` and `image push` are listed in help but not built. They print
+    a notice and exit 0, and will be removed;
+  - several subcommands and flags have no description in help;
+  - the `scripts/run.sh` that `experiment new` writes calls `traffic up` and `traffic down`
+    without the `--manifest` they need today.
+- `vxedge` target naming: the gateway verbs `up` and `down`, and `vehicle`, `traffic`,
+  `telemetry collect` and `manifest validate`, take `--manifest`; `ota`, `telemetry up` and
+  `down`, `nos-check` and `results` take `--experiment`; `manifest validate` takes its path
+  through `--manifest`, not as an argument.
+- `vxedged` and `vxcapsule` have no `--version`. `vxmcp` has no `--help`, ignores unknown
+  arguments, and exits 1 on every failure.
+- The measurement, OTA, telemetry, model and VHAL tools have no `--json` flag. `vxprobe`,
+  `vxtraffic`, `vxota-probe` and `vxtelemetry` always print JSON, while `vxota` and `vxvhal` write
+  their logs to stdout. None of them exits 3 on a host failure, `vxtelemetry verify` uses 3 for an
+  identity it cannot check, and `vxmodel` exits 1 on a usage error.
+
+The work to close these is planned in [vxedge#215](https://github.com/vxedge/vxedge/issues/215)
+(`vxedge` exit codes and help), [vxedge#216](https://github.com/vxedge/vxedge/issues/216) (naming
+the target), and each tool's own issue:
+[vxagents#28](https://github.com/vxedge/vxagents/issues/28),
+[vxtelemetry#57](https://github.com/vxedge/vxtelemetry/issues/57),
+[vxota#23](https://github.com/vxedge/vxota/issues/23),
+[vxmodels#15](https://github.com/vxedge/vxmodels/issues/15) and
+[vxvhal#7](https://github.com/vxedge/vxvhal/issues/7).
 
 ## 3. Typical workflows
 
