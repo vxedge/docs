@@ -2119,7 +2119,14 @@ deliberately separate:
   (`"virtio_mmio": "legacy"` for version 1; the default is the modern version 2). It may size its guest, `cpus`
   (default 1, at most 16, and no more than a pinned node's pinned CPUs) and `memory_mb` (default 128 MiB on x86_64,
   256 MiB on aarch64), and an aarch64 bundle with `"virtualization": true` gets the CPU's virtualization
-  extensions, the `virt` machine at EL2 with GICv3, for a guest that is itself a hypervisor. KVM runs a guest only on a host of the guest's own instruction set;
+  extensions, the `virt` machine at EL2 with GICv3, for a guest that is itself a hypervisor. A bundle may carry its
+  guest's whole system as a root disk, `rootfs.img` (a raw image), beside `vmlinuz`, in place of `initrd.img` or with
+  it. **Specified 2026-11-21, not implemented in vxedge yet.** qemu-microvm boots the disk as `/dev/vda`, as a
+  snapshot: the guest's writes go to an overlay QEMU drops when it exits, so the image stays as its checksum says and
+  every boot starts from it. A distribution's own init reads no `vx.ip=`, so the guest also gets its address from
+  the kernel's `ip=`, on `eth0` with `net.ifnames=0`, and no gateway; the `vx.` markers stay on the command line.
+  libvirt and cloud-hypervisor boot a kernel and an initramfs only, and refuse a bundle with a root disk.
+  KVM runs a guest only on a host of the guest's own instruction set;
   anywhere else QEMU emulates the CPU (TCG). `NodeStatus.arch` and `NodeStatus.acceleration` (`kvm` or `tcg`)
   report what the running guest actually got, read from its emulator, and a result names both: a `tcg`
   result is functional evidence only and is never timed.

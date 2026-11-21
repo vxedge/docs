@@ -8,6 +8,9 @@ All notable changes to this repo are documented here. Format follows
 
 ### Added
 
+- `ARCHITECTURE.md` §9 specifies a VM bundle's root disk, which is not implemented yet. A bundle may carry
+  `rootfs.img`, a raw image of its guest's whole system, which `backend: qemu-microvm` boots as `/dev/vda` from a
+  snapshot, with the guest's address in the kernel's own `ip=`. libvirt and cloud-hypervisor refuse such a bundle.
 - `ARCHITECTURE.md` §5 specifies the fleet view, which is not implemented yet: `RunService.Status` returns every
   run's status in one call, with a typed per-run error for a run that is not up or cannot be read, and
   `RunService.Down` takes several runs, or every run, down as one job with a child job per run. A slot a running
