@@ -8,7 +8,7 @@ All notable changes to this repo are documented here. Format follows
 
 ### Added
 
-- `ARCHITECTURE.md` §9 specifies a VM bundle's root disk, which is not implemented yet. A bundle may carry
+- `ARCHITECTURE.md` §9 specifies a VM bundle's root disk, implemented in vxedge 0.35.0. A bundle may carry
   `rootfs.img`, a raw image of its guest's whole system, which `backend: qemu-microvm` boots as `/dev/vda` from a
   snapshot, with the guest's address in the kernel's own `ip=`. libvirt and cloud-hypervisor refuse such a bundle.
 - `ARCHITECTURE.md` §5 specifies the fleet view, which is not implemented yet: `RunService.Status` returns every
